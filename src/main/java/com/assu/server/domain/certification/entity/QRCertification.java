@@ -1,8 +1,8 @@
-package com.assu.server.domain.suggestion.entity;
+package com.assu.server.domain.certification.entity;
 
-import com.assu.server.domain.admin.entity.Admin;
+import java.time.LocalDateTime;
+
 import com.assu.server.domain.common.entity.BaseEntity;
-import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.user.entity.Student;
 
 import jakarta.persistence.Entity;
@@ -15,26 +15,23 @@ import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+
 
 @Entity
-@AllArgsConstructor
-@RequiredArgsConstructor
-@Builder
 @Getter
-public class Suggestion extends BaseEntity {
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+public class QRCertification extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "admin_id")
-	private Admin admin;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "student_id")
+	@JoinColumn(name = "member_id")
 	private Student student;
 
-	private String shopName;
-	private String content;
+	private Boolean isVerified;
+	private LocalDateTime verifiedTime;
 }

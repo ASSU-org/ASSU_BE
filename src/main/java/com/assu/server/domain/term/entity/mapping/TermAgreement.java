@@ -1,9 +1,7 @@
-package com.assu.server.domain.suggestion.entity;
-
-import com.assu.server.domain.admin.entity.Admin;
+package com.assu.server.domain.term.entity.mapping;
 import com.assu.server.domain.common.entity.BaseEntity;
-import com.assu.server.domain.store.entity.Store;
-import com.assu.server.domain.user.entity.Student;
+import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.term.entity.Term;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,26 +13,24 @@ import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+
 
 @Entity
-@AllArgsConstructor
-@RequiredArgsConstructor
-@Builder
 @Getter
-public class Suggestion extends BaseEntity {
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+public class TermAgreement extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "admin_id")
-	private Admin admin;
+	@JoinColumn(name = "member_id")
+	private Member member;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "student_id")
-	private Student student;
-
-	private String shopName;
-	private String content;
+	@JoinColumn(name = "term_id")
+	private Term term;
 }

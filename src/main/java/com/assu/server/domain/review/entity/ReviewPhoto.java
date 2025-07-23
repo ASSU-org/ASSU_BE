@@ -1,9 +1,9 @@
-package com.assu.server.domain.notificaiton.entity;
-import com.assu.server.domain.certification.entity.QRCertification;
+package com.assu.server.domain.review.entity;
 import com.assu.server.domain.common.entity.BaseEntity;
-import com.assu.server.domain.partner.entity.Partner;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,19 +21,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class Notification extends BaseEntity {
+public class ReviewPhoto extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "qr_id")
-	private QRCertification qrVerification;
+	@JoinColumn(name = "review_id")
+	private Review review;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "partner_id")
-	private Partner partner;
-
-	private String content;
-	private Boolean isChecked;
+	private String photoUrl;
 }

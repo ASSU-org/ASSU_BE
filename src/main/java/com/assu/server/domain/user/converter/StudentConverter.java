@@ -1,4 +1,4 @@
 package com.assu.server.domain.user.converter;
 
-public class UserConverter {
+public class StudentConverter {
 }

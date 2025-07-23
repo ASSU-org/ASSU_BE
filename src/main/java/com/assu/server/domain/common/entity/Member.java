@@ -4,7 +4,7 @@ import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.partner.entity.Partner;
-import com.assu.server.domain.user.entity.User;
+import com.assu.server.domain.user.entity.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -32,7 +32,7 @@ public class Member {
 
     // 역할별 프로필 - 선택적으로 연관
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
-    private User studentProfile;
+    private Student studentProfile;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Admin adminProfile;
