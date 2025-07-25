@@ -49,7 +49,7 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
 
     // chatting
-    implementation 'org.springframework.book:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
 	// maria db
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
