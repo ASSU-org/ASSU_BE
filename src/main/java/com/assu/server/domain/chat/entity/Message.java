@@ -3,6 +3,7 @@ import java.time.LocalDateTime;
 
 import com.assu.server.domain.chat.entity.enums.MessageType;
 
+import com.assu.server.domain.common.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @AllArgsConstructor
-public class Message {
+public class Message extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
