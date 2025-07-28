@@ -12,7 +12,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/chat/rooms").permitAll()
+                        .requestMatchers("/chat/**").permitAll()
                         .requestMatchers(
                                 "/ws/**",
                                 "/v3/api-docs/**",

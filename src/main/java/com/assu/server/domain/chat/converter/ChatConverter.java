@@ -1,8 +1,9 @@
 package com.assu.server.domain.chat.converter;
 
-import com.assu.server.domain.chat.dto.ChatResponseDTO;
+import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import com.assu.server.domain.chat.entity.ChattingRoom;
+import com.assu.server.domain.partner.entity.Partner;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,9 +24,16 @@ public class ChatConverter {
     }
 
     // 리스트 변환
-    public static List<ChatRoomListResultDTO> toChatRoomListResultDTO(List<ChatRoomListResultDTO> dtos) {
-        return dtos.stream()
+    public static List<ChatRoomListResultDTO> toChatRoomListResultDTO(List<ChatRoomListResultDTO> dto) {
+        return dto.stream()
                 .map(ChatConverter::toChatRoomResultDTO)
                 .collect(Collectors.toList());
+    }
+
+    public static ChattingRoom toCreateChattingRoom(Admin admin, Partner partner) {
+        return ChattingRoom.builder()
+                .admin(admin)
+                .partner(partner)
+                .build();
     }
 }

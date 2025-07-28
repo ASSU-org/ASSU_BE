@@ -1,9 +1,17 @@
 package com.assu.server.domain.chat.service;
 
+import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.admin.repository.AdminRepository;
 import com.assu.server.domain.chat.converter.ChatConverter;
+import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
+import com.assu.server.domain.chat.entity.ChattingRoom;
 import com.assu.server.domain.chat.repository.ChatRepository;
 import com.assu.server.domain.common.repository.MemberRepository;
+import com.assu.server.domain.partner.entity.Partner;
+import com.assu.server.domain.partner.repository.PartnerRepository;
+import com.assu.server.global.apiPayload.code.status.ErrorStatus;
+import com.assu.server.global.exception.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -14,6 +22,8 @@ import java.util.List;
 public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final MemberRepository memberRepository;
+    private final PartnerRepository partnerRepository;
+    private final AdminRepository adminRepository;
 
     @Override
     public List<ChatRoomListResultDTO> getChatRoomList() {
@@ -22,5 +32,25 @@ public class ChatServiceImpl implements ChatService {
 
         List<ChatRoomListResultDTO> chatRoomList = chatRepository.findChattingRoomByMember(memberId);
         return ChatConverter.toChatRoomListResultDTO(chatRoomList);
+    }
+
+    @Override
+    public Long createChatRoom(ChatRequestDTO.CreateChatRoomRequestDTO request) {
+//        Long memberId = SecurityUtil.getCurrentUserId;
+//        Long opponentId = request.getOpponentId();
+
+        Long adminId = request.getAdminId();
+        Long partnerId = request.getPartnerId();
+
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+
+        ChattingRoom room = ChatConverter.toCreateChattingRoom(admin, partner);
+
+        ChattingRoom savedRoom = chatRepository.save(room);
+
+        return savedRoom.getId();
     }
 }
