@@ -1,9 +1,12 @@
 package com.assu.server.domain.chat.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import com.assu.server.domain.chat.entity.ChattingRoom;
+import com.assu.server.domain.chat.entity.Message;
+import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.partner.entity.Partner;
 
 import java.util.List;
@@ -40,5 +43,22 @@ public class ChatConverter {
 
     public static ChatResponseDTO.CreateChatRoomResponseDTO toCreateChatRoomIdDTO(ChattingRoom room) {
         return new ChatResponseDTO.CreateChatRoomResponseDTO(room.getId());
+    }
+
+    public static Message toMessageEntity(ChatRequestDTO.ChatMessageRequestDTO request, ChattingRoom room, Member sender) {
+        return Message.builder()
+                .chattingRoom(room)
+                .sender(sender)
+                .message(request.message())
+                .build();
+    }
+
+    public static ChatResponseDTO.ChatMessageResponseDTO toChatMessageDTO(Message message) {
+        return ChatResponseDTO.ChatMessageResponseDTO.builder()
+                .roomId(message.getChattingRoom().getId())
+                .senderId(message.getSender().getId())
+                .message(message.getMessage())
+                .sentAt(message.getCreatedAt())
+                .build();
     }
 }

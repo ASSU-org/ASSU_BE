@@ -6,8 +6,11 @@ import com.assu.server.domain.chat.service.ChatService;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
 import com.assu.server.global.apiPayload.BaseResponse;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 
@@ -16,6 +19,7 @@ import java.util.List;
 @RequestMapping("/chat")
 public class ChatController {
     private final ChatService chatService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Operation(
             summary = "채팅방 목록을 조회하는 API 입니다.",
@@ -33,5 +37,16 @@ public class ChatController {
     @PostMapping("/create/rooms")
     public BaseResponse<ChatResponseDTO.CreateChatRoomResponseDTO> createChatRoom(@RequestBody ChatRequestDTO.CreateChatRoomRequestDTO request) {
         return BaseResponse.onSuccess(SuccessStatus._OK, chatService.createChatRoom(request));
+    }
+
+    @Operation(
+            summary = "채팅 API 입니다.",
+            description = "roomId, senderId, message를 입력해 주세요"
+    )
+    @MessageMapping("/send")
+    public void handleMessage(@Payload ChatRequestDTO.ChatMessageRequestDTO request) {
+        ChatResponseDTO.ChatMessageResponseDTO response = chatService.handleMessage(request);
+
+        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.roomId(), response);
     }
 }

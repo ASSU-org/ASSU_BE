@@ -7,7 +7,10 @@ import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import com.assu.server.domain.chat.entity.ChattingRoom;
+import com.assu.server.domain.chat.entity.Message;
 import com.assu.server.domain.chat.repository.ChatRepository;
+import com.assu.server.domain.chat.repository.MessageRepository;
+import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.repository.MemberRepository;
 import com.assu.server.domain.partner.entity.Partner;
@@ -25,6 +28,8 @@ public class ChatServiceImpl implements ChatService {
     private final MemberRepository memberRepository;
     private final PartnerRepository partnerRepository;
     private final AdminRepository adminRepository;
+    private final MessageRepository messageRepository;
+
 
     @Override
     public List<ChatRoomListResultDTO> getChatRoomList() {
@@ -61,5 +66,19 @@ public class ChatServiceImpl implements ChatService {
 
 
         return ChatConverter.toCreateChatRoomIdDTO(savedRoom);
+    }
+
+    @Override
+    public ChatResponseDTO.ChatMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request) {
+        // 유효성 검사
+        ChattingRoom room = chatRepository.findById(request.roomId())
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ROOM));
+        Member sender = memberRepository.findById(request.senderId())
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
+
+        Message message = ChatConverter.toMessageEntity(request, room, sender);
+        messageRepository.save(message);
+
+        return ChatConverter.toChatMessageDTO(message);
     }
 }

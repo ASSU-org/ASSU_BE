@@ -8,4 +8,10 @@ public class ChatRequestDTO {
         private Long adminId;
         private Long partnerId;
     }
+
+    public record ChatMessageRequestDTO(
+        Long roomId,
+        Long senderId,
+        String message
+        ) {}
 }
