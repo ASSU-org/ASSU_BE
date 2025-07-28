@@ -31,7 +31,7 @@ public class ChatController {
             description = "상대방의 id를 request body에 입력해 주세요"
     )
     @PostMapping("/create/rooms")
-    public BaseResponse<Long> createChatRoom(@RequestBody ChatRequestDTO.CreateChatRoomRequestDTO request) {
+    public BaseResponse<ChatResponseDTO.CreateChatRoomResponseDTO> createChatRoom(@RequestBody ChatRequestDTO.CreateChatRoomRequestDTO request) {
         return BaseResponse.onSuccess(SuccessStatus._OK, chatService.createChatRoom(request));
     }
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class ChatResponseDTO {
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor

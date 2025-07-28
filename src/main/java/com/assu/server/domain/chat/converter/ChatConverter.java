@@ -1,6 +1,7 @@
 package com.assu.server.domain.chat.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import com.assu.server.domain.chat.entity.ChattingRoom;
 import com.assu.server.domain.partner.entity.Partner;
@@ -35,5 +36,9 @@ public class ChatConverter {
                 .admin(admin)
                 .partner(partner)
                 .build();
+    }
+
+    public static ChatResponseDTO.CreateChatRoomResponseDTO toCreateChatRoomIdDTO(ChattingRoom room) {
+        return new ChatResponseDTO.CreateChatRoomResponseDTO(room.getId());
     }
 }

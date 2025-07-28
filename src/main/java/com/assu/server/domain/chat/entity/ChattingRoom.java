@@ -39,4 +39,16 @@ public class ChattingRoom extends BaseEntity {
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private List<Message> messages;
+
+    private String adminViewName;
+    private String partnerViewName;
+
+    public void updateStatus(ActivationStatus status) {
+        this.status = status;
+    }
+
+    public void updateName(String adminViewName, String partnerViewName) {
+        this.adminViewName = adminViewName;
+        this.partnerViewName = partnerViewName;
+    }
 }
