@@ -8,25 +8,17 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 public class ChatResponseDTO {
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ChatRoomListResultDTO {
-        private String roomId;
-        private String lastMessage;
-        private LocalDateTime lastMessageTime;
-        private int unreadMessagesCount;
-        private Opponent opponent;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Opponent {
-        private Long  opponentId;
-        private String opponentName;
-        private String profileImageUrl;
-    }
+//    @Getter
+//    @Builder
+//    @AllArgsConstructor
+//    @NoArgsConstructor
+//    public static class ChatRoomListResultDTO {
+//        private Long roomId;
+//        private String lastMessage;
+//        private LocalDateTime lastMessageTime;
+//        private Long unreadMessagesCount;
+//        private Long  opponentId;
+//        private String opponentName;
+//        private String opponentProfileImage;
+//    }
 }

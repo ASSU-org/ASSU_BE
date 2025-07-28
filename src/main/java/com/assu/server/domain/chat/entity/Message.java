@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import com.assu.server.domain.chat.entity.enums.MessageType;
 
 import com.assu.server.domain.common.entity.BaseEntity;
+import com.assu.server.domain.common.entity.Member;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,15 +33,25 @@ public class Message extends BaseEntity {
 	@JoinColumn(name = "room_id")
 	private ChattingRoom chattingRoom;
 
-	@Enumerated(EnumType.STRING)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private Member sender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id", nullable = true) // 그룹 채팅이면 nullable
+    private Member receiver;
+
+
+    @Enumerated(EnumType.STRING)
 	private MessageType type;
 
-	private String content;
+	private String message;
 
 	private LocalDateTime sendTime;
 	private LocalDateTime readTime;
 
 	private Boolean isRead;
 
-
+    @Builder.Default
+    private Boolean deleted = false;
 }
