@@ -5,19 +5,8 @@ import com.assu.server.domain.chat.entity.enums.MessageType;
 
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.common.entity.Member;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Getter
@@ -50,8 +39,13 @@ public class Message extends BaseEntity {
 	private LocalDateTime sendTime;
 	private LocalDateTime readTime;
 
-	private Boolean isRead;
+    @Column(nullable = false)
+	private boolean isRead = false;
 
     @Builder.Default
     private Boolean deleted = false;
+
+    public void markAsRead() {
+        this.isRead = true;
+    }
 }

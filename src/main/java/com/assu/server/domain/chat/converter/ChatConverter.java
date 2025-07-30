@@ -45,10 +45,11 @@ public class ChatConverter {
         return new ChatResponseDTO.CreateChatRoomResponseDTO(room.getId());
     }
 
-    public static Message toMessageEntity(ChatRequestDTO.ChatMessageRequestDTO request, ChattingRoom room, Member sender) {
+    public static Message toMessageEntity(ChatRequestDTO.ChatMessageRequestDTO request, ChattingRoom room, Member sender, Member receiver) {
         return Message.builder()
                 .chattingRoom(room)
                 .sender(sender)
+                .receiver(receiver)
                 .message(request.message())
                 .build();
     }

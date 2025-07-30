@@ -3,11 +3,13 @@ package com.assu.server.domain.chat.controller;
 import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.service.ChatService;
+import com.assu.server.domain.common.entity.Member;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.assu.server.global.apiPayload.BaseResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -48,5 +50,16 @@ public class ChatController {
         ChatResponseDTO.ChatMessageResponseDTO response = chatService.handleMessage(request);
 
         simpMessagingTemplate.convertAndSend("/sub/chat/" + request.roomId(), response);
+    }
+
+    @Operation(
+            summary = "메시지 읽음 처리 API 입니다.",
+            description = "roomId를 입력해 주세요."
+    )
+    @PatchMapping("rooms/{roomId}/read")
+    public BaseResponse<ChatResponseDTO.ReadMessageResponseDTO> readMessage(
+            @PathVariable Long roomId) {
+        ChatResponseDTO.ReadMessageResponseDTO response = chatService.readMessage(roomId);
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 }

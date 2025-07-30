@@ -17,6 +17,7 @@ import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.exception.DatabaseException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -75,10 +76,25 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ROOM));
         Member sender = memberRepository.findById(request.senderId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
+        Member receiver = memberRepository.findById(request.receiverId())
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
 
-        Message message = ChatConverter.toMessageEntity(request, room, sender);
+        Message message = ChatConverter.toMessageEntity(request, room, sender, receiver);
         messageRepository.save(message);
 
         return ChatConverter.toChatMessageDTO(message);
+    }
+
+    @Transactional
+    @Override
+    public ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId) {
+//        Long memberId = SecurityUtil.getCurrentUserId();
+        Long memberId = 2L;
+
+        List<Message> unreadMessages = messageRepository.findUnreadMessagesByRoomAndReceiver(roomId, memberId);
+
+        unreadMessages.forEach(Message::markAsRead);
+
+        return new ChatResponseDTO.ReadMessageResponseDTO(roomId, unreadMessages.size());
     }
 }

@@ -12,6 +12,7 @@
 <div>
     <label>roomId: <input id="roomId" type="number" value="7" /></label><br/>
     <label>senderId: <input id="senderId" type="number" value="2" /></label><br/>
+    <label>receiverId: <input id="receiverId" type="number" value="1" /></label><br/>
     <label>message: <input id="message" type="text" value="테스트 메시지입니다!" /></label><br/>
     <button onclick="connect()">Connect</button>
     <button onclick="sendMessage()">Send Message</button>
@@ -46,6 +47,7 @@
     function sendMessage() {
         const roomId = document.getElementById("roomId").value;
         const senderId = document.getElementById("senderId").value;
+        const receiverId = document.getElementById("receiverId").value;
         const message = document.getElementById("message").value;
 
         if (!stompClient || !stompClient.connected) {
@@ -56,6 +58,7 @@
         const payload = {
             roomId: parseInt(roomId),
             senderId: parseInt(senderId),
+            receiverId: parseInt(receiverId),
             message: message
         };
 

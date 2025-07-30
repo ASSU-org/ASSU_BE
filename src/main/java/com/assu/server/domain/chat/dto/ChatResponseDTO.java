@@ -1,10 +1,10 @@
 package com.assu.server.domain.chat.dto;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 public class ChatResponseDTO {
@@ -23,5 +23,10 @@ public class ChatResponseDTO {
             Long senderId,
             String message,
             LocalDateTime sentAt
+    ) {}
+
+    public record ReadMessageResponseDTO(
+            Long roomId,
+            int readCount
     ) {}
 }
