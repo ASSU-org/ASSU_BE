@@ -3,6 +3,7 @@ package com.assu.server.domain.chat.service;
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
 import com.assu.server.domain.chat.converter.ChatConverter;
+import com.assu.server.domain.chat.dto.ChatMessageDTO;
 import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
@@ -70,7 +71,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public ChatResponseDTO.ChatMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request) {
+    public ChatResponseDTO.SendMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request) {
         // 유효성 검사
         ChattingRoom room = chatRepository.findById(request.roomId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ROOM));
@@ -82,7 +83,7 @@ public class ChatServiceImpl implements ChatService {
         Message message = ChatConverter.toMessageEntity(request, room, sender, receiver);
         messageRepository.save(message);
 
-        return ChatConverter.toChatMessageDTO(message);
+        return ChatConverter.toSendMessageDTO(message);
     }
 
     @Transactional
@@ -96,5 +97,15 @@ public class ChatServiceImpl implements ChatService {
         unreadMessages.forEach(Message::markAsRead);
 
         return new ChatResponseDTO.ReadMessageResponseDTO(roomId, unreadMessages.size());
+    }
+
+    @Override
+    public ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId) {
+        //        Long memberId = SecurityUtil.getCurrentUserId();
+        Long memberId = 2L;
+
+        List<ChatMessageDTO> allMessages = messageRepository.findAllMessagesByRoomAndMemberId(roomId, memberId);
+
+        return ChatConverter.toChatHistoryDTO(allMessages);
     }
 }

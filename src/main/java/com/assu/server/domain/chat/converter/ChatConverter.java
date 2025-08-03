@@ -1,6 +1,7 @@
 package com.assu.server.domain.chat.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.chat.dto.ChatMessageDTO;
 import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
@@ -54,12 +55,32 @@ public class ChatConverter {
                 .build();
     }
 
-    public static ChatResponseDTO.ChatMessageResponseDTO toChatMessageDTO(Message message) {
-        return ChatResponseDTO.ChatMessageResponseDTO.builder()
+    public static ChatResponseDTO.SendMessageResponseDTO toSendMessageDTO(Message message) {
+        return ChatResponseDTO.SendMessageResponseDTO.builder()
                 .roomId(message.getChattingRoom().getId())
                 .senderId(message.getSender().getId())
                 .message(message.getMessage())
-                .sentAt(message.getCreatedAt())
+                .sentAt(message.getSendTime())
+                .build();
+    }
+
+//    public static ChatMessageDTO toChatMessageDTO(Message message, Long currentUserId) {
+//        return ChatMessageDTO.builder()
+//                .messageId(message.getId())
+//                .message(message.getMessage())
+//                .sendTime(message.getCreatedAt())
+//                .isRead(message.isRead())
+//                .isMyMessage(message.getSender().getId().equals(currentUserId))
+//                .build();
+//    }
+
+    public static ChatResponseDTO.ChatHistoryResponseDTO toChatHistoryDTO(
+            List<ChatMessageDTO> messages) {
+
+        // ③ 최종 DTO 빌드
+        return ChatResponseDTO.ChatHistoryResponseDTO.builder()
+                .roomId(messages.get(0).getRoomId())
+                .messages(messages)
                 .build();
     }
 }

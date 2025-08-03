@@ -8,6 +8,7 @@ import java.util.List;
 public interface ChatService {
     List<ChatRoomListResultDTO> getChatRoomList();
     ChatResponseDTO.CreateChatRoomResponseDTO createChatRoom(ChatRequestDTO.CreateChatRoomRequestDTO request);
-    ChatResponseDTO.ChatMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request);
+    ChatResponseDTO.SendMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request);
     ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId);
+    ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId);
 }
