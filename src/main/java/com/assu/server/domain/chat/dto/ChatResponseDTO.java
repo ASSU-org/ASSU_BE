@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ChatResponseDTO {
@@ -43,4 +42,15 @@ public class ChatResponseDTO {
         private Long roomId;
         private List<ChatMessageDTO> messages;
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class LeaveChattingRoomResponseDTO {
+        private Long roomId;
+        private boolean isLeftSuccessfully;
+        private boolean isRoomDeleted;
+    }
 }
+

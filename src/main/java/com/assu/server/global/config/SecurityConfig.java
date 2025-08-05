@@ -14,6 +14,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/chat/**",
+                                "/suggestion/**",
+                                "/review/**",
                                 "/ws/**",
                                 "/pub/**",     // STOMP 메시지 전송
                                 "/sub/**",     // STOMP 메시지 구독

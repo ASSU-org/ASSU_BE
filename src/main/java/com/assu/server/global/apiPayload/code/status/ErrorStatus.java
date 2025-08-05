@@ -2,6 +2,7 @@ package com.assu.server.global.apiPayload.code.status;
 
 import com.assu.server.global.apiPayload.code.BaseErrorCode;
 import com.assu.server.global.apiPayload.code.ErrorReasonDTO;
+import com.sun.net.httpserver.HttpsServer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,9 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_SUCH_PARTNER(HttpStatus.NOT_FOUND,"MEMBER_4002","존재하지 않는 partner ID 입니다."),
 
     // 채팅 에러
-    NO_SUCH_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5001", "존재하지 않는 채팅방 ID 입니다.")
+    NO_SUCH_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5001", "존재하지 않는 채팅방 ID 입니다."),
+    NO_MEMBER_IN_THE_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5002", "해당 방에는 해당 사용자가 없습니다."),
+    NO_MEMBER(HttpStatus.NOT_FOUND, "CHATTING_5003", "해당 방에는 사용자가 아무도 없습니다.")
 
     ;
 

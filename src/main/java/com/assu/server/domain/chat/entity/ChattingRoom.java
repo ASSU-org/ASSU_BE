@@ -36,12 +36,14 @@ public class ChattingRoom extends BaseEntity {
 	@JoinColumn(name = "partner_id")
 	private Partner partner;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private List<Message> messages;
 
     private String adminViewName;
     private String partnerViewName;
+
+    private int memberCount;
 
     public void updateStatus(ActivationStatus status) {
         this.status = status;
@@ -50,5 +52,17 @@ public class ChattingRoom extends BaseEntity {
     public void updateName(String adminViewName, String partnerViewName) {
         this.adminViewName = adminViewName;
         this.partnerViewName = partnerViewName;
+    }
+
+    public void updateMemberCount(int memberCount) {
+        this.memberCount = memberCount;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
+
+    public void setPartner(Partner partner) {
+        this.partner = partner;
     }
 }

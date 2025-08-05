@@ -38,4 +38,5 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             @Param("roomId") Long roomId,
             @Param("memberId") Long memberId
     );
+
 }

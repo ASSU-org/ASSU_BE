@@ -70,4 +70,16 @@ public class ChatController {
         ChatResponseDTO.ChatHistoryResponseDTO response = chatService.readHistory(roomId);
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
+
+    @Operation(
+            summary = "채팅방을 나가는 API 입니다." +
+                    "참여자가 2명이면 채팅방이 살아있지만, 이미 한 명이 나갔다면 채팅방이 삭제됩니다.",
+            description = "roomId를 입력해 주세요."
+    )
+    @DeleteMapping("rooms/{roomId}/leave")
+    public BaseResponse<ChatResponseDTO.LeaveChattingRoomResponseDTO> leaveChattingRoom(
+            @PathVariable Long roomId
+    ) {
+        return BaseResponse.onSuccess(SuccessStatus._OK, chatService.leaveChattingRoom(roomId));
+    }
 }

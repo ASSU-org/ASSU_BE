@@ -20,6 +20,7 @@ import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<ChatRoomListResultDTO> getChatRoomList() {
 //        Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 1L;
+        Long memberId = 2L;
 
         List<ChatRoomListResultDTO> chatRoomList = chatRepository.findChattingRoomByMember(memberId);
         return ChatConverter.toChatRoomListResultDTO(chatRoomList);
@@ -58,6 +59,8 @@ public class ChatServiceImpl implements ChatService {
         ChattingRoom room = ChatConverter.toCreateChattingRoom(admin, partner);
 
         room.updateStatus(ActivationStatus.ACTIVE);
+
+        room.updateMemberCount(2);
 
         room.updateName(
                 partner.getName(),
@@ -101,11 +104,56 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId) {
-        //        Long memberId = SecurityUtil.getCurrentUserId();
+//        Long memberId = SecurityUtil.getCurrentUserId();
         Long memberId = 2L;
 
         List<ChatMessageDTO> allMessages = messageRepository.findAllMessagesByRoomAndMemberId(roomId, memberId);
 
         return ChatConverter.toChatHistoryDTO(allMessages);
+    }
+
+    @Override
+    public ChatResponseDTO.LeaveChattingRoomResponseDTO leaveChattingRoom(Long roomId) {
+//        Long memberId = SecurityUtil.getCurrentUserId();
+
+        Long memberId = 2L;
+
+        // 멤버 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
+
+        // 채팅방 조회
+        ChattingRoom chattingRoom = chatRepository.findById(roomId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_MEMBER_IN_THE_ROOM));
+
+        boolean isAdmin = chattingRoom.getAdmin() != null &&
+                chattingRoom.getAdmin().getMember().getId().equals(member.getId());
+        boolean isPartner = chattingRoom.getPartner() != null &&
+                chattingRoom.getPartner().getMember().getId().equals(member.getId());
+
+        int memberCount = chattingRoom.getMemberCount();
+        boolean isRoomDeleted = false;
+        boolean isLeftSuccessfully = false;
+
+        if(memberCount == 2) {
+            if (isAdmin) {
+                chattingRoom.setAdmin(null);
+            } else if (isPartner) {
+                chattingRoom.setPartner(null);
+            } else {
+                throw new DatabaseException(ErrorStatus.NO_SUCH_MEMBER);
+            }
+            chattingRoom.updateMemberCount(1);
+            isLeftSuccessfully = true;
+            chatRepository.save(chattingRoom);
+        } else if(memberCount == 1) {
+            isRoomDeleted = true;
+            isLeftSuccessfully = true;
+            chatRepository.delete(chattingRoom);
+
+        } else if(memberCount == 0) {
+            throw new DatabaseException(ErrorStatus.NO_MEMBER);
+        }
+        return new  ChatResponseDTO.LeaveChattingRoomResponseDTO(roomId, isLeftSuccessfully,isRoomDeleted);
     }
 }
