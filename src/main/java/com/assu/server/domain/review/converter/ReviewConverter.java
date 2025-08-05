@@ -8,6 +8,9 @@ import com.assu.server.domain.review.entity.Review;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.user.entity.Student;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class ReviewConverter {
     public static ReviewResponseDTO.WriteReviewResponseDTO writeReviewResultDTO(Review review){
         //enti -> dto
@@ -30,5 +33,19 @@ public class ReviewConverter {
                 .student(student)
             //    .imageList(request.getReviewImage())
                 .build();
+    }
+    public static ReviewResponseDTO.CheckStudentReviewResponseDTO checkStudentReviewResultDTO(Review review){
+        return ReviewResponseDTO.CheckStudentReviewResponseDTO.builder()
+                .reviewId(review.getId())
+                .rate(review.getRate())
+                .content(review.getContent())
+                .createdAt(review.getCreatedAt())
+                .storeId(review.getStore().getId())
+                .build();
+    }
+    public static List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReviewResultDTO(List<Review> reviews){
+        return reviews.stream()
+                .map(ReviewConverter::checkStudentReviewResultDTO)
+                .collect(Collectors.toList());
     }
 }

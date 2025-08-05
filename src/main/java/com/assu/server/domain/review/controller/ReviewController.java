@@ -7,10 +7,9 @@ import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,5 +23,14 @@ public class ReviewController {
     @PostMapping()
     public BaseResponse<ReviewResponseDTO.WriteReviewResponseDTO> writeReview(@RequestBody ReviewRequestDTO.WriteReviewRequestDTO writeReviewRequestDTO) {
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.writeReview(writeReviewRequestDTO));
+    }
+
+    @Operation(
+            summary = "내가 쓴 리뷰 조회 API입니다.",
+            description = "Autorization 후에 사용해주세요."
+    )
+    @GetMapping("/{studentId}")
+    public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent() {
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview());
     }
 }

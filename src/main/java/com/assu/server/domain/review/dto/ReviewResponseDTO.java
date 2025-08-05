@@ -19,5 +19,18 @@ public class ReviewResponseDTO {
         private LocalDateTime createdAt;
         private Long memberId;
     }
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CheckStudentReviewResponseDTO { //내가 작성한 리뷰
+        private Long reviewId;
+        private Long storeId;
+        private String content;
+        private Integer rate;
+        private LocalDateTime createdAt;
+        //private List<ReviewPhoto> reviewImage;
+    }
+
 
 }

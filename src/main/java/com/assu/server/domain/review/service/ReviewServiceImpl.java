@@ -17,6 +17,8 @@ import com.assu.server.global.exception.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
@@ -48,5 +50,12 @@ public class ReviewServiceImpl implements ReviewService {
         return ReviewConverter.writeReviewResultDTO(review);//객체를 dto로 바꿔서 사용자에게 보여줌 -> controller
     }
 
+    @Override
+    public List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview() {
+        //Long memberId = SecurityUtil.getCurrentUserId;
+        Long memberId = 1L;
+        List<Review> reviews = reviewRepository.findByMemberId(memberId);
 
+        return ReviewConverter.checkStudentReviewResultDTO(reviews);
+    }
 }
