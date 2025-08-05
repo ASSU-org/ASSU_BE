@@ -1,4 +1,7 @@
 package com.assu.server.domain.review.repository;
 
-public class ReviewRepository {
+import com.assu.server.domain.review.entity.Review;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ReviewRepository extends JpaRepository<Review, Long> {
 }

@@ -20,7 +20,12 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
-
+    //스토어 에러
+    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE_5001", "존재하지 않는 스토어 ID입니다."),
+    //파트너 에러
+    NO_SUCH_PARTNER(HttpStatus.NOT_FOUND, "PARTNER_4002", "존재하지 않는 파트너 ID입니다."),
+    //스투던트 에러
+    NO_SUCH_STUDENT(HttpStatus.NOT_FOUND, "STUDENT_4003", "존재하지 않는 학생 ID입니다.")
     ;
 
     private final HttpStatus httpStatus;

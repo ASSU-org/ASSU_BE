@@ -46,7 +46,7 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	// Swagger 3 (SpringDoc OpenAPI)
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
 
 	// maria db
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
