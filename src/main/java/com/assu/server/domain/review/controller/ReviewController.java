@@ -33,4 +33,14 @@ public class ReviewController {
     public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent() {
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview());
     }
+
+    @Operation(
+            summary = "내가 쓴 리뷰 삭제 API입니다.",
+            description = "삭제할 리뷰 ID를 입력해주세요."
+    )
+    @DeleteMapping("/{reviewId}")
+    public BaseResponse<ReviewResponseDTO.DeleteReviewResponseDTO> deleteReview(@PathVariable Long reviewId) {
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.deleteReview(reviewId));
+    }
+
 }

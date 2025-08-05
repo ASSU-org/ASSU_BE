@@ -31,6 +31,12 @@ public class ReviewResponseDTO {
         private LocalDateTime createdAt;
         //private List<ReviewPhoto> reviewImage;
     }
-
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class DeleteReviewResponseDTO {
+        private Long reviewId;
+    }
 
 }

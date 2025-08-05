@@ -14,6 +14,7 @@ import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.exception.DatabaseException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -57,5 +58,12 @@ public class ReviewServiceImpl implements ReviewService {
         List<Review> reviews = reviewRepository.findByMemberId(memberId);
 
         return ReviewConverter.checkStudentReviewResultDTO(reviews);
+    }
+
+    @Override
+    @Transactional
+    public ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(Long reviewId) {
+        reviewRepository.deleteById(reviewId);
+        return ReviewConverter.deleteReviewResultDTO(reviewId);
     }
 }

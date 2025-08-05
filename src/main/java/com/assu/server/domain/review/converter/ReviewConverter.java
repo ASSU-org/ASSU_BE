@@ -1,6 +1,5 @@
 package com.assu.server.domain.review.converter;
 
-import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.review.dto.ReviewRequestDTO;
 import com.assu.server.domain.review.dto.ReviewResponseDTO;
@@ -47,5 +46,10 @@ public class ReviewConverter {
         return reviews.stream()
                 .map(ReviewConverter::checkStudentReviewResultDTO)
                 .collect(Collectors.toList());
+    }
+    public static ReviewResponseDTO.DeleteReviewResponseDTO deleteReviewResultDTO(Long reviewId){
+        return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
+                .reviewId(reviewId)
+                .build();
     }
 }
