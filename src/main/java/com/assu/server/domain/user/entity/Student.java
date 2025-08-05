@@ -31,6 +31,8 @@ public class Student {
 
     private int stamp;
 
+    private Long studentNumber;
+
     @Enumerated(EnumType.STRING)
     private Major major;
 }
