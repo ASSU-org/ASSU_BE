@@ -32,6 +32,10 @@ public class QRCertification extends BaseEntity {
 	@JoinColumn(name = "member_id")
 	private Student student;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "certification_id")
+	private AssociateCertification certification;
+
 	private Boolean isVerified;
 	private LocalDateTime verifiedTime;
 }

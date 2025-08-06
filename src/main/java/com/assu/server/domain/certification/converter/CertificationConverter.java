@@ -1,4 +1,27 @@
 package com.assu.server.domain.certification.converter;
 
+import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.certification.dto.CertificationRequestDTO;
+import com.assu.server.domain.certification.dto.CertificationResponseDTO;
+import com.assu.server.domain.certification.entity.AssociateCertification;
+import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.store.entity.Store;
+
 public class CertificationConverter {
+	public static AssociateCertification toAssociateCertification(CertificationRequestDTO.groupRequest dto, Store store, Member member) {
+		return AssociateCertification.builder()
+			.store(store)
+			.partner(store.getPartner())
+			.isCertified(false)
+			.peopleNumber(dto.getPeople())
+			.tableNumber(dto.getTableNumber())
+			.student(member.getStudentProfile())
+			.build();
+	}
+
+	public static CertificationResponseDTO.getSessionIdResponse toSessionIdResponse(Long sessionId, Long adminId){
+		return CertificationResponseDTO.getSessionIdResponse.builder()
+			.sessionId(sessionId).adminId(adminId)
+			.build();
+	}
 }

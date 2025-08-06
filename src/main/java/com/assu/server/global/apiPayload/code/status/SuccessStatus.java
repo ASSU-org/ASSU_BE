@@ -95,8 +95,15 @@ public enum SuccessStatus implements BaseCode {
     REPORT_PROFILE_VIEW_SUCCESS(HttpStatus.OK, "REPORT_200", "계정 신고의 정보가 성공적으로 조회되었습니다."),
     REPORT_PROFILE_SUCCESS(HttpStatus.OK, "REPORT_201", "계정을 성공적으로 신고했습니다."),
     REPORT_ADMIN_VIEW_SUCCESS(HttpStatus.OK, "REPORT_200","관리자용 신고 기록이 성공적으로 조회되었습니다."),
-    REPORT_ADMIN_PROCESSED(HttpStatus.OK,"REPORT_204","신고가 성공적으로 처리되었습니다.")
+    REPORT_ADMIN_PROCESSED(HttpStatus.OK,"REPORT_204","신고가 성공적으로 처리되었습니다."),
 
+    // 제휴 성공
+    PAPER_HISTORY_SUCCESS(HttpStatus.OK, "PAPER201", "가게 별 제휴 내용이 성공적으로 조회되었습니다."),
+
+
+    // 그룹 인증
+    GROUP_SESSION_CREATE(HttpStatus.OK, "GROUP201", "인증 세션 생성 및 대표자 구독이 완료되었습니다."),
+    GROUP_CERTIFICATION_SUCCESS(HttpStatus.OK, "GROUP202", "그룹 인증 세션에 대한 인증이 완료되었습니다.")
     ;
 
     private final HttpStatus httpStatus;

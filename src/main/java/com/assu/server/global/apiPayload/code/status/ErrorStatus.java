@@ -20,6 +20,21 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
+    NO_STUENT_TYPE(HttpStatus.BAD_REQUEST, "MEMBER4002", "학생 타입이 아닌 멤버입니다."),
+
+
+    // 관리자 에러
+    NO_SUCH_ADMIN(HttpStatus.NOT_FOUND, "ADMIN4001", "존재하지 않는 관리자 ID입니다."),
+
+
+    // store 에러
+    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE4001", "존재하지 않은 store ID입니다."),
+
+
+    // session 에러
+    NO_SUCH_SESSION(HttpStatus.NOT_FOUND, "SESSION4001", "존재하지 않는 session ID입니다."),
+    SESSION_NOT_OPENED(HttpStatus.BAD_REQUEST, "SESSION4002", "만료되었거나 인증이 완료된 session ID입니다."),
+    DOUBLE_CERTIFIED_USER(HttpStatus.BAD_REQUEST, "SESSION4003", "이미 인증된 유저입니다.")
 
     ;
 
