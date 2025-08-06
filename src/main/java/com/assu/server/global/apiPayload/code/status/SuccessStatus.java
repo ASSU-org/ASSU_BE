@@ -4,6 +4,8 @@ import com.assu.server.global.apiPayload.code.BaseCode;
 import com.assu.server.global.apiPayload.code.ReasonDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -98,7 +100,8 @@ public enum SuccessStatus implements BaseCode {
     REPORT_ADMIN_PROCESSED(HttpStatus.OK,"REPORT_204","신고가 성공적으로 처리되었습니다."),
 
     // 제휴 성공
-    PAPER_HISTORY_SUCCESS(HttpStatus.OK, "PAPER201", "가게 별 제휴 내용이 성공적으로 조회되었습니다."),
+    PAPER_STORE_HISTORY_SUCCESS(HttpStatus.OK, "PAPER201", "가게 별 제휴 내용이 성공적으로 조회되었습니다."),
+    USER_PAPER_REQUEST_SUCCESS(HttpStatus.OK, "PAPER202", "제휴 요청이 성공적으로 처리되었습니다."),
 
 
     // 그룹 인증
