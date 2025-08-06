@@ -33,4 +33,8 @@ public class Student {
 
     @Enumerated(EnumType.STRING)
     private Major major;
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
 }
