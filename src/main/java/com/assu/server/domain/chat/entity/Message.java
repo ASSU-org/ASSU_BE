@@ -36,8 +36,8 @@ public class Message extends BaseEntity {
 
 	private String message;
 
-	private LocalDateTime sendTime;
-	private LocalDateTime readTime;
+//	private LocalDateTime sendTime;
+//	private LocalDateTime readTime;
 
     @Column(nullable = false)
 	private boolean isRead = false;

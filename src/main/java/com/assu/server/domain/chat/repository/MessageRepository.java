@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("""
@@ -23,16 +24,16 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             m.chattingRoom.id,
             m.id,
             m.message,
-            m.sendTime,
+            m.createdAt,
             m.isRead,
-            CASE WHEN m.sender.id = :memberId THEN true 
-            ELSE false 
+            CASE WHEN m.sender.id = :memberId THEN true
+            ELSE false
             END
         )
         FROM Message m
         WHERE m.chattingRoom.id = :roomId
         AND (m.sender.id = :memberId OR m.receiver.id = :memberId)
-                ORDER BY m.sendTime ASC
+                ORDER BY m.createdAt ASC
 """)
     List<ChatMessageDTO> findAllMessagesByRoomAndMemberId(
             @Param("roomId") Long roomId,

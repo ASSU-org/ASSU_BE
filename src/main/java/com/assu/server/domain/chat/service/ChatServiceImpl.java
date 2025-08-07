@@ -20,7 +20,6 @@ import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -37,9 +36,9 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public List<ChatRoomListResultDTO> getChatRoomList() {
 //        Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 2L;
+        Long memberId = 1L;
 
-        List<ChatRoomListResultDTO> chatRoomList = chatRepository.findChattingRoomByMember(memberId);
+        List<ChatRoomListResultDTO> chatRoomList = chatRepository.findChattingRoomsByMemberId(memberId);
         return ChatConverter.toChatRoomListResultDTO(chatRoomList);
     }
 
@@ -105,11 +104,14 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId) {
 //        Long memberId = SecurityUtil.getCurrentUserId();
-        Long memberId = 2L;
+        Long memberId = 1L;
+
+        ChattingRoom room = chatRepository.findById(roomId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ROOM));
 
         List<ChatMessageDTO> allMessages = messageRepository.findAllMessagesByRoomAndMemberId(roomId, memberId);
 
-        return ChatConverter.toChatHistoryDTO(allMessages);
+        return ChatConverter.toChatHistoryDTO(roomId, allMessages);
     }
 
     @Override

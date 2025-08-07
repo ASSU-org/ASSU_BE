@@ -60,7 +60,7 @@ public class ChatConverter {
                 .roomId(message.getChattingRoom().getId())
                 .senderId(message.getSender().getId())
                 .message(message.getMessage())
-                .sentAt(message.getSendTime())
+                .sentAt(message.getCreatedAt())
                 .build();
     }
 
@@ -75,11 +75,12 @@ public class ChatConverter {
 //    }
 
     public static ChatResponseDTO.ChatHistoryResponseDTO toChatHistoryDTO(
+            Long roomId,
             List<ChatMessageDTO> messages) {
 
         // ③ 최종 DTO 빌드
         return ChatResponseDTO.ChatHistoryResponseDTO.builder()
-                .roomId(messages.get(0).getRoomId())
+                .roomId(roomId)
                 .messages(messages)
                 .build();
     }

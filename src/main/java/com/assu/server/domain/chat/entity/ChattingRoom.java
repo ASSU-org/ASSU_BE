@@ -36,8 +36,7 @@ public class ChattingRoom extends BaseEntity {
 	@JoinColumn(name = "partner_id")
 	private Partner partner;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
+    @OneToMany(mappedBy = "chattingRoom", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Message> messages;
 
     private String adminViewName;
