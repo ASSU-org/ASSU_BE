@@ -59,6 +59,12 @@ dependencies {
 
 	// h2 db (test)
 	runtimeOnly 'com.h2database:h2'
+
+	// fcm
+	implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'com.google.auth:google-auth-library-oauth2-http:1.18.0'
+	implementation 'com.google.firebase:firebase-admin:9.2.0'
 }
 
 tasks.named('test') {

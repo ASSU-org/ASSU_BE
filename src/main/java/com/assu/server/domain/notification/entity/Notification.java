@@ -1,4 +1,4 @@
-package com.assu.server.domain.notificaiton.entity;
+package com.assu.server.domain.notification.entity;
 import com.assu.server.domain.certification.entity.QRCertification;
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.partner.entity.Partner;
