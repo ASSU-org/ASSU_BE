@@ -1,7 +1,9 @@
 package com.assu.server.domain.partnership.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -32,8 +34,9 @@ public class PartnershipServiceImpl implements PartnershipService {
 		// 1) 요청한 member 본인
 		usages.add(PartnershipConverter.toPartnershipUsage(dto, member.getStudentProfile()));
 
+		List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
 		// 2) dto의 userIds에 있는 다른 사용자들
-		for (Long userId : dto.getUserIds()) {
+		for (Long userId : userIds) {
 			Student student = studentRepository.getReferenceById(userId);
 			usages.add(PartnershipConverter.toPartnershipUsage(dto, student));
 		}
