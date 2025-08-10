@@ -1,5 +1,7 @@
 package com.assu.server.domain.partnership.dto;
 
+import java.util.List;
+
 import lombok.Getter;
 
 public class PartnershipRequestDTO {
@@ -10,5 +12,6 @@ public class PartnershipRequestDTO {
 		String partnershipContent;
 		Long contentId;
 		Long discount;
+		List<Long> userIds;
 	}
 }

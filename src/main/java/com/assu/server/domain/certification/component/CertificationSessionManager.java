@@ -1,5 +1,6 @@
 package com.assu.server.domain.certification.component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +25,9 @@ public class CertificationSessionManager {
 
 	public boolean hasUser(Long sessionId, Long userId) {
 		return sessionUserMap.getOrDefault(sessionId, Set.of()).contains(userId);
+	}
+	public List<Long> snapshotUserIds(Long sessionId) {
+		return List.copyOf(sessionUserMap.getOrDefault(sessionId, Set.of()));
 	}
 
 	public void removeSession(Long sessionId) {

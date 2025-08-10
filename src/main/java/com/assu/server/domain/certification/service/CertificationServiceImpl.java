@@ -39,7 +39,6 @@ public class CertificationServiceImpl implements CertificationService {
 	private final AdminRepository adminRepository;
 	private final StoreRepository storeRepository;
 	private final AssociateCertificationRepository associateCertificationRepository;
-	private final QRCertificationRepository qrRepository;
 
 	// 세션 메니저
 	private final CertificationSessionManager sessionManager;
@@ -127,19 +126,19 @@ public class CertificationServiceImpl implements CertificationService {
 			associateCertificationRepository.save(session);
 
 
-			messagingTemplate.convertAndSend("certification/progress"+sessionId,
-				new CurrentProgress.CompletedNotification("인증이 완료되었습니다.")
+			messagingTemplate.convertAndSend("/certification/progress"+sessionId,
+				new CurrentProgress.CompletedNotification("인증이 완료되었습니다.", sessionManager.snapshotUserIds(sessionId))
 			);
 		}
 
-		// 인증 정보를 QRCertification 에 삽입
-		QRCertification qrCertification = new QRCertification();
-			qrCertification.builder()
-			.certification(session)
-			.verifiedTime(LocalDateTime.now())
-			.isVerified(true)
-			.build();
-		qrRepository.save(qrCertification);
+		// // 인증 정보를 QRCertification 에 삽입
+		// QRCertification qrCertification = new QRCertification();
+		// 	qrCertification.builder()
+		// 	.certification(session)
+		// 	.verifiedTime(LocalDateTime.now())
+		// 	.isVerified(true)
+		// 	.build();
+		// qrRepository.save(qrCertification);
 
 	}
 

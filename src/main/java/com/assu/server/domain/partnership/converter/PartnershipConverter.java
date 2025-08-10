@@ -11,15 +11,17 @@ import com.assu.server.domain.partnership.entity.PaperContent;
 import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
 import com.assu.server.domain.user.entity.PartnershipUsage;
+import com.assu.server.domain.user.entity.Student;
 
 public class PartnershipConverter {
 
-	public static PartnershipUsage toPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member){
+	public static PartnershipUsage toPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Student student) {
 		return PartnershipUsage.builder()
 			.date(LocalDate.now())
 			.place(dto.getPlaceName())
-			.student(member.getStudentProfile())
+			.student(student)
 			.isReviewed(false)
+			.contentId(dto.getContentId())
 			.partnershipContent(dto.getPartnershipContent())
 			.build();
 	}
