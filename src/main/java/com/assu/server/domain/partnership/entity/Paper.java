@@ -1,4 +1,6 @@
 package com.assu.server.domain.partnership.entity;
+import java.time.LocalDate;
+
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.common.enums.ActivationStatus;
@@ -29,7 +31,7 @@ public class Paper extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private String partnershipPeriod; //  이게 뭘로 들어오는거지. 그냥 LocalDate  로 하는게 낫지 않나?
+	private LocalDate partnershipPeriod; //  이게 뭘로 들어오는거지. 그냥 LocalDate  로 하는게 낫지 않나?
 
 	@Enumerated(EnumType.STRING)
 	private ActivationStatus isActivated;

@@ -1,4 +1,4 @@
 package com.assu.server.domain.partnership.dto;
 
-public class PatnershipRequestDTO {
+public class PaperContentRequestDTO {
 }

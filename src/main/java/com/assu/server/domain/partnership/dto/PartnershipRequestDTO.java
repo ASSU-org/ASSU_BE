@@ -8,6 +8,7 @@ public class PartnershipRequestDTO {
 	public static class finalRequest{
 		String placeName;
 		String partnershipContent;
+		Long contentId;
 		Long discount;
 	}
 }
