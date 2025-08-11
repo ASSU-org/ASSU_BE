@@ -47,6 +47,22 @@ public class ReviewConverter {
                 .map(ReviewConverter::checkStudentReviewResultDTO)
                 .collect(Collectors.toList());
     }
+    public static ReviewResponseDTO.CheckPartnerReviewResponseDTO checkPartnerReviewResultDTO(Review review){
+        return ReviewResponseDTO.CheckPartnerReviewResponseDTO.builder()
+                .reviewId(review.getId())
+                .storeId(review.getStore().getId())
+                .reviewerId(review.getStudent().getId())
+                .content(review.getContent())
+                .rate(review.getRate())
+                .createdAt(review.getCreatedAt())
+                .build();
+
+    }
+    public static List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(List<Review> reviews){
+        return reviews.stream()
+                .map(ReviewConverter::checkPartnerReviewResultDTO)
+                .collect(Collectors.toList());
+    }
     public static ReviewResponseDTO.DeleteReviewResponseDTO deleteReviewResultDTO(Long reviewId){
         return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
                 .reviewId(reviewId)

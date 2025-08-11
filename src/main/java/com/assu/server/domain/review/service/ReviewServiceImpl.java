@@ -18,6 +18,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLOutput;
 import java.util.List;
 
 @Service
@@ -60,6 +61,22 @@ public class ReviewServiceImpl implements ReviewService {
         return ReviewConverter.checkStudentReviewResultDTO(reviews);
     }
 
+    @Override
+    @Transactional
+    public List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview() {
+        //Long memberId = SecurityUtil.getCurrentUserId;
+        Long partnerId = 2L; //ID 하드코딩 한 것
+
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+        System.out.println("파트너 id는 "+partner.getId());
+        Store store = storeRepository.findByPartner(partner)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
+
+        //List<Review> reviews = reviewRepository.findByStoreId(store.getId());
+        List<Review> reviews = reviewRepository.findByStoreIdOrderByCreatedAtDesc(store.getId()); //최신순 정렬
+        return ReviewConverter.checkPartnerReviewResultDTO(reviews);
+    }
     @Override
     @Transactional
     public ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(Long reviewId) {

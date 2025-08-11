@@ -15,4 +15,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     ORDER BY r.createdAt DESC
 """)
     List<Review> findByMemberId(@Param("memberId") Long memberId);
+    List<Review> findByStoreId(Long storeId);
+
+    List<Review> findByStoreIdOrderByCreatedAtDesc(Long id);//최신순 정렬
 }

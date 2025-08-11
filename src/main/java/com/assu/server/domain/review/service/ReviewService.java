@@ -10,5 +10,6 @@ import java.util.List;
 public interface ReviewService {
     ReviewResponseDTO.WriteReviewResponseDTO writeReview(@RequestBody ReviewRequestDTO.WriteReviewRequestDTO request);
     List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview();
+    List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview();
     ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(@PathVariable Long reviewId);
 }

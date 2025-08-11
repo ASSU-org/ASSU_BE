@@ -33,7 +33,6 @@ public class Store extends BaseEntity {
 	private Partner partner;
 
 	private Integer rate;
-
 	@Enumerated(EnumType.STRING)
 	private ActivationStatus isActivate;
 

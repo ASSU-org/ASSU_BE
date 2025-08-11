@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ReviewResponseDTO {
     @Getter
@@ -31,6 +32,22 @@ public class ReviewResponseDTO {
         private LocalDateTime createdAt;
         //private List<ReviewPhoto> reviewImage;
     }
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CheckPartnerReviewResponseDTO {//partner의 리뷰 확인
+        private Long reviewId;
+        private Long storeId; //현재 파트너의 가게 아이디
+        private Long reviewerId;
+        private String content;
+        private Integer rate;
+        private LocalDateTime createdAt;
+        private String sortBy; // 정렬기준 -> 최신, 별점, 오래된 순
+        //private List<ReviewPhoto> reviewImage;
+    }
+
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor

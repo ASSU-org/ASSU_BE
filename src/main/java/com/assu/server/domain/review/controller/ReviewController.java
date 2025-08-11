@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/review")
+@RequestMapping("/reviews")
 public class ReviewController {
     private final ReviewService reviewService;
     @Operation(
@@ -29,7 +29,7 @@ public class ReviewController {
             summary = "내가 쓴 리뷰 조회 API입니다.",
             description = "Autorization 후에 사용해주세요."
     )
-    @GetMapping("/{studentId}")
+    @GetMapping("/student")
     public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent() {
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview());
     }
@@ -43,4 +43,12 @@ public class ReviewController {
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.deleteReview(reviewId));
     }
 
+    @Operation(
+            summary = "내 가게 리뷰 조회 API입니다.",
+            description = "내 가게 ID를 입력해주세요."
+    )
+    @GetMapping("/partner")
+    public BaseResponse<List<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(){
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview());
+    }
 }
