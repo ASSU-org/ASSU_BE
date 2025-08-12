@@ -39,6 +39,7 @@ public class PartnershipServiceImpl implements PartnershipService {
 		for (Long userId : userIds) {
 			Student student = studentRepository.getReferenceById(userId);
 			usages.add(PartnershipConverter.toPartnershipUsage(dto, student));
+			student.setStamp();
 		}
 
 		partnershipUsageRepository.saveAll(usages);
