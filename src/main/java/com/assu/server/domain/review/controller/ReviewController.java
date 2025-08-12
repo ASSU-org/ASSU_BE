@@ -27,7 +27,7 @@ public class ReviewController {
 
     @Operation(
             summary = "내가 쓴 리뷰 조회 API입니다.",
-            description = "Autorization 후에 사용해주세요."
+            description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/student")
     public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent() {
@@ -45,7 +45,7 @@ public class ReviewController {
 
     @Operation(
             summary = "내 가게 리뷰 조회 API입니다.",
-            description = "내 가게 ID를 입력해주세요."
+            description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/partner")
     public BaseResponse<List<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(){

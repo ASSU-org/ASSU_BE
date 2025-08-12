@@ -64,7 +64,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview() {
-        //Long memberId = SecurityUtil.getCurrentUserId;
+        //Long partnerId = SecurityUtil.getCurrentUserId;
         Long partnerId = 2L; //ID 하드코딩 한 것
 
         Partner partner = partnerRepository.findById(partnerId)

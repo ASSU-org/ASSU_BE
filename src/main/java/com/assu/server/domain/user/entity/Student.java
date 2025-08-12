@@ -1,10 +1,14 @@
 package com.assu.server.domain.user.entity;
 
+import com.assu.server.domain.common.entity.AdminUser;
 import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
 import com.assu.server.domain.user.entity.enums.Major;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -33,4 +37,6 @@ public class Student {
 
     @Enumerated(EnumType.STRING)
     private Major major;
+    //@OneToMany(mappedBy = "user")
+    //private List<AdminUser> adminUsers = new ArrayList<>();
 }
