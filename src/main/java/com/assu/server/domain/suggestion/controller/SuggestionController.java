@@ -7,10 +7,9 @@ import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor // 파라미터가 있어야만 하는 생성자
@@ -28,5 +27,14 @@ public class SuggestionController {
             @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO suggestionRequestDTO
     ){
         return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.writeSuggestion(suggestionRequestDTO));
+    }
+
+    @Operation(
+            summary = "제휴 건의를 조회하는 API 입니다.",
+            description = "모든 제휴 건의를 조회합니다."
+    )
+    @GetMapping("/list")
+    public BaseResponse<List<SuggestionResponseDTO.GetSuggestionResponseDTO>> getSuggestions() {
+        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.getSuggestions());
     }
 }

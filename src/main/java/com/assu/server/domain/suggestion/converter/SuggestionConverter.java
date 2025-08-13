@@ -7,6 +7,9 @@ import com.assu.server.domain.suggestion.dto.SuggestionResponseDTO;
 import com.assu.server.domain.suggestion.entity.Suggestion;
 import com.assu.server.domain.user.entity.Student;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class SuggestionConverter {
 
     public static SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestionResultDTO(Suggestion suggestion){
@@ -28,5 +31,24 @@ public class SuggestionConverter {
                 .storeName(suggestionRequestDTO.getStoreName())
                 .content(suggestionRequestDTO.getBenefit())
                 .build();
+    }
+
+    public static SuggestionResponseDTO.GetSuggestionResponseDTO GetSuggestionResultDTO(Suggestion s){
+
+        Student student = s.getStudent();
+        return SuggestionResponseDTO.GetSuggestionResponseDTO.builder()
+                .suggestionId(s.getId())
+                .createdAt(s.getCreatedAt())
+                .content(s.getContent())
+                .studentNumber(student.getStudentNumber())
+                .enrollmentStatus(student.getEnrollmentStatus())
+                .studentMajor(student.getMajor())
+                .build();
+    }
+
+    public static List<SuggestionResponseDTO.GetSuggestionResponseDTO> toGetSuggestionDTOList(List<Suggestion> list) {
+        return list.stream()
+                .map(SuggestionConverter::GetSuggestionResultDTO)
+                .collect(Collectors.toList());
     }
 }

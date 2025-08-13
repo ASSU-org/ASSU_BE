@@ -4,6 +4,7 @@ import com.assu.server.global.apiPayload.code.BaseErrorCode;
 import com.assu.server.global.apiPayload.code.ErrorReasonDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -23,6 +24,42 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 어드민 에러
     NO_SUCH_ADMIN(HttpStatus.NOT_FOUND, "ADMIN_5001", "존재하지 않는 학생회입니다."),
+
+    // 파트너 에러
+    NO_SUCH_PARTNER(HttpStatus.NOT_FOUND, "PARTNER_5003", "존재하지 않는 파트너입니다."),
+
+    // 학생 에러
+    NO_SUCH_STUDENT(HttpStatus.NOT_FOUND, "STUDENT_5004", "존재하지 않는 학생입니다."),
+
+    // 스토어 에러
+    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE_6001", "존재하지 않는 가게입니다."),
+
+    // 혜택 없음 에러
+    OPTION_NOT_EMPTY(HttpStatus.BAD_REQUEST, "OPTION_7001", "혜택은 한 가지 이상이어야 합니다."),
+
+    // 벨류(금액, 인원수) 에러
+    VALUE_IS_REQUIRED(HttpStatus.NOT_FOUND, "VALUE_8001", "값을 알 수 없습니다."),
+
+    // 서비스 아이템 에러
+    SERVICE_ITEM_REQUIRED(HttpStatus.NOT_FOUND, "SERVICE_ITEM_9001", "서비스 품목은 한 가지 이상이어야 합니다."),
+
+    // 카테고리 에러
+    CATEGORY_REQUIRED(HttpStatus.NOT_FOUND, "CATEGORY_10001", "품목에 대한 카테고리가 설정되어야 합니다."),
+
+    // 할인율 에러
+    DISCOUNT_RATE_REQUIRED(HttpStatus.NOT_FOUND, "DISCOUNT_11001", "할인율 값을 알 수 없습니다."),
+
+    // 혜택 타입 에러
+    UNSUPPORTED_OPTION_TYPE(HttpStatus.NOT_FOUND, "OPTION_7002", "지원하지 않는 혜택 항목입니다."),
+
+    // 제휴 아이디 에러
+    NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_12001", "존재하지 않는 제휴입니다."),
+
+    // 어드민 찾기 에러
+    NO_AVAILABLE_ADMIN(HttpStatus.NOT_FOUND, "ADMIN_5002", "제휴단체를 찾을 수 없습니다."),
+
+    // 파트너 찾기 에러
+    NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "PARTNER_5502", "제휴업체를 찾을 수 없습니다."),
 
     ;
 
