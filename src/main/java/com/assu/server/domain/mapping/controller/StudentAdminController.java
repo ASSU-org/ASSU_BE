@@ -16,12 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class StudentAdminController {
     private final StudentAdminService studentAdminService;
     @Operation(
-            summary = "누적 가입수 조회 API입니다.",
+            summary = "누적 가입자 수 조회 API 입니다.",
             description = "admin으로 접근해주세요."
     )
     @GetMapping
     public BaseResponse<StudentAdminResponseDTO.CountAdminAuthResponseDTO> getCountAdmin() {
         return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountAdminAuth());
+    }
+    @Operation(
+            summary = "신규 한 달 가입자 수 조회 API 입니다.",
+            description = "admin으로 접근해주세요."
+    )
+    @GetMapping("/new")
+    public BaseResponse<StudentAdminResponseDTO.NewCountAdminResponseDTO> getNewStudentCountAdmin(){
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getNewStudentCountAdmin());
     }
 
 }

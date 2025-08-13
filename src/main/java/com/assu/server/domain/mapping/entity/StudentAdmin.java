@@ -1,5 +1,6 @@
 package com.assu.server.domain.mapping.entity;
 
+import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.admin.entity.Admin;
 import jakarta.persistence.*;
@@ -11,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class StudentAdmin {
+public class StudentAdmin extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
