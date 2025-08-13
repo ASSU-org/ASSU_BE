@@ -110,7 +110,10 @@ public enum SuccessStatus implements BaseCode {
 
 
     // 개인 인증
-    PERSONAL_CERTIFICATION_SUCCESS(HttpStatus.OK, "PERSONAL201", "개인 인증이 완료 되었습니다.")
+    PERSONAL_CERTIFICATION_SUCCESS(HttpStatus.OK, "PERSONAL201", "개인 인증이 완료 되었습니다."),
+
+    // 베스트 조회
+    BEST_STORE_SUCCESS(HttpStatus.OK, "STORE205", "베스트 매장 조회에 성공하였습니다")
     ;
 
     private final HttpStatus httpStatus;
