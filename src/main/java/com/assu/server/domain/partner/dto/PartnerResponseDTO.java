@@ -1,6 +1,5 @@
 package com.assu.server.domain.partner.dto;
 
-import com.assu.server.domain.admin.entity.Admin;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
