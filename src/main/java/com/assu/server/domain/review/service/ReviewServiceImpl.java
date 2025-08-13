@@ -64,10 +64,10 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview() {
-        //Long partnerId = SecurityUtil.getCurrentUserId;
-        Long partnerId = 2L; //ID 하드코딩 한 것
+        //Long memberId = SecurityUtil.getCurrentUserId;
+        Long memberId = 2L;
 
-        Partner partner = partnerRepository.findById(partnerId)
+        Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
         System.out.println("파트너 id는 "+partner.getId());
         Store store = storeRepository.findByPartner(partner)
