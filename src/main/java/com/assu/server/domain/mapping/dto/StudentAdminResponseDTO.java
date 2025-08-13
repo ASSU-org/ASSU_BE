@@ -25,4 +25,14 @@ public class StudentAdminResponseDTO {
         private Long adminId;
         private String adminName;
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CountUsagePersonResponseDTO{
+        private Long usagePersonCount;
+        private Long adminId;
+        private String adminName;
+    }
 }

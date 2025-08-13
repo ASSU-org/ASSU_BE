@@ -42,4 +42,17 @@ public class StudentAdminServiceImpl implements StudentAdminService {
         String adminName = admin.getName();
         return StudentAdminConverter.newCountAdminResponseDTO(memberId, total, adminName);
     }
+
+    @Override
+    @Transactional
+    public StudentAdminResponseDTO.CountUsagePersonResponseDTO getCountUsagePerson() {
+        //Long memberId = SecurityUtil.getCurrentUserId;
+        Long memberId = 5L;
+        Long total = studentAdminRepository.countTodayUsersByAdmin(memberId);
+        Admin admin = adminRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+        String adminName =admin.getName();
+        return StudentAdminConverter.countUsagePersonDTO(memberId, total, adminName);
+    }
+
 }

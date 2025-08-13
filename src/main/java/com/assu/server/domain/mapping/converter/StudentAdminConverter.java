@@ -19,4 +19,13 @@ public class StudentAdminConverter {
                 .adminName(adminName)
                 .build();
     }
+
+    public static StudentAdminResponseDTO.CountUsagePersonResponseDTO countUsagePersonDTO(Long adminId, Long total, String adminName){
+        return StudentAdminResponseDTO.CountUsagePersonResponseDTO.builder()
+                .adminId(adminId)
+                .usagePersonCount(total)
+                .adminName(adminName)
+                .build();
+    }
+
 }

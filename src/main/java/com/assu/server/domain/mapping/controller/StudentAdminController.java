@@ -32,4 +32,12 @@ public class StudentAdminController {
         return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getNewStudentCountAdmin());
     }
 
+    @Operation(
+            summary = "오늘 제휴 사용자 수 조회 API 입니다.",
+            description = "admin으로 접근해주세요."
+    )
+    @GetMapping("/countUser")
+    public BaseResponse<StudentAdminResponseDTO.CountUsagePersonResponseDTO> getCountUser(){
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsagePerson());
+    }
 }

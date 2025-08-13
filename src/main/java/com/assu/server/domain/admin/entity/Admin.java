@@ -1,11 +1,7 @@
 package com.assu.server.domain.admin.entity;
 
 import com.assu.server.domain.common.entity.Member;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
