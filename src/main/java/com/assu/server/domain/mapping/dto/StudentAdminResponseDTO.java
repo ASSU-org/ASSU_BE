@@ -16,4 +16,13 @@ public class StudentAdminResponseDTO {
         private Long adminId;
         private String adminName;
     }
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class NewCountAdminResponseDTO{ //신규 가입자수 (매달 1일 초기화)
+        private Long newStudentCount;
+        private Long adminId;
+        private String adminName;
+    }
 }

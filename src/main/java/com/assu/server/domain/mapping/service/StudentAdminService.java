@@ -4,4 +4,5 @@ import com.assu.server.domain.mapping.dto.StudentAdminResponseDTO;
 
 public interface StudentAdminService {
     StudentAdminResponseDTO.CountAdminAuthResponseDTO getCountAdminAuth();
+    StudentAdminResponseDTO.NewCountAdminResponseDTO getNewStudentCountAdmin();
 }
