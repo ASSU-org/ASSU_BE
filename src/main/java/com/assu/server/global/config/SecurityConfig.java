@@ -12,7 +12,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()  // ⭐ 모든 요청 허용
+                        .requestMatchers(
+                                "/chat/**",
+                                "/suggestion/**",
+                                "/review/**",
+                                "/ws/**",
+                                "/pub/**",     // STOMP 메시지 전송
+                                "/sub/**",     // STOMP 메시지 구독
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())  // CSRF 비활성화
                 .formLogin(login -> login.disable())
