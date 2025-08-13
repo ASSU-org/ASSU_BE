@@ -142,6 +142,18 @@ public class CertificationServiceImpl implements CertificationService {
 
 	}
 
+	@Override
+	public void certificatePersonal(CertificationRequestDTO.personalRequest dto, Member member){
+		// store id 추출
+		Store store = storeRepository.findByName(dto.getStoreName()).orElseThrow(
+			() -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
+		);
+
+		AssociateCertification personalCertificationData = CertificationConverter.toPersonalCertification(dto, store, member);
+		associateCertificationRepository.save(personalCertificationData);
+
+	}
+
 
 
 }

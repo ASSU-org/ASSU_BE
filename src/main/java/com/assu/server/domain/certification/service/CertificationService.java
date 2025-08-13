@@ -9,4 +9,6 @@ public interface CertificationService {
 	CertificationResponseDTO.getSessionIdResponse getSessionId(CertificationRequestDTO.groupRequest dto, Member member);
 
 	void handleCertification(CertificationRequestDTO.groupSessionRequest dto, Member member);
+
+	void certificatePersonal(CertificationRequestDTO.personalRequest dto, Member member);
 }

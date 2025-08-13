@@ -22,6 +22,7 @@ import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PrincipalDetails;
+import com.fasterxml.jackson.databind.ser.Serializers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -79,6 +80,20 @@ public class CertificationController {
 		certificationService.handleCertification(dto, member);
 
 		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.GROUP_CERTIFICATION_SUCCESS, null));
+	}
+
+	@PostMapping("/certification/personal")
+	@Operation(summary = "개인 인증 api", description = "사실 크게 필요없는데, 제휴 내역 통계를 위해 데이터를 post하는 api 입니다. "
+		+ "가게 별 제휴를 조회하고 people값이 null 인 제휴를 선택한 경우 그룹 인증 대신 요청하는 api 입니다.")
+	public ResponseEntity<BaseResponse<Void>> personalCertification(
+		@AuthenticationPrincipal PrincipalDetails userDetails,
+		@RequestBody CertificationRequestDTO.personalRequest dto
+	) {
+
+		Member member = userDetails.getMember();
+		certificationService.certificatePersonal(dto, member);
+
+		return ResponseEntity.ok(BaseResponse.onSuccessWithoutData(SuccessStatus.PERSONAL_CERTIFICATION_SUCCESS));
 	}
 
 }

@@ -106,7 +106,11 @@ public enum SuccessStatus implements BaseCode {
 
     // 그룹 인증
     GROUP_SESSION_CREATE(HttpStatus.OK, "GROUP201", "인증 세션 생성 및 대표자 구독이 완료되었습니다."),
-    GROUP_CERTIFICATION_SUCCESS(HttpStatus.OK, "GROUP202", "그룹 인증 세션에 대한 인증이 완료되었습니다.")
+    GROUP_CERTIFICATION_SUCCESS(HttpStatus.OK, "GROUP202", "그룹 인증 세션에 대한 인증이 완료되었습니다."),
+
+
+    // 개인 인증
+    PERSONAL_CERTIFICATION_SUCCESS(HttpStatus.OK, "PERSONAL201", "개인 인증이 완료 되었습니다.")
     ;
 
     private final HttpStatus httpStatus;

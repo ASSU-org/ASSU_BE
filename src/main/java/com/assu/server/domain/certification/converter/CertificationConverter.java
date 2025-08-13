@@ -24,4 +24,15 @@ public class CertificationConverter {
 			.sessionId(sessionId).adminId(adminId)
 			.build();
 	}
+
+	public static AssociateCertification toPersonalCertification(CertificationRequestDTO.personalRequest dto, Store store, Member member) {
+		return AssociateCertification.builder()
+			.store(store)
+			.partner(store.getPartner())
+			.isCertified(true)
+			.tableNumber(dto.getTableNumber())
+			.peopleNumber(1)
+			.student(member.getStudentProfile())
+			.build();
+	}
 }

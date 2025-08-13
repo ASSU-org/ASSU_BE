@@ -14,6 +14,13 @@ public class CertificationRequestDTO {
 	}
 
 	@Getter
+	public static class personalRequest{
+		String storeName;
+		String adminName;
+		Integer tableNumber;
+	}
+
+	@Getter
 	public static class groupSessionRequest{
 		Long adminId;
 		Long sessionId;
