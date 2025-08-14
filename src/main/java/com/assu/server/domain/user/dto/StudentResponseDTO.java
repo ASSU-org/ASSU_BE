@@ -1,5 +1,6 @@
 package com.assu.server.domain.user.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,16 +16,16 @@ public class StudentResponseDTO {
 	@AllArgsConstructor
 	@RequiredArgsConstructor
 	public static class myPartnership {
-		private long serviceCount;        // SERVICE 개수
-		private int totalDiscount;        // DISCOUNT 총액
-		private List<UsageDetailDTO> usageDetails;
+		private long serviceCount;
+		private List<UsageDetailDTO> details;
 	}
 
 	@Getter
 	@AllArgsConstructor
+	@Builder
 	public static class UsageDetailDTO {
 		private String storeName;
-		private LocalDateTime usedAt;
+		private LocalDate usedAt;
 		private String benefitDescription;
 		private boolean isReviewed;
 	}

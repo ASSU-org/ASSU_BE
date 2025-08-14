@@ -6,6 +6,4 @@ import com.assu.server.domain.user.dto.StudentResponseDTO;
 
 public interface StoreService {
 	StoreResponseDTO.todayBest getTodayBestStore();
-
-	StudentResponseDTO.myPartnership getMyPartnership(Long studentId, int year, int month);
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.assu.server.domain.user.entity.PartnershipUsage;
 
@@ -20,12 +21,14 @@ public interface PartnershipUsageRepository extends JpaRepository<PartnershipUsa
         """, nativeQuery = true)
 	List<String> findTodayPopularPartnership();
 
-	@Query("""
-    SELECT pu
-    FROM PartnershipUsage pu
-    WHERE pu.student.id = :studentId
-      AND YEAR(pu.createdAt) = :year
-      AND MONTH(pu.createdAt) = :month
-""")
-	List<PartnershipUsage> myPartnershipByYearAndMonth();
+	@Query("SELECT pu FROM PartnershipUsage pu " +
+		"WHERE pu.student.id= :studentId " +
+		"AND YEAR(pu.date) = :year " +
+		"AND MONTH(pu.date) = :month " +
+		"ORDER BY pu.date DESC")
+	List<PartnershipUsage> findByYearAndMonth(
+		@Param("studentId") Long studentId,
+		@Param("year") int year,
+		@Param("month") int month
+	);
 }
