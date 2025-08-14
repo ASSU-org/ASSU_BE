@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,6 +23,8 @@ public class Member {
     private Boolean isPhoneVerified;
 
     private LocalDateTime phoneVerifiedAt;
+
+    private String profileUrl;
 
     @Enumerated(EnumType.STRING)
     private UserRole role;  // User, ADMIN, PARTNER

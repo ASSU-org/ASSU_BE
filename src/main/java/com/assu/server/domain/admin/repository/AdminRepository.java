@@ -1,5 +1,6 @@
 package com.assu.server.domain.admin.repository;
 
+
 import java.util.List;
 import java.util.Optional;
 
@@ -21,5 +22,6 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 		@Param("major") Major major);
 
 	Optional<Admin> findByName(String name);
+
 
 }

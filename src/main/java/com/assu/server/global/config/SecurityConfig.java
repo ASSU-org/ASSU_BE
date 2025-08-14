@@ -7,7 +7,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
@@ -24,7 +23,8 @@ public class SecurityConfig {
 					"/swagger-ui.html",
 					"/swagger-resources/**",
 					"/webjars/**",
-					"/certification/**"
+					"/certification/**", 
+                    "/store/**"
 				).permitAll()
 				.anyRequest().authenticated()
 			)
@@ -34,4 +34,5 @@ public class SecurityConfig {
 
 		return http.build();
 	}
+
 }
