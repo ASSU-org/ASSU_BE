@@ -24,6 +24,6 @@ public class StudentController {
 	public ResponseEntity<BaseResponse<StudentResponseDTO.myPartnership>> getMyPartnership(
 		@PathVariable int year, @PathVariable int month, @AuthenticationPrincipal PrincipalDetails userDetails
 	){
-
+		return null;
 	}
 }
