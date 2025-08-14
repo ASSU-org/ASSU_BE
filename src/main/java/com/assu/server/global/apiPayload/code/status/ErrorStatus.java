@@ -31,6 +31,8 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
 
 
+    // 인증 에러
+    NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"AUTH_4001","전화번호 인증에 실패했습니다.")
     ;
 
     private final HttpStatus httpStatus;
