@@ -1,7 +1,5 @@
 package com.assu.server.domain.partnership.entity;
 
-import com.assu.server.domain.partnership.repository.PaperContentRepository;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;

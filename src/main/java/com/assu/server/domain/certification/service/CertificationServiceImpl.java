@@ -25,6 +25,7 @@ import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
+import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.exception.GeneralException;
 import jakarta.transaction.Transactional;
@@ -39,6 +40,7 @@ public class CertificationServiceImpl implements CertificationService {
 	private final AdminRepository adminRepository;
 	private final StoreRepository storeRepository;
 	private final AssociateCertificationRepository associateCertificationRepository;
+	private final StudentRepository studentRepository;
 
 	// 세션 메니저
 	private final CertificationSessionManager sessionManager;
@@ -84,7 +86,6 @@ public class CertificationServiceImpl implements CertificationService {
 
 	@Override
 	public void handleCertification(CertificationRequestDTO.groupSessionRequest dto, Member member) {
-
 		Long userId = member.getId();
 
 		// 제휴 대상인지 확인하기
