@@ -21,6 +21,8 @@ public enum ErrorStatus implements BaseErrorCode {
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
 
+    // 인증 에러
+    NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"AUTH_4001","전화번호 인증에 실패했습니다.")
     ;
 
     private final HttpStatus httpStatus;
