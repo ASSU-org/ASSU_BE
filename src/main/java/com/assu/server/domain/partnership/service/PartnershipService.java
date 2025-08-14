@@ -15,4 +15,6 @@ public interface PartnershipService {
     List<PartnershipResponseDTO.WritePartnershipResponseDTO> listPartnerships(boolean all);
 
     PartnershipResponseDTO.WritePartnershipResponseDTO getPartnership(Long partnershipId);
+
+    PartnershipResponseDTO.UpdateResponseDTO updatePartnershipStatus(Long partnershipId, PartnershipRequestDTO.UpdateRequestDTO request);
 }

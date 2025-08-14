@@ -5,6 +5,7 @@ import com.assu.server.domain.partnership.entity.enums.OptionType;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class PartnershipResponseDTO {
@@ -47,5 +48,17 @@ public class PartnershipResponseDTO {
     public static class PartnershipGoodsResponseDTO {
         private Long goodsId;
         private String goodsName;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UpdateResponseDTO {
+        private Long partnershipId;
+        private String prevStatus;
+        private String newStatus;
+        private LocalDateTime changedAt;
     }
 }

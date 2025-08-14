@@ -6,10 +6,7 @@ import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.store.entity.Store;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,7 +25,8 @@ public class Paper extends BaseEntity {
 	private LocalDate partnershipPeriodStart; //  LocalDate vs String
 	private LocalDate partnershipPeriodEnd;
 
-	@Enumerated(EnumType.STRING)
+	@Setter
+    @Enumerated(EnumType.STRING)
 	private ActivationStatus isActivated;
 
 	@ManyToOne(fetch = FetchType.LAZY)

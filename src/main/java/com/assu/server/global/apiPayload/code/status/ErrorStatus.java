@@ -31,13 +31,6 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_MEMBER(HttpStatus.NOT_FOUND, "CHATTING_5003", "해당 방에는 사용자가 아무도 없습니다."),
     NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
 
-
-    // 어드민 에러
-    NO_SUCH_ADMIN(HttpStatus.NOT_FOUND, "ADMIN_5001", "존재하지 않는 학생회입니다."),
-
-    // 파트너 에러
-    NO_SUCH_PARTNER(HttpStatus.NOT_FOUND, "PARTNER_5003", "존재하지 않는 파트너입니다."),
-
     // 학생 에러
     NO_SUCH_STUDENT(HttpStatus.NOT_FOUND, "STUDENT_5004", "존재하지 않는 학생입니다."),
 
@@ -70,6 +63,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 파트너 찾기 에러
     NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "PARTNER_5502", "제휴업체를 찾을 수 없습니다."),
+
+    // 유효하지 않은 요청
+    INVALID_REQUEST(HttpStatus.NOT_FOUND, "INVALID_13001", "유효하지 않은 요청입니다."),
 
     ;
 

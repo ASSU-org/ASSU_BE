@@ -2,6 +2,7 @@ package com.assu.server.domain.partnership.service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
+import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.partnership.converter.PartnershipConverter;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,5 +129,36 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .toList();
 
         return PartnershipConverter.writePartnershipResultDTO(paper, contents, goodsBatches);
+    }
+
+    @Override
+    @Transactional
+    public PartnershipResponseDTO.UpdateResponseDTO updatePartnershipStatus(Long partnershipId, PartnershipRequestDTO.UpdateRequestDTO request) {
+        Paper paper = paperRepository.findById(partnershipId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
+
+        if(request == null || request.getStatus() == null){
+            throw new DatabaseException(ErrorStatus.INVALID_REQUEST);
+        }
+
+        ActivationStatus prev = paper.getIsActivated();
+        ActivationStatus next = parseStatus(request.getStatus());
+
+        paper.setIsActivated(next);
+
+        return PartnershipResponseDTO.UpdateResponseDTO.builder()
+                .partnershipId(paper.getId())
+                .prevStatus(prev == null ? null : prev.name())
+                .newStatus(next.name())
+                .changedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private ActivationStatus parseStatus(String raw) {
+        try {
+            return ActivationStatus.valueOf(raw.trim().toUpperCase());
+        } catch (Exception e) {
+            throw new DatabaseException(ErrorStatus.INVALID_REQUEST);
+        }
     }
 }

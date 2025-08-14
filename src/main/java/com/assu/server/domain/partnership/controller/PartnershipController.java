@@ -51,4 +51,16 @@ public class PartnershipController {
         return BaseResponse.onSuccess(SuccessStatus._OK, partnershipService.getPartnership(partnershipId));
     }
 
+    @Operation(
+            summary = "제휴 상태를 업데이트하는 API 입니다.",
+            description = "바꾸고 싶은 상태를 입력하세요(PENDING/ACTIVE/INACTIVE)"
+    )
+    @PatchMapping("/{partnershipId}/status")
+    public BaseResponse<PartnershipResponseDTO.UpdateResponseDTO> updatePartnershipStatus(
+            @PathVariable("partnershipId") Long partnershipId,
+            @RequestBody PartnershipRequestDTO.UpdateRequestDTO request
+    ) {
+        return BaseResponse.onSuccess(SuccessStatus._OK, partnershipService.updatePartnershipStatus(partnershipId, request));
+    }
+
 }
