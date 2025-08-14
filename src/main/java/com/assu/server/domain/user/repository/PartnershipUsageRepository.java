@@ -19,4 +19,13 @@ public interface PartnershipUsageRepository extends JpaRepository<PartnershipUsa
         LIMIT 10
         """, nativeQuery = true)
 	List<String> findTodayPopularPartnership();
+
+	@Query("""
+    SELECT pu
+    FROM PartnershipUsage pu
+    WHERE pu.student.id = :studentId
+      AND YEAR(pu.createdAt) = :year
+      AND MONTH(pu.createdAt) = :month
+""")
+	List<PartnershipUsage> myPartnershipByYearAndMonth();
 }
