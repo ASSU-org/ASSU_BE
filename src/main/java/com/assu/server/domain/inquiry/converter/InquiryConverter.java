@@ -11,6 +11,7 @@ public class InquiryConverter {
                 .content(i.getContent())
                 .email(i.getEmail())
                 .status(i.getStatus().name())
+                .answer(i.getAnswer())
                 .createdAt(i.getCreatedAt())
                 .build();
     }

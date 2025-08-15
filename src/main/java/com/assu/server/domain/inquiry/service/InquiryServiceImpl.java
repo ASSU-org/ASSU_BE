@@ -8,6 +8,7 @@ import com.assu.server.domain.inquiry.dto.InquiryResponseDTO;
 import com.assu.server.domain.inquiry.entity.Inquiry;
 import com.assu.server.domain.inquiry.entity.Inquiry.Status;
 import com.assu.server.domain.inquiry.repository.InquiryRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -95,12 +96,17 @@ public class InquiryServiceImpl implements InquiryService {
         return InquiryConverter.toDto(inquiry);
     }
 
-    /** 운영자가 답변 완료 처리 */
+    // InquiryServiceImpl.java
     @Transactional
     @Override
-    public void markAnswered(Long id) {
-        Inquiry i = inquiryRepository.findById(id).orElseThrow();
-        i.markAnswered();
-        // TODO: 필요 시 '답변 완료' 알림 발송
+    public void answer(Long inquiryId, String answerText) {
+        Inquiry inquiry = inquiryRepository.findById(inquiryId)
+                .orElseThrow(() -> new EntityNotFoundException("Inquiry not found: " + inquiryId));
+
+        if (inquiry.getStatus() == Inquiry.Status.ANSWERED) {
+            throw new IllegalStateException("이미 답변 완료된 문의입니다.");
+        }
+
+        inquiry.answer(answerText); // 도메인 메서드
     }
 }

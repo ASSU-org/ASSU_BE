@@ -13,6 +13,7 @@ public class InquiryResponseDTO {
     private String content;
     private String email;
     private String status;
+    private String answer;
     private LocalDateTime createdAt;
 
     public static InquiryResponseDTO from(Inquiry inquiry) {
@@ -22,6 +23,7 @@ public class InquiryResponseDTO {
                 .content(inquiry.getContent())
                 .email(inquiry.getEmail())
                 .status(inquiry.getStatus().name())
+                .answer(inquiry.getAnswer())
                 .createdAt(inquiry.getCreatedAt())
                 .build();
     }
