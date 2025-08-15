@@ -1,10 +1,10 @@
 package com.assu.server.domain.chat.entity;
-import java.time.LocalDateTime;
 
+import com.assu.server.domain.auth.entity.Member;
 import com.assu.server.domain.chat.entity.enums.MessageType;
 
 import com.assu.server.domain.common.entity.BaseEntity;
-import com.assu.server.domain.common.entity.Member;
+
 import jakarta.persistence.*;
 import lombok.*;
 

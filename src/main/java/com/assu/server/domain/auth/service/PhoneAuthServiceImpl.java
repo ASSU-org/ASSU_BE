@@ -2,7 +2,7 @@ package com.assu.server.domain.auth.service;
 
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.util.RandomNumberUtil;
-import com.assu.server.domain.auth.exception.AuthException;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -38,7 +38,7 @@ public class PhoneAuthServiceImpl implements PhoneAuthService {
         String stored = valueOps.get(phoneNumber);
 
         if (stored == null || !stored.equals(authNumber)) {
-            throw new AuthException(ErrorStatus.NOT_VERIFIED_PHONE_NUMBER);
+            throw new CustomAuthException(ErrorStatus.NOT_VERIFIED_PHONE_NUMBER);
         }
 
         // 인증 성공 시 Redis에서 삭제(Optional)
