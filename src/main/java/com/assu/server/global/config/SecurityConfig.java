@@ -26,7 +26,6 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
                         .anyRequest().authenticated()
-                        .anyRequest().permitAll()  // ⭐ 모든 요청 허용
                 )
                 .csrf(csrf -> csrf.disable()) // websocket은 csrf 필요 없음
                 .formLogin(login -> login.disable())
