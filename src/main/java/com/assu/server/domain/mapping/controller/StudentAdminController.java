@@ -40,4 +40,25 @@ public class StudentAdminController {
     public BaseResponse<StudentAdminResponseDTO.CountUsagePersonResponseDTO> getCountUser(){
         return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsagePerson());
     }
+    @Operation(
+            summary = "제휴업체 누적별 1위 업체 조회 API입니다.",
+            description = "adminId로 접근해주세요."
+    )
+        @GetMapping("/top")
+        public BaseResponse<StudentAdminResponseDTO.CountUsageResponseDTO> getTopUsage() {
+            return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsage());
+        }
+
+        /**
+         * 제휴 업체별 누적 제휴 이용 현황 리스트 반환 (사용량 내림차순)
+         */
+        @Operation(
+                summary = "제휴업체 누적 사용 수 내림차순 조회 API입니다.",
+                description = "adminId로 접근해주세요."
+        )
+        @GetMapping("/usage")
+        public BaseResponse<StudentAdminResponseDTO.CountUsageListResponseDTO> getUsageList() {
+            return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsageList());
+        }
+
 }

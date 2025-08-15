@@ -1,5 +1,6 @@
 package com.assu.server.domain.mapping.dto;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,4 +36,25 @@ public class StudentAdminResponseDTO {
         private Long adminId;
         private String adminName;
     }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CountUsageResponseDTO{ //제휴 업체별 누적 제휴 이용현황
+        private Long usageCount;
+        private Long adminId;
+        private String adminName;
+        private Long storeId;
+        private String storeName;
+
+    }
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CountUsageListResponseDTO {
+        private List<CountUsageResponseDTO> items; // 사용량 내림차순 정렬됨
+    }
+
 }

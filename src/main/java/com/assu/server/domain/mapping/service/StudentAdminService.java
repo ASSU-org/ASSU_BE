@@ -6,4 +6,6 @@ public interface StudentAdminService {
     StudentAdminResponseDTO.CountAdminAuthResponseDTO getCountAdminAuth();
     StudentAdminResponseDTO.NewCountAdminResponseDTO getNewStudentCountAdmin();
     StudentAdminResponseDTO.CountUsagePersonResponseDTO getCountUsagePerson();
+    StudentAdminResponseDTO.CountUsageResponseDTO getCountUsage();
+    StudentAdminResponseDTO.CountUsageListResponseDTO getCountUsageList();
 }

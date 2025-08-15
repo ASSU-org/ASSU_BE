@@ -27,7 +27,9 @@ public enum ErrorStatus implements BaseErrorCode {
     //스투던트 에러
     NO_SUCH_STUDENT(HttpStatus.NOT_FOUND, "STUDENT_4003", "존재하지 않는 학생 ID입니다."),
     //어드민 에러
-    NO_SUCH_ADMIN(HttpStatus.NOT_FOUND, "ADMIN_4004", "존재하지 않는 관리자 ID입니다.")
+    NO_SUCH_ADMIN(HttpStatus.NOT_FOUND, "ADMIN_4004", "존재하지 않는 관리자 ID입니다."),
+    //스토어의 제휴내역이 없을 때
+    NO_PAPER_FOR_STORE(HttpStatus.NOT_FOUND, "ADMIN_4005", "존재하지 않는 paper ID입니다.")
     ;
 
     private final HttpStatus httpStatus;
