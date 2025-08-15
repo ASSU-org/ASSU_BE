@@ -13,4 +13,5 @@ public interface InquiryService {
     Map<String, Object> getInquiries(String status, int page, int size, Long memberId);
     InquiryResponseDTO get(Long id, Long memberId);
     void answer(Long inquiryId, String answerText);
+    Page<InquiryResponseDTO> list(String status, Pageable pageable, Long memberId);
 }

@@ -8,12 +8,10 @@ import com.assu.server.domain.inquiry.dto.InquiryResponseDTO;
 import com.assu.server.domain.inquiry.entity.Inquiry;
 import com.assu.server.domain.inquiry.entity.Inquiry.Status;
 import com.assu.server.domain.inquiry.repository.InquiryRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.assu.server.global.apiPayload.code.status.ErrorStatus;
+import com.assu.server.global.exception.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +29,8 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional
     @Override
     public Long create(InquiryCreateRequestDTO req, Long memberId) {
-        Member member = memberRepository.getReferenceById(memberId);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
 
         Inquiry inquiry = Inquiry.builder()
                 .member(member)
@@ -49,16 +48,12 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional(readOnly = true)
     @Override
     public Map<String, Object> getInquiries(String status, int page, int size, Long memberId) {
-        if (page < 1) {
-            throw new IllegalArgumentException("page는 1 이상이어야 합니다.");
-        }
-        if (size < 1 || size > 200) {
-            throw new IllegalArgumentException("size는 1~200 사이여야 합니다.");
-        }
+        if (page < 1) throw new DatabaseException(ErrorStatus.PAGE_UNDER_ONE);
+        if (size < 1 || size > 200) throw new DatabaseException(ErrorStatus.PAGE_SIZE_INVALID);
 
         String s = status.toLowerCase();
         if (!s.equals("all") && !s.equals("waiting") && !s.equals("answered")) {
-            throw new IllegalArgumentException("status는 [all, waiting, answered] 중 하나여야 합니다.");
+            throw new DatabaseException(ErrorStatus.INVALID_INQUIRY_STATUS_FILTER);
         }
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
@@ -70,18 +65,17 @@ public class InquiryServiceImpl implements InquiryService {
         body.put("size", p.getSize());
         body.put("totalPages", p.getTotalPages());
         body.put("totalElements", p.getTotalElements());
-
         return body;
     }
 
+    @Override
     public Page<InquiryResponseDTO> list(String status, Pageable pageable, Long memberId) {
         Page<Inquiry> page = switch (status.toLowerCase()) {
-            case "waiting" -> inquiryRepository.findByMemberIdAndStatus(memberId, Status.WAITING, pageable);
+            case "waiting"  -> inquiryRepository.findByMemberIdAndStatus(memberId, Status.WAITING, pageable);
             case "answered" -> inquiryRepository.findByMemberIdAndStatus(memberId, Status.ANSWERED, pageable);
             case "all"      -> inquiryRepository.findByMemberId(memberId, pageable);
-            default         -> throw new IllegalArgumentException("status must be one of [all, waiting, answered]");
+            default         -> throw new DatabaseException(ErrorStatus.INVALID_INQUIRY_STATUS_FILTER);
         };
-
         return page.map(InquiryConverter::toDto);
     }
 
@@ -89,24 +83,26 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional(readOnly = true)
     @Override
     public InquiryResponseDTO get(Long id, Long memberId) {
-        Inquiry inquiry = inquiryRepository.findById(id).orElseThrow();
+        Inquiry inquiry = inquiryRepository.findById(id)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_INQUIRY));
+
         if (!inquiry.getMember().getId().equals(memberId)) {
-            throw new IllegalArgumentException("not yours");
+            throw new DatabaseException(ErrorStatus.FORBIDDEN_INQUIRY);
         }
         return InquiryConverter.toDto(inquiry);
     }
 
-    // InquiryServiceImpl.java
+    /** 답변 저장(상태 ANSWERED 전환) */
     @Transactional
     @Override
     public void answer(Long inquiryId, String answerText) {
         Inquiry inquiry = inquiryRepository.findById(inquiryId)
-                .orElseThrow(() -> new EntityNotFoundException("Inquiry not found: " + inquiryId));
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_INQUIRY));
 
         if (inquiry.getStatus() == Inquiry.Status.ANSWERED) {
-            throw new IllegalStateException("이미 답변 완료된 문의입니다.");
+            throw new DatabaseException(ErrorStatus.ALREADY_ANSWERED);
         }
 
-        inquiry.answer(answerText); // 도메인 메서드
+        inquiry.answer(answerText);
     }
 }
