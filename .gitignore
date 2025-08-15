@@ -46,3 +46,5 @@ out/
 src/main/resources/application-secret.yml
 src/test/resources/application-test.yml
 src/test/resources/application-secret.yml
+
+resources/firebase/service-account.json
