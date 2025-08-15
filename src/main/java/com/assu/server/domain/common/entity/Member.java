@@ -24,6 +24,8 @@ public class Member extends BaseEntity{
 
     private LocalDateTime phoneVerifiedAt;
 
+    private String profileUrl;
+
     @Enumerated(EnumType.STRING)
     private UserRole role;  // User, ADMIN, PARTNER
 

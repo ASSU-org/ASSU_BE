@@ -2,6 +2,7 @@ package com.assu.server.global.apiPayload.code.status;
 
 import com.assu.server.global.apiPayload.code.BaseErrorCode;
 import com.assu.server.global.apiPayload.code.ErrorReasonDTO;
+import com.sun.net.httpserver.HttpsServer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ public enum ErrorStatus implements BaseErrorCode {
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
     //스토어 에러
-    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE_5001", "존재하지 않는 스토어 ID입니다."),
+    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE_4006", "존재하지 않는 스토어 ID입니다."),
     //파트너 에러
     NO_SUCH_PARTNER(HttpStatus.NOT_FOUND, "PARTNER_4002", "존재하지 않는 파트너 ID입니다."),
     //스투던트 에러
@@ -29,7 +30,14 @@ public enum ErrorStatus implements BaseErrorCode {
     //어드민 에러
     NO_SUCH_ADMIN(HttpStatus.NOT_FOUND, "ADMIN_4004", "존재하지 않는 관리자 ID입니다."),
     //스토어의 제휴내역이 없을 때
-    NO_PAPER_FOR_STORE(HttpStatus.NOT_FOUND, "ADMIN_4005", "존재하지 않는 paper ID입니다.")
+    NO_PAPER_FOR_STORE(HttpStatus.NOT_FOUND, "ADMIN_4005", "존재하지 않는 paper ID입니다."),
+    // 채팅 에러
+    NO_SUCH_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5001", "존재하지 않는 채팅방 ID 입니다."),
+    NO_MEMBER_IN_THE_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5002", "해당 방에는 해당 사용자가 없습니다."),
+    NO_MEMBER(HttpStatus.NOT_FOUND, "CHATTING_5003", "해당 방에는 사용자가 아무도 없습니다."),
+    NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
+
+
     ;
 
     private final HttpStatus httpStatus;
