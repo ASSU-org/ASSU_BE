@@ -1,6 +1,7 @@
 package com.assu.server.domain.inquiry.service;
 
 import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.common.repository.MemberRepository;
 import com.assu.server.domain.inquiry.converter.InquiryConverter;
 import com.assu.server.domain.inquiry.dto.InquiryCreateRequestDTO;
 import com.assu.server.domain.inquiry.dto.InquiryResponseDTO;
@@ -9,16 +10,20 @@ import com.assu.server.domain.inquiry.entity.Inquiry.Status;
 import com.assu.server.domain.inquiry.repository.InquiryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class InquiryServiceImpl implements InquiryService {
 
     private final InquiryRepository inquiryRepository;
-    private final InquiryConverter inquiryConverter;
     private final MemberRepository memberRepository;
 
     /** 문의 등록 */
@@ -42,6 +47,32 @@ public class InquiryServiceImpl implements InquiryService {
     /** 문의 내역 조회 (status=all|waiting|answered) */
     @Transactional(readOnly = true)
     @Override
+    public Map<String, Object> getInquiries(String status, int page, int size, Long memberId) {
+        if (page < 1) {
+            throw new IllegalArgumentException("page는 1 이상이어야 합니다.");
+        }
+        if (size < 1 || size > 200) {
+            throw new IllegalArgumentException("size는 1~200 사이여야 합니다.");
+        }
+
+        String s = status.toLowerCase();
+        if (!s.equals("all") && !s.equals("waiting") && !s.equals("answered")) {
+            throw new IllegalArgumentException("status는 [all, waiting, answered] 중 하나여야 합니다.");
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        Page<InquiryResponseDTO> p = list(s, pageable, memberId);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("items", p.getContent());
+        body.put("page", p.getNumber() + 1);
+        body.put("size", p.getSize());
+        body.put("totalPages", p.getTotalPages());
+        body.put("totalElements", p.getTotalElements());
+
+        return body;
+    }
+
     public Page<InquiryResponseDTO> list(String status, Pageable pageable, Long memberId) {
         Page<Inquiry> page = switch (status.toLowerCase()) {
             case "waiting" -> inquiryRepository.findByMemberIdAndStatus(memberId, Status.WAITING, pageable);
@@ -50,7 +81,7 @@ public class InquiryServiceImpl implements InquiryService {
             default         -> throw new IllegalArgumentException("status must be one of [all, waiting, answered]");
         };
 
-        return page.map(inquiryConverter::toDto);
+        return page.map(InquiryConverter::toDto);
     }
 
     /** 단건 상세 조회 */
@@ -61,7 +92,7 @@ public class InquiryServiceImpl implements InquiryService {
         if (!inquiry.getMember().getId().equals(memberId)) {
             throw new IllegalArgumentException("not yours");
         }
-        return inquiryConverter.toDto(inquiry);
+        return InquiryConverter.toDto(inquiry);
     }
 
     /** 운영자가 답변 완료 처리 */

@@ -3,14 +3,17 @@ package com.assu.server.domain.inquiry.controller;
 import com.assu.server.domain.inquiry.dto.InquiryCreateRequestDTO;
 import com.assu.server.domain.inquiry.dto.InquiryResponseDTO;
 import com.assu.server.domain.inquiry.service.InquiryService;
+import com.assu.server.global.apiPayload.BaseResponse;
+import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/member/inquiries")
@@ -20,41 +23,39 @@ public class InquiryController {
     private final InquiryService inquiryService;
 
     @PostMapping
-    public ResponseEntity<Long> create(
+    public BaseResponse<Long> create(
             @RequestBody @Valid InquiryCreateRequestDTO req,
             @RequestParam Long memberId
     ) {
         Long id = inquiryService.create(req, memberId);
-        return ResponseEntity.ok(id);
+        return BaseResponse.onSuccess(SuccessStatus._OK, id);
     }
 
     @GetMapping
-    public Page<InquiryResponseDTO> list(
+    public BaseResponse<Map<String, Object>> list(
             @RequestParam(defaultValue = "all") String status,
-            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer size,
             @RequestParam Long memberId
     ) {
-        if (!"all".equalsIgnoreCase(status)
-                && !"waiting".equalsIgnoreCase(status)
-                && !"answered".equalsIgnoreCase(status)) {
-            throw new IllegalArgumentException("상태값: [all, waiting, answered]");
-        }
-        return inquiryService.list(status, pageable, memberId);
+        Map<String, Object> response = inquiryService.getInquiries(status, page, size, memberId);
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
     /** 단건 상세 조회*/
-    @GetMapping("/{inquiry_id}")
-    public InquiryResponseDTO get(
-            @PathVariable Long id,
+    @GetMapping("/{inquiryId}")
+    public BaseResponse<InquiryResponseDTO> get(
+            @PathVariable("inquiryId") Long inquiryId,
             @RequestParam Long memberId
     ) {
-        return inquiryService.get(id, memberId);
+        InquiryResponseDTO response = inquiryService.get(inquiryId, memberId);
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
     /** 운영자: 답변 완료 처리 */
-    @PatchMapping("/{inquiry_id}/answer")
-    public ResponseEntity<Void> markAnswered(@PathVariable Long id) {
-        inquiryService.markAnswered(id);
-        return ResponseEntity.noContent().build();
+    @PatchMapping("/{inquiryId}/answer")
+    public BaseResponse<Void> markAnswered(@PathVariable Long inquiryId) {
+        inquiryService.markAnswered(inquiryId);
+        return BaseResponse.onSuccess(SuccessStatus._OK, null);
     }
 }

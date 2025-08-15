@@ -13,6 +13,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/member/inquiries/**",
                                 "/chat/**",
                                 "/suggestion/**",
                                 "/review/**",
