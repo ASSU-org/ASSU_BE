@@ -18,6 +18,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     //페이징 에러
     PAGE_UNDER_ONE(HttpStatus.BAD_REQUEST,"PAGE_4001","페이지는 1이상이여야 합니다."),
+    PAGE_SIZE_INVALID(HttpStatus.BAD_REQUEST,"PAGE_4002","size는 1~200 사이여야 합니다."),
 
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),

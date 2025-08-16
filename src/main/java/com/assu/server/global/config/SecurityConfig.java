@@ -13,6 +13,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/deviceTokens/**",
+                                "/notifications/**",
                                 "/chat/**",
                                 "/suggestion/**",
                                 "/review/**",
