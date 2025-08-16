@@ -25,7 +25,7 @@ public class InquiryController {
     private final InquiryService inquiryService;
 
     @Operation(
-            summary = "문의를 생성하는 API입니다.",
+            summary = "문의를 생성하는 API",
             description = "셍성 성공시 생성된 문의의 ID를 반환합니다."
     )
     @PostMapping
@@ -38,7 +38,7 @@ public class InquiryController {
     }
 
     @Operation(
-            summary = "문의 목록을 조회하는 API 입니다.",
+            summary = "문의 목록을 조회하는 API",
             description = "page는 1 이상이어야 합니다."
     )
     @GetMapping
@@ -54,7 +54,7 @@ public class InquiryController {
 
     /** 단건 상세 조회*/
     @Operation(
-            summary = "문의 단건 상세 조회 API 입니다.",
+            summary = "문의 단건 상세 조회 API",
             description = "문의 ID를 보내주세요."
     )
     @GetMapping("/{inquiryId}")
@@ -68,7 +68,7 @@ public class InquiryController {
 
     /** 문의 답변*/
     @Operation(
-            summary = "운영자 답변 API입니다.",
+            summary = "운영자 답변 API",
             description = "문의에 답변을 저장하고 상태를 ANSWERED로 변경합니다."
     )
     @PatchMapping("/{inquiryId}/answer")
