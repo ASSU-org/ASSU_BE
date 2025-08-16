@@ -8,6 +8,8 @@ import com.assu.server.domain.notification.entity.NotificationOutbox;
 import com.assu.server.domain.notification.entity.NotificationType;
 import com.assu.server.domain.notification.repository.NotificationOutboxRepository;
 import com.assu.server.domain.notification.repository.NotificationRepository;
+import com.assu.server.global.apiPayload.code.status.ErrorStatus;
+import com.assu.server.global.exception.exception.DatabaseException;
 import com.assu.server.infra.NotificationFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,10 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
     @Override
     public Notification createAndQueue(Long receiverId, NotificationType type, Long refId, Map<String, Object> ctx) {
         Member member = memberRepository.findMemberById(receiverId);
+        if (member == null) {
+            throw new DatabaseException(ErrorStatus.NO_SUCH_MEMBER);
+        }
+
         Notification notification = notificationFactory.create(member, type, refId, ctx);
 
         notificationRepository.save(notification);
@@ -42,13 +48,14 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
         return notification;
     }
 
-
     @Transactional
     @Override
-    public void markRead(Long notificationId, Long currentMemberId) throws AccessDeniedException {
-        Notification n = notificationRepository.findById(notificationId).orElseThrow();
+    public void markRead(Long notificationId, Long currentMemberId) {
+        Notification n = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NOTIFICATION_NOT_FOUND));
+
         if (!n.getReceiver().getId().equals(currentMemberId)) {
-            throw new AccessDeniedException("not yours");
+            throw new DatabaseException(ErrorStatus.NOTIFICATION_ACCESS_DENIED);
         }
         n.markRead();
     }
@@ -60,54 +67,62 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
         try {
             type = NotificationType.valueOf(req.getType().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Unsupported type: " + req.getType());
+            throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
         }
 
         Map<String, Object> ctx = new HashMap<>();
-        // 공통 컨텍스트(있으면 추가)
         if (req.getContent()  != null) ctx.put("content",  req.getContent());
         if (req.getTitle()    != null) ctx.put("title",    req.getTitle());
         if (req.getDeeplink() != null) ctx.put("deeplink", req.getDeeplink());
 
-        Long refId = req.getRefId(); // 우선 refId가 넘어오면 사용
+        Long refId = req.getRefId();
 
         switch (type) {
             case CHAT -> {
-                // refId 우선순위: refId 필드 → roomId
-                if (refId == null) {
-                    refId = Objects.requireNonNull(req.getRoomId(), "roomId is required for CHAT");
+                if (refId == null && req.getRoomId() == null) {
+                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                ctx.put("senderName", Objects.requireNonNull(req.getSenderName(), "senderName is required for CHAT"));
-                ctx.put("message",    Objects.requireNonNull(req.getMessage(),    "message is required for CHAT"));
+                refId = (refId != null) ? refId : req.getRoomId();
+                if (req.getSenderName() == null || req.getMessage() == null) {
+                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+                }
+                ctx.put("senderName", req.getSenderName());
+                ctx.put("message", req.getMessage());
             }
             case PARTNER_SUGGESTION -> {
-                if (refId == null) {
-                    refId = Objects.requireNonNull(req.getSuggestionId(), "suggestionId is required for PARTNER_SUGGESTION");
+                if (refId == null && req.getSuggestionId() == null) {
+                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                // 추가 ctx 없음
+                refId = (refId != null) ? refId : req.getSuggestionId();
             }
             case ORDER -> {
-                if (refId == null) {
-                    refId = Objects.requireNonNull(req.getOrderId(), "orderId is required for ORDER");
+                if (refId == null && req.getOrderId() == null) {
+                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                ctx.put("table_num",     Objects.requireNonNull(req.getTable_num(),     "table_num is required for ORDER"));
-                ctx.put("paper_content", Objects.requireNonNull(req.getPaper_content(), "paper_content is required for ORDER"));
+                refId = (refId != null) ? refId : req.getOrderId();
+                if (req.getTable_num() == null || req.getPaper_content() == null) {
+                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+                }
+                ctx.put("table_num", req.getTable_num());
+                ctx.put("paper_content", req.getPaper_content());
             }
             case PARTNER_PROPOSAL -> {
-                if (refId == null) {
-                    refId = Objects.requireNonNull(req.getProposalId(), "proposalId is required for PARTNER_PROPOSAL");
+                if (refId == null && req.getProposalId() == null) {
+                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                ctx.put("partner_name", Objects.requireNonNull(req.getPartner_name(), "partner_name is required for PARTNER_PROPOSAL"));
+                refId = (refId != null) ? refId : req.getProposalId();
+                if (req.getPartner_name() == null) {
+                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+                }
+                ctx.put("partner_name", req.getPartner_name());
             }
-            default -> throw new IllegalArgumentException("Unsupported type: " + type);
+            default -> throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
         }
 
-        // 최종 큐 적재 (Outbox → Dispatcher가 발송)
-        createAndQueue(
-                Objects.requireNonNull(req.getReceiverId(), "receiverId is required"),
-                type,
-                Objects.requireNonNull(refId, "refId is required"),
-                ctx
-        );
+        if (req.getReceiverId() == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+
+        createAndQueue(req.getReceiverId(), type, refId, ctx);
     }
 }

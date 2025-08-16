@@ -1,5 +1,6 @@
 package com.assu.server.domain.notification.service;
 
+import com.assu.server.domain.common.repository.MemberRepository;
 import com.assu.server.domain.notification.converter.NotificationConverter;
 import com.assu.server.domain.notification.dto.NotificationResponseDTO;
 import com.assu.server.domain.notification.entity.Notification;
@@ -22,33 +23,36 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class NotificationQueryServiceImpl implements NotificationQueryService {
     private final NotificationRepository notificationRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     @Override
     public Map<String, Object> getNotifications(String status, int page, int size, Long memberId) {
-        // 입력 검증
-        if (page < 1)  throw new DatabaseException(ErrorStatus.PAGE_UNDER_ONE);
+        // 1) 파라미터 검증
+        if (page < 1) throw new DatabaseException(ErrorStatus.PAGE_UNDER_ONE);
         if (size < 1 || size > 200) throw new DatabaseException(ErrorStatus.PAGE_SIZE_INVALID);
 
-        String s = status == null ? "all" : status.toLowerCase();
-        if (!s.equals("all") && !s.equals("unread")) {
-            // 필요 시 ErrorStatus에 INVALID_NOTIFICATION_STATUS_FILTER 추가해서 사용 가능
-            throw new IllegalArgumentException("status must be one of [all, unread]");
+        if (!memberRepository.existsById(memberId)) {
+            throw new DatabaseException(ErrorStatus.NO_SUCH_MEMBER);
         }
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
+        String s = (status == null ? "all" : status.toLowerCase());
+        if (!s.equals("all") && !s.equals("unread")) {
+            throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_STATUS_FILTER);
+        }
 
-        // 상태별 조회 (여기서 바로 분기하고 변환까지)
+        // 2) 조회
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "id"));
         Page<Notification> rawPage = s.equals("unread")
                 ? notificationRepository.findByReceiverIdAndIsReadFalse(memberId, pageable)
                 : notificationRepository.findByReceiverId(memberId, pageable);
 
         Page<NotificationResponseDTO> p = rawPage.map(NotificationConverter::toDto);
 
-        // 응답 포맷 구성
+        // 3) 응답 포맷
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("items", p.getContent());
-        body.put("page", p.getNumber() + 1);      // 1-base로 반환
+        body.put("page", p.getNumber() + 1);
         body.put("size", p.getSize());
         body.put("totalPages", p.getTotalPages());
         body.put("totalElements", p.getTotalElements());
