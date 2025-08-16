@@ -1,4 +1,7 @@
 package com.assu.server.domain.user.repository;
 
-public class StudentRepository {
+import com.assu.server.domain.user.entity.Student;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface StudentRepository extends JpaRepository<Student, Long> {
 }
