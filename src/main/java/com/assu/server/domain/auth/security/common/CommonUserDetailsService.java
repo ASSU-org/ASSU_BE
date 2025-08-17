@@ -1,7 +1,7 @@
 package com.assu.server.domain.auth.security.common;
 
 import com.assu.server.domain.auth.entity.CommonAuth;
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.repository.CommonAuthRepository;
 import com.assu.server.domain.common.enums.ActivationStatus;

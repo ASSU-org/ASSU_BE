@@ -1,7 +1,7 @@
 package com.assu.server.domain.chat.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.chat.dto.ChatMessageDTO;
 import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;

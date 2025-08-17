@@ -6,11 +6,11 @@ import com.assu.server.domain.auth.dto.login.RefreshResponse;
 import com.assu.server.domain.auth.dto.login.StudentLoginRequest;
 import com.assu.server.domain.auth.dto.signup.Tokens;
 import com.assu.server.domain.auth.entity.CommonAuth;
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.auth.entity.SSUAuth;
 import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.repository.CommonAuthRepository;
-import com.assu.server.domain.auth.repository.MemberRepository;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.auth.repository.SSUAuthRepository;
 import com.assu.server.domain.auth.security.JwtUtil;
 import com.assu.server.domain.auth.security.SecurityUtil;
@@ -18,13 +18,9 @@ import com.assu.server.domain.auth.security.common.CommonUsernamePasswordAuthent
 import com.assu.server.domain.auth.security.student.StudentUsernamePasswordAuthenticationToken;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
-import java.util.Collections;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
