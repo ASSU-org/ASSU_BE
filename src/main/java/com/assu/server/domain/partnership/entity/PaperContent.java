@@ -42,8 +42,6 @@ public class PaperContent extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private OptionType optionType;
 
-
-
 	private Integer people;
 
 	private String category;

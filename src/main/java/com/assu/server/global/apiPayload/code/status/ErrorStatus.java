@@ -23,9 +23,7 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
     NO_STUENT_TYPE(HttpStatus.BAD_REQUEST, "MEMBER4002", "학생 타입이 아닌 멤버입니다."),
 
-
-    // 관리자 에러
-    NO_SUCH_ADMIN(HttpStatus.NOT_FOUND, "ADMIN4001", "존재하지 않는 관리자 ID입니다."),
+    NO_SUCH_ADMIN(HttpStatus.NOT_FOUND,"MEMBER_4002","존재하지 않는 admin ID 입니다."),
     NO_SUCH_PARTNER(HttpStatus.NOT_FOUND,"MEMBER_4002","존재하지 않는 partner ID 입니다."),
 
     // store 에러
@@ -43,8 +41,6 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_MEMBER_IN_THE_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5002", "해당 방에는 해당 사용자가 없습니다."),
     NO_MEMBER(HttpStatus.NOT_FOUND, "CHATTING_5003", "해당 방에는 사용자가 아무도 없습니다."),
     NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
-
-
 
     ;
 

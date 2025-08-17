@@ -4,8 +4,6 @@ spring:
       initialize-schema: never
     job:
       enabled: false
-
-
   profiles:
     active: local # 여기에 local, blue, green 셋중 하나로 입력
   config:
