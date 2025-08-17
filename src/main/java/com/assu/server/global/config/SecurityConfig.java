@@ -1,38 +1,49 @@
 package com.assu.server.global.config;
 
+import com.assu.server.domain.auth.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
-	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
 		http
+			.csrf(csrf -> csrf.disable())
+			.cors(cors -> {
+			}) // 기본 CORS 구성 사용(필요하면 CorsConfigurationSource 빈 추가)
+			.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
+				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers(
 					"/chat/**",
 					"/suggestion/**",
 					"/review/**",
 					"/ws/**",
-					"/pub/**",     // STOMP 메시지 전송
-					"/sub/**",     // STOMP 메시지 구독
+					"/pub/**",
+					"/sub/**",
 					"/v3/api-docs/**",
 					"/swagger-ui/**",
 					"/swagger-ui.html",
 					"/swagger-resources/**",
 					"/webjars/**",
-					"/certification/**", 
-                    "/store/**"
+					"/auth/**",
+					"/certification/**",
+					"/store/**"
 				).permitAll()
 				.anyRequest().authenticated()
 			)
-			.csrf(csrf -> csrf.disable()) // websocket은 csrf 필요 없음
 			.formLogin(login -> login.disable())
-			.httpBasic(basic  -> basic.disable());
-
+			.httpBasic(basic -> basic.disable())
+			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
-
 }

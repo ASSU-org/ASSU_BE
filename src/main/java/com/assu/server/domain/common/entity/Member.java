@@ -72,26 +72,26 @@ public class Member extends BaseEntity {
 
     // 연관관계 편의 메서드
 
-    public void setStudentProfile(Student studentProfile) {
-        this.studentProfile = studentProfile;
-        if (studentProfile.getMember() != this) {
-            studentProfile.setMember(this);
-        }
-    }
-
-    public void setAdminProfile(Admin adminProfile) {
-        this.adminProfile = adminProfile;
-        if (adminProfile.getMember() != this) {
-            adminProfile.setMember(this);
-        }
-    }
-
-    public void setPartnerProfile(Partner partnerProfile) {
-        this.partnerProfile = partnerProfile;
-        if (partnerProfile.getMember() != this) {
-            partnerProfile.setMember(this);
-        }
-    }
+    // public void setStudentProfile(Student studentProfile) {
+    //     this.studentProfile = studentProfile;
+    //     if (studentProfile.getMember() != this) {
+    //         studentProfile.setMember(this);
+    //     }
+    // }
+    //
+    // public void setAdminProfile(Admin adminProfile) {
+    //     this.adminProfile = adminProfile;
+    //     if (adminProfile.getMember() != this) {
+    //         adminProfile.setMember(this);
+    //     }
+    // }
+    //
+    // public void setPartnerProfile(Partner partnerProfile) {
+    //     this.partnerProfile = partnerProfile;
+    //     if (partnerProfile.getMember() != this) {
+    //         partnerProfile.setMember(this);
+    //     }
+    // }
 
 
 }

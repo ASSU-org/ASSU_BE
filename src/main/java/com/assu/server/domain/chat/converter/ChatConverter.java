@@ -1,13 +1,14 @@
 package com.assu.server.domain.chat.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.auth.entity.Member;
 import com.assu.server.domain.chat.dto.ChatMessageDTO;
 import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import com.assu.server.domain.chat.entity.ChattingRoom;
 import com.assu.server.domain.chat.entity.Message;
-import com.assu.server.domain.common.entity.Member;
+
 import com.assu.server.domain.partner.entity.Partner;
 
 import java.util.List;

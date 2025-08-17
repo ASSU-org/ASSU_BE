@@ -21,7 +21,7 @@ import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.GeneralException;
+import com.assu.server.global.exception.GeneralException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,7 @@ public class PaperQueryServiceImpl implements PaperQueryService {
 	public PaperResponseDTO.partnershipContent getStorePaperContent(Long storeId, Member member){
 
 		// 역할이 학생이 아닌 경우 : 이미 type별로 ui를 분기 시켜놔서 그럴일 없을 것 같긴 하지만 혹시 몰라서 처리함
-		if(member.getRole() != UserRole.USER)
+		if(member.getRole() != UserRole.STUDENT)
 			throw new GeneralException(ErrorStatus.NO_STUENT_TYPE);
 
 		Student student = member.getStudentProfile();
@@ -51,19 +51,19 @@ public class PaperQueryServiceImpl implements PaperQueryService {
 			student.getDepartment(),
 			student.getMajor());
 
-		// 한번 더 거르기 위해서
-		List<Admin> filteredAdmin = adminList.stream()
-			.filter(admin -> {
-				String name = admin.getName();
-				Major major = admin.getMajor();
-				return name.contains(student.getUniversity())
-					|| name.contains(student.getDepartment())
-					|| major.equals(student.getMajor());
-			}).toList();
+		// // 한번 더 거르기 위해서
+		// List<Admin> filteredAdmin = adminList.stream()
+		// 	.filter(admin -> {
+		// 		String name = admin.getName();
+		// 		Major major = admin.getMajor();
+		// 		return name.contains(student.getUniversity())
+		// 			|| name.contains(student.getDepartment())
+		// 			|| major.equals(student.getMajor());
+		// 	}).toList();
 
 
 		// 추출한 admin, store와 일치하는 paperId 를 추출합니다.
-		List<Paper> paperList = filteredAdmin.stream()
+		List<Paper> paperList = adminList.stream()
 			.flatMap(admin ->
 				paperRepository.findByStoreIdAndAdminIdAndStatus(storeId, admin.getId(), ActivationStatus.ACTIVE)
 					.stream()).toList();

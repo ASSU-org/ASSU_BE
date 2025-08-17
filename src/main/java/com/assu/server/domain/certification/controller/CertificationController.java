@@ -23,7 +23,7 @@ import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
-import com.assu.server.global.exception.exception.GeneralException;
+import com.assu.server.global.exception.GeneralException;
 import com.assu.server.global.util.PrincipalDetails;
 import com.fasterxml.jackson.databind.ser.Serializers;
 

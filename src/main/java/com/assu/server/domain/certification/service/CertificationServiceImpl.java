@@ -27,7 +27,7 @@ import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.GeneralException;
+import com.assu.server.global.exception.GeneralException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
