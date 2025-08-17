@@ -5,9 +5,11 @@ import com.assu.server.domain.common.repository.MemberRepository;
 import com.assu.server.domain.notification.dto.QueueNotificationRequest;
 import com.assu.server.domain.notification.entity.Notification;
 import com.assu.server.domain.notification.entity.NotificationOutbox;
+import com.assu.server.domain.notification.entity.NotificationSetting;
 import com.assu.server.domain.notification.entity.NotificationType;
 import com.assu.server.domain.notification.repository.NotificationOutboxRepository;
 import com.assu.server.domain.notification.repository.NotificationRepository;
+import com.assu.server.domain.notification.repository.NotificationSettingRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.exception.DatabaseException;
 import com.assu.server.infra.NotificationFactory;
@@ -26,6 +28,7 @@ import java.util.Objects;
 public class NotificationCommandServiceImpl implements NotificationCommandService {
     private final NotificationRepository notificationRepository;
     private final NotificationOutboxRepository outboxRepository;
+    private final NotificationSettingRepository notificationSettingRepository;
     private final NotificationFactory notificationFactory;
     private final MemberRepository memberRepository;
 
@@ -123,6 +126,42 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
             throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
         }
 
+        // OFF면 Outbox 적재 없이 Notification만 저장하고 종료
+        boolean enabled = isEnabled(req.getReceiverId(), type);
+
+        if (!enabled) {
+            // 기록만 남기고 발송은 스킵
+            var member = memberRepository.findMemberById(req.getReceiverId());
+            var notification = notificationFactory.create(member, type, refId, ctx);
+            notificationRepository.save(notification);
+            return;
+        }
+
         createAndQueue(req.getReceiverId(), type, refId, ctx);
+    }
+
+    @Transactional
+    @Override
+    public boolean toggle(Long memberId, NotificationType type) {
+        NotificationSetting setting = notificationSettingRepository
+                .findByMemberIdAndType(memberId, type)
+                .orElse(NotificationSetting.builder()
+                        .member(memberRepository.findMemberById(memberId))
+                        .type(type)
+                        .enabled(true) // 기본값
+                        .build());
+
+        setting.setEnabled(!setting.getEnabled()); // 토글
+        notificationSettingRepository.save(setting);
+
+        return setting.getEnabled(); // 변경된 값 반환
+    }
+
+    @Transactional
+    @Override
+    public boolean isEnabled(Long memberId, NotificationType type) {
+        return notificationSettingRepository.findByMemberIdAndType(memberId, type)
+                .map(ns -> Boolean.TRUE.equals(ns.getEnabled())) // null → false 처리
+                .orElse(true); // 설정 없으면 기본 허용
     }
 }

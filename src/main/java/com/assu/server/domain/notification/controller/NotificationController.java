@@ -59,8 +59,17 @@ public class NotificationController {
     )
     @PostMapping("/queue")
     public BaseResponse<String> queue(@Valid @RequestBody QueueNotificationRequest req) {
-        command.queue(req); // 서비스로 위임
+        command.queue(req);
         return BaseResponse.onSuccess(SuccessStatus._OK, "Notification delivery succeeded.");
+    }
+
+    @Operation(summary = "알림 유형별 ON/OFF 토글 API")
+    @PutMapping("/{memberId}/{type}/toggle")
+    public BaseResponse<String> toggle(@PathVariable Long memberId,
+                                       @PathVariable NotificationType type) {
+        boolean newValue = command.toggle(memberId, type);
+        return BaseResponse.onSuccess(SuccessStatus._OK,
+                "Notification setting toggled: now enabled=" + newValue);
     }
 
 }
