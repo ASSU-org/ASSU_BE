@@ -1,6 +1,6 @@
 package com.assu.server.infra;
 
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.auth.entity.Member;
 import com.assu.server.domain.deviceToken.repository.DeviceTokenRepository;
 import com.assu.server.domain.notification.entity.Notification;
 import com.google.firebase.messaging.FirebaseMessaging;

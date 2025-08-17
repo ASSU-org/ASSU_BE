@@ -1,8 +1,8 @@
 package com.assu.server.infra;
 
+import com.assu.server.domain.auth.entity.Member;
 import com.assu.server.domain.notification.entity.Notification;
 import com.assu.server.domain.notification.entity.NotificationType;
-import com.assu.server.domain.common.entity.Member;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

@@ -1,7 +1,7 @@
 package com.assu.server.domain.notification.service;
 
-import com.assu.server.domain.common.entity.Member;
-import com.assu.server.domain.common.repository.MemberRepository;
+import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.auth.repository.MemberRepository;
 import com.assu.server.domain.notification.dto.QueueNotificationRequest;
 import com.assu.server.domain.notification.entity.Notification;
 import com.assu.server.domain.notification.entity.NotificationOutbox;
@@ -11,17 +11,15 @@ import com.assu.server.domain.notification.repository.NotificationOutboxReposito
 import com.assu.server.domain.notification.repository.NotificationRepository;
 import com.assu.server.domain.notification.repository.NotificationSettingRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.DatabaseException;
+import com.assu.server.global.exception.DatabaseException;
 import com.assu.server.infra.NotificationFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor

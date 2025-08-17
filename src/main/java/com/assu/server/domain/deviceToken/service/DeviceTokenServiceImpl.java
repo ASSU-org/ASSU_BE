@@ -1,11 +1,11 @@
 package com.assu.server.domain.deviceToken.service;
 
-import com.assu.server.domain.common.entity.Member;
-import com.assu.server.domain.common.repository.MemberRepository;
+import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.auth.repository.MemberRepository;
 import com.assu.server.domain.deviceToken.entity.DeviceToken;
 import com.assu.server.domain.deviceToken.repository.DeviceTokenRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.DatabaseException;
+import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

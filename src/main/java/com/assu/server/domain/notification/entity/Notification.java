@@ -1,7 +1,7 @@
 package com.assu.server.domain.notification.entity;
+import com.assu.server.domain.auth.entity.Member;
 import com.assu.server.domain.common.entity.BaseEntity;
 
-import com.assu.server.domain.common.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Notification extends BaseEntity {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)

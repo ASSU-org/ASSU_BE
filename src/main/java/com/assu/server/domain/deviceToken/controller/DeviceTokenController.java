@@ -1,6 +1,5 @@
 package com.assu.server.domain.deviceToken.controller;
 
-import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.deviceToken.dto.DeviceTokenRequest;
 import com.assu.server.domain.deviceToken.service.DeviceTokenService;
 import com.assu.server.global.apiPayload.BaseResponse;

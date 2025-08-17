@@ -25,8 +25,8 @@ public class NotificationDispatcher {
 
         for (NotificationOutbox o : batch) {
             try {
-                Notification n = o.getNotification();
-                fcmClient.sendToMember(n.getReceiver(), n);
+                Notification notification = o.getNotification();
+                fcmClient.sendToMember(notification.getReceiver(), notification);
                 o.markSent();
             } catch (Exception e) {
                 o.incRetry();
