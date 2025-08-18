@@ -1,6 +1,6 @@
 package com.assu.server.global.util;
 
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

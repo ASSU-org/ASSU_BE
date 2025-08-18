@@ -14,6 +14,7 @@ import com.assu.server.domain.user.entity.enums.University;
 
 public interface AdminRepository extends JpaRepository<Admin, Long> {
 
+	// 여기 예원이 머지하고 수정
 	List<Admin> findMatchingAdmins(@Param("university") University university,
 		@Param("department") Department department,
 		@Param("major") Major major);

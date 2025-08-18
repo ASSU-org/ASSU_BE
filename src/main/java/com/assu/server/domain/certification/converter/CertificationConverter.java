@@ -1,10 +1,10 @@
 package com.assu.server.domain.certification.converter;
 
-import com.assu.server.domain.admin.entity.Admin;
+
 import com.assu.server.domain.certification.dto.CertificationRequestDTO;
 import com.assu.server.domain.certification.dto.CertificationResponseDTO;
 import com.assu.server.domain.certification.entity.AssociateCertification;
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.store.entity.Store;
 
 public class CertificationConverter {

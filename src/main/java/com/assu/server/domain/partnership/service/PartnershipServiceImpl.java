@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.partnership.converter.PartnershipConverter;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.user.entity.PartnershipUsage;

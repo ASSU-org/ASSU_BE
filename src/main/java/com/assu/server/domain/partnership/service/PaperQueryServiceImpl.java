@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.service.AdminService;
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.domain.partnership.converter.PartnershipConverter;

@@ -1,7 +1,7 @@
 package com.assu.server.domain.user.entity;
 
 
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.user.entity.enums.Department;
 import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
 import com.assu.server.domain.user.entity.enums.Major;

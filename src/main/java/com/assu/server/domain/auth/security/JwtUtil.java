@@ -1,9 +1,9 @@
 package com.assu.server.domain.auth.security;
 
 import com.assu.server.domain.auth.dto.signup.Tokens;
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.auth.exception.CustomAuthException;
-import com.assu.server.domain.auth.repository.MemberRepository;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import io.jsonwebtoken.Claims;

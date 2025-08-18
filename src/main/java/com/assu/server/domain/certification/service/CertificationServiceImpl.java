@@ -20,8 +20,7 @@ import com.assu.server.domain.certification.entity.AssociateCertification;
 import com.assu.server.domain.certification.entity.QRCertification;
 import com.assu.server.domain.certification.entity.enums.SessionStatus;
 import com.assu.server.domain.certification.repository.AssociateCertificationRepository;
-import com.assu.server.domain.certification.repository.QRCertificationRepository;
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
@@ -132,14 +131,6 @@ public class CertificationServiceImpl implements CertificationService {
 			);
 		}
 
-		// // 인증 정보를 QRCertification 에 삽입
-		// QRCertification qrCertification = new QRCertification();
-		// 	qrCertification.builder()
-		// 	.certification(session)
-		// 	.verifiedTime(LocalDateTime.now())
-		// 	.isVerified(true)
-		// 	.build();
-		// qrRepository.save(qrCertification);
 
 	}
 

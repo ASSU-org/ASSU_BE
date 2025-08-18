@@ -1,6 +1,8 @@
-package com.assu.server.domain.auth.entity;
+package com.assu.server.domain.member.entity;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.auth.entity.CommonAuth;
+import com.assu.server.domain.auth.entity.SSUAuth;
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.enums.UserRole;

@@ -2,7 +2,7 @@ package com.assu.server.domain.certification.service;
 
 import com.assu.server.domain.certification.dto.CertificationRequestDTO;
 import com.assu.server.domain.certification.dto.CertificationResponseDTO;
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 
 public interface CertificationService {
 

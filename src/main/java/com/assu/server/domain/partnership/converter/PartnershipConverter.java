@@ -3,7 +3,6 @@ package com.assu.server.domain.partnership.converter;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.partnership.dto.PaperContentResponseDTO;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.partnership.entity.Goods;

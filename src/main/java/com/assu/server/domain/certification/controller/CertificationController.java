@@ -12,20 +12,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.assu.server.domain.certification.dto.CertificationRequestDTO;
 import com.assu.server.domain.certification.dto.CertificationResponseDTO;
 import com.assu.server.domain.certification.service.CertificationService;
-import com.assu.server.domain.common.entity.Member;
-import com.assu.server.domain.common.enums.ActivationStatus;
-import com.assu.server.domain.common.enums.UserRole;
-import com.assu.server.domain.common.repository.MemberRepository;
-import com.assu.server.domain.user.entity.Student;
-import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
-import com.assu.server.domain.user.entity.enums.Major;
-import com.assu.server.domain.user.repository.StudentRepository;
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.exception.GeneralException;
 import com.assu.server.global.util.PrincipalDetails;
-import com.fasterxml.jackson.databind.ser.Serializers;
+
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

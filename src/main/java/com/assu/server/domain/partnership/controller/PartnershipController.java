@@ -2,12 +2,11 @@ package com.assu.server.domain.partnership.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.assu.server.domain.common.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.partnership.dto.PaperResponseDTO;
 import com.assu.server.domain.partnership.service.PartnershipService;
 import com.assu.server.global.apiPayload.BaseResponse;
