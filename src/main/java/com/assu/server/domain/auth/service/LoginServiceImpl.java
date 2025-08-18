@@ -1,50 +1,69 @@
 package com.assu.server.domain.auth.service;
 
-import com.assu.server.domain.auth.dto.login.LoginRequest;
+import com.assu.server.domain.auth.dto.login.CommonLoginRequest;
 import com.assu.server.domain.auth.dto.login.LoginResponse;
 import com.assu.server.domain.auth.dto.login.RefreshResponse;
 import com.assu.server.domain.auth.dto.login.StudentLoginRequest;
 import com.assu.server.domain.auth.dto.signup.Tokens;
-import com.assu.server.domain.auth.entity.CommonAuth;
+import com.assu.server.domain.auth.entity.AuthRealm;
+import com.assu.server.domain.auth.security.adapter.RealmAuthAdapter;
+import com.assu.server.domain.auth.security.token.LoginUsernamePasswordAuthenticationToken;
 import com.assu.server.domain.member.entity.Member;
-import com.assu.server.domain.auth.entity.SSUAuth;
-import com.assu.server.domain.auth.exception.CustomAuthException;
-import com.assu.server.domain.auth.repository.CommonAuthRepository;
-import com.assu.server.domain.member.repository.MemberRepository;
-import com.assu.server.domain.auth.repository.SSUAuthRepository;
-import com.assu.server.domain.auth.security.JwtUtil;
-import com.assu.server.domain.auth.security.SecurityUtil;
-import com.assu.server.domain.auth.security.common.CommonUsernamePasswordAuthenticationToken;
-import com.assu.server.domain.auth.security.student.StudentUsernamePasswordAuthenticationToken;
+import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService {
 
-    private final CommonAuthRepository commonAuthRepository;
-    private final SSUAuthRepository ssuAuthRepository;
-    private final MemberRepository memberRepository;
-
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
+    // 공통/학생/기타 학교까지 모두 여기로 주입
+    private final List<RealmAuthAdapter> realmAuthAdapters;
+
+    private RealmAuthAdapter pickAdapter(AuthRealm realm) {
+        return realmAuthAdapters.stream()
+                .filter(a -> a.supports(realm))
+                .findFirst()
+                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION));
+    }
+
+    /**
+     * 공통(파트너/관리자) 로그인: 이메일/비밀번호 기반.
+     * 1) 인증 성공 시 CommonAuth 조회
+     * 2) JWT 발급: username=email, authRealm=COMMON
+     */
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse loginCommon(CommonLoginRequest request) {
         // 공통(파트너/관리자) 로그인: 이메일/비번
-        Authentication auth = authenticationManager.authenticate(
-                new CommonUsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        Authentication authentication = authenticationManager.authenticate(
+                new LoginUsernamePasswordAuthenticationToken(
+                        AuthRealm.COMMON,
+                        request.getEmail(),
+                        request.getPassword()
+                )
         );
 
-        CommonAuth commonAuth = commonAuthRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER));
+        RealmAuthAdapter adapter = pickAdapter(AuthRealm.COMMON);
 
-        Member member = commonAuth.getMember();
-        Tokens tokens = jwtUtil.issueAndPersistTokens(member, member.getRole());
+        // identifier = email
+        Member member = adapter.loadMember(authentication.getName());
+
+        // 토큰 발급 (Access 미저장, Refresh는 Redis 저장)
+        Tokens tokens = jwtUtil.issueTokens(
+                member.getId(),
+                authentication.getName(), // email
+                member.getRole(),
+                adapter.authRealmValue()    // "COMMON"
+        );
 
         return LoginResponse.builder()
                 .memberId(member.getId())
@@ -54,18 +73,36 @@ public class LoginServiceImpl implements LoginService {
                 .build();
     }
 
+    /**
+     * 학생 로그인: 학번/학교 비밀번호 기반.
+     * 1) 인증 성공 시 SSUAuth 조회
+     * 2) JWT 발급: username=studentNumber, authRealm=SSU
+     */
     @Override
     public LoginResponse loginStudent(StudentLoginRequest request) {
-        // 학생 로그인: 학번/학교 비번
-        Authentication auth = authenticationManager.authenticate(
-                new StudentUsernamePasswordAuthenticationToken(request.getStudentNumber(), request.getStudentPassword())
+
+        String realmStr = request.getUniversity().toString();  // University → AuthRealm 매핑
+        AuthRealm authRealm = AuthRealm.valueOf(realmStr);
+        RealmAuthAdapter adapter = pickAdapter(authRealm);
+
+        Authentication authentication = authenticationManager.authenticate(
+                new LoginUsernamePasswordAuthenticationToken(
+                        authRealm,
+                        request.getStudentNumber(),
+                        request.getStudentPassword()
+                )
         );
 
-        SSUAuth ssuAuth = ssuAuthRepository.findByStudentNumber(auth.getName())
-                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER));
+        // identifier = studentNumber
+        Member member = adapter.loadMember(authentication.getName());
 
-        Member member = ssuAuth.getMember();
-        Tokens tokens = jwtUtil.issueAndPersistTokens(member, member.getRole());
+        // 토큰 발급 (Access 미저장, Refresh는 Redis 저장)
+        Tokens tokens = jwtUtil.issueTokens(
+                member.getId(),
+                authentication.getName(), // studentNumber
+                member.getRole(),
+                adapter.authRealmValue()    // 예: "SSU"
+        );
 
         return LoginResponse.builder()
                 .memberId(member.getId())
@@ -75,23 +112,21 @@ public class LoginServiceImpl implements LoginService {
                 .build();
     }
 
+    /**
+     * Refresh 토큰 재발급(회전).
+     * 전제: JwtAuthFilter가 /auth/refresh 에서 Access(만료 허용) 서명 검증 및 컨텍스트 세팅을 이미 수행.
+     *
+     * 절차:
+     * 1) RT 서명/만료 검증(jwtUtil.validateRefreshToken)
+     * 2) RT의 Claims 추출(만료 X), memberId/jti/username/role/authRealm 획득
+     * 3) Redis 키 "refresh:{memberId}:{jti}" 존재 및 값 일치 확인(도난/중복 재사용 차단)
+     * 4) 기존 RT 키 삭제(회전), 새 토큰 발급(issueTokens)
+     */
     @Override
     public RefreshResponse refresh(String refreshToken) {
-        Long userId = SecurityUtil.getCurrentUserId();
-        Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER));
-
-        jwtUtil.validateRefreshToken(refreshToken);
-        String savedRt = member.getRefreshToken();
-        if (savedRt == null || !savedRt.equals(refreshToken)) {
-            throw new CustomAuthException(ErrorStatus.REFRESH_TOKEN_NOT_EQUAL);
-        }
-
-        // 회전: JwtUtil에 위임(내부의 valid-seconds 사용)
-        Tokens rotated = jwtUtil.issueAndPersistTokens(member, member.getRole());
-
+        Tokens rotated = jwtUtil.rotateRefreshToken(refreshToken);
         return new RefreshResponse(
-                userId,
+                ((Number) jwtUtil.validateTokenOnlySignature(rotated.getAccessToken()).get("userId")).longValue(),
                 rotated.getAccessToken(),
                 rotated.getRefreshToken()
         );
