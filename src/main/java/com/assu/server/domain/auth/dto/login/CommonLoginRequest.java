@@ -13,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Schema(description = "파트너/관리자 공통 로그인 요청")
-public class LoginRequest {
+public class CommonLoginRequest {
 
     @Schema(description = "로그인 이메일", example = "user@example.com")
     @NotBlank(message = "이메일은 필수입니다.")
