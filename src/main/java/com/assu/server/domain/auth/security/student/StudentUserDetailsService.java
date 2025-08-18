@@ -1,6 +1,6 @@
 package com.assu.server.domain.auth.security.student;
 
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.auth.entity.SSUAuth;
 import com.assu.server.domain.auth.repository.SSUAuthRepository;
 import com.assu.server.domain.common.enums.ActivationStatus;

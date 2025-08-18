@@ -1,6 +1,6 @@
 package com.assu.server.domain.term.entity.mapping;
 import com.assu.server.domain.common.entity.BaseEntity;
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.term.entity.Term;
 
 import jakarta.persistence.Entity;

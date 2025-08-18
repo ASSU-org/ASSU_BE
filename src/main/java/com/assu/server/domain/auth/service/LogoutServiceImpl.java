@@ -1,6 +1,6 @@
 package com.assu.server.domain.auth.service;
 
-import com.assu.server.domain.auth.repository.MemberRepository;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.auth.security.JwtUtil;
 import com.assu.server.domain.auth.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
