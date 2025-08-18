@@ -241,6 +241,7 @@ public class JwtUtil {
                 .memberId(member.getId())
                 .username(username)
                 .password(password)
+                .enabled(member.getIsActivated().equals(ActivationStatus.ACTIVE))
                 .role(role)
                 .authRealm(realm)
                 .authorities(authorities)
