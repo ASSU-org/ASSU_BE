@@ -9,10 +9,9 @@ import com.assu.server.domain.auth.dto.signup.AdminSignUpRequest;
 import com.assu.server.domain.auth.dto.signup.PartnerSignUpRequest;
 import com.assu.server.domain.auth.dto.signup.SignUpResponse;
 import com.assu.server.domain.auth.dto.signup.StudentSignUpRequest;
-import com.assu.server.domain.auth.service.LoginService;
-import com.assu.server.domain.auth.service.LogoutService;
-import com.assu.server.domain.auth.service.PhoneAuthService;
-import com.assu.server.domain.auth.service.SignUpService;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthResponse;
+import com.assu.server.domain.auth.service.*;
 import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
@@ -43,6 +42,7 @@ public class AuthController {
     private final SignUpService signUpService;
     private final LoginService loginService;
     private final LogoutService logoutService;
+    private final SSUAuthService ssuAuthService;
 
     @Operation(
             summary = "휴대폰 인증번호 발송 API (추후 개발)",
@@ -300,6 +300,31 @@ public class AuthController {
     ) {
         logoutService.logout(accessToken);
         return BaseResponse.onSuccess(SuccessStatus._OK, null);
+    }
+
+    // 숭실대 인증 및 개인정보 조회
+    @Operation(
+            summary = "숭실대 유세인트 인증 API",
+            description = "# v1.0 (2025-08-20)\n" +
+                    "- `application/json`으로 호출합니다.\n" +
+                    "- 요청 바디: `USaintAuthRequest(sToken, sIdno)`.\n" +
+                    "- 처리 순서:\n" +
+                    "  1) 유세인트 SSO 로그인 시도 (sToken, sIdno 검증)\n" +
+                    "  2) 응답 Body 검증 후 세션 쿠키 추출\n" +
+                    "  3) 유세인트 포털 페이지 접근 및 HTML 파싱\n" +
+                    "  4) 이름, 학번, 소속, 학적 상태, 학년/학기 정보 추출\n" +
+                    "  5) 소속 문자열을 전공 Enum(`Major`)으로 매핑\n" +
+                    "  6) 인증 결과를 `USaintAuthResponse` DTO로 반환\n"
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(schema = @Schema(implementation = USaintAuthRequest.class))
+    )
+    @PostMapping(value = "/schools/ssu", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<USaintAuthResponse> ssuAuth(
+            @RequestBody @Valid USaintAuthRequest request
+    ) {
+        return BaseResponse.onSuccess(SuccessStatus._OK, ssuAuthService.uSaintAuth(request));
     }
 
 }
