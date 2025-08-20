@@ -63,6 +63,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader(jwtHeader);
 
+        log.debug("Auth header={}", request.getHeader("Authorization"));
+
         // Refresh 전용 처리
         if (PATH.match("/auth/refresh", request.getRequestURI())) {
             final String refreshToken = request.getHeader("refreshToken");
