@@ -24,6 +24,12 @@ public enum ErrorStatus implements BaseErrorCode {
     JWT_TOKEN_OUT_OF_FORM(HttpStatus.UNAUTHORIZED, "AUTH4006", "JWT 토큰의 형식이 올바르지 않습니다."),
     REFRESH_TOKEN_NOT_EQUAL(HttpStatus.UNAUTHORIZED, "AUTH4007", "Refreash 토큰이 일치하지 않습니다."),
 
+    // 숭실대 관련 에러
+    SSU_SAINT_SSO_FAILED(HttpStatus.UNAUTHORIZED, "SSU4000", "숭실대학교 유세인트 SSO 로그인에 실패했습니다."),
+    SSU_SAINT_PORTAL_FAILED(HttpStatus.UNAUTHORIZED, "SSU4001", "숭실대학교 유세인트 포털 접근에 실패했습니다."),
+    SSU_SAINT_PARSE_FAILED(HttpStatus.UNAUTHORIZED, "SSU4002", "숭실대학교 유세인트 포털 크롤링 파싱에 실패했습니다."),
+    SSU_SAINT_UNSUPPORTED_MAJOR(HttpStatus.UNAUTHORIZED, "SSU4003", "지원하는 학과가 아닙니다."),
+
     // 인증 에러
     NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"AUTH_4007","전화번호 인증에 실패했습니다."),
 
