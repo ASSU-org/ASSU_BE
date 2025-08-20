@@ -22,7 +22,7 @@ public class AdminServiceImpl implements AdminService {
 
 	// 유저의 정보와 맞는 admin 을 찾기
 	@Override
-	public List<Admin> findMatchingAdmins(University university, Department department, Major major){
+	public List<Admin> findMatchingAdmins(String university, String department, Major major){
 
 
 		List<Admin> adminList = adminRepository.findMatchingAdmins(university, department,major);

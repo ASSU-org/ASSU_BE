@@ -36,13 +36,12 @@ public class CertificationController {
 	@PostMapping("/certification/session")
 	@Operation(summary = "세션 정보를 요청하는 api", description = "인원 수 기준이 요구되는 제휴일 때 세션을 만들고, 대표자 QR에 담을 정보를 요청하는 api 입니다.")
 	public ResponseEntity<BaseResponse<CertificationResponseDTO.getSessionIdResponse>> getSessionId(
-		// @AuthenticationPrincipal PrincipalDetails userDetails,
+		@AuthenticationPrincipal PrincipalDetails userDetails,
 		@RequestBody CertificationRequestDTO.groupRequest dto
 	) {
 
-		// Member member = userDetails.getMember();
-		Member member = memberRepository.findMemberById(1L)
-			.orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER));
+		Member member = userDetails.getMember();
+
 		CertificationResponseDTO.getSessionIdResponse result = certificationService.getSessionId(dto, member);
 
 		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.GROUP_SESSION_CREATE, result));

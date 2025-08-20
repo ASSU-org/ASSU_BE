@@ -90,7 +90,7 @@ public class CertificationServiceImpl implements CertificationService {
 		// 제휴 대상인지 확인하기
 		Long adminId = dto.getAdminId();
 		Student student = member.getStudentProfile();
-		List<Admin> admins = adminService.findMatchingAdmins(student.getUniversity(), student.getDepartment(), student.getMajor());
+		List<Admin> admins = adminService.findMatchingAdmins(student.getUniversity().toString(), student.getDepartment().toString(), student.getMajor());
 
 		boolean matched = admins.stream()
 			.anyMatch(admin -> admin.getId().equals(adminId));
