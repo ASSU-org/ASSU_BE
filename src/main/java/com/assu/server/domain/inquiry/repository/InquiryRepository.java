@@ -1,6 +1,5 @@
 package com.assu.server.domain.inquiry.repository;
 
-import com.assu.server.domain.common.entity.Member;
 import com.assu.server.domain.inquiry.entity.Inquiry;
 import com.assu.server.domain.inquiry.entity.Inquiry.Status;
 import org.springframework.data.domain.*;

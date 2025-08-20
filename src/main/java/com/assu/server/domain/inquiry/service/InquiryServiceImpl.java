@@ -1,15 +1,16 @@
 package com.assu.server.domain.inquiry.service;
 
-import com.assu.server.domain.common.entity.Member;
-import com.assu.server.domain.common.repository.MemberRepository;
+
 import com.assu.server.domain.inquiry.converter.InquiryConverter;
 import com.assu.server.domain.inquiry.dto.InquiryCreateRequestDTO;
 import com.assu.server.domain.inquiry.dto.InquiryResponseDTO;
 import com.assu.server.domain.inquiry.entity.Inquiry;
 import com.assu.server.domain.inquiry.entity.Inquiry.Status;
 import com.assu.server.domain.inquiry.repository.InquiryRepository;
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.DatabaseException;
+import com.assu.server.global.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;

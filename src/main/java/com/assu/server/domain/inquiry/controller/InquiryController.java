@@ -6,13 +6,12 @@ import com.assu.server.domain.inquiry.dto.InquiryResponseDTO;
 import com.assu.server.domain.inquiry.service.InquiryService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+
+import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -26,13 +25,14 @@ public class InquiryController {
 
     @Operation(
             summary = "문의를 생성하는 API",
-            description = "셍성 성공시 생성된 문의의 ID를 반환합니다."
+            description = "생성 성공시 생성된 문의의 ID를 반환합니다."
     )
     @PostMapping
     public BaseResponse<Long> create(
-            @RequestBody @Valid InquiryCreateRequestDTO req,
-            @RequestParam Long memberId
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @RequestBody @Valid InquiryCreateRequestDTO req
     ) {
+        Long memberId = pd.getMember().getId();
         Long id = inquiryService.create(req, memberId);
         return BaseResponse.onSuccess(SuccessStatus._OK, id);
     }
@@ -43,30 +43,32 @@ public class InquiryController {
     )
     @GetMapping
     public BaseResponse<Map<String, Object>> list(
+            @AuthenticationPrincipal PrincipalDetails pd,
             @RequestParam(defaultValue = "all") String status,
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "20") Integer size,
-            @RequestParam Long memberId
+            @RequestParam(defaultValue = "20") Integer size
     ) {
+        Long memberId = pd.getMember().getId();
         Map<String, Object> response = inquiryService.getInquiries(status, page, size, memberId);
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
-    /** 단건 상세 조회*/
+    /** 단건 상세 조회 */
     @Operation(
             summary = "문의 단건 상세 조회 API",
             description = "문의 ID를 보내주세요."
     )
     @GetMapping("/{inquiryId}")
     public BaseResponse<InquiryResponseDTO> get(
-            @PathVariable("inquiryId") Long inquiryId,
-            @RequestParam Long memberId
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @PathVariable("inquiryId") Long inquiryId
     ) {
+        Long memberId = pd.getMember().getId();
         InquiryResponseDTO response = inquiryService.get(inquiryId, memberId);
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
-    /** 문의 답변*/
+    /** 문의 답변 (운영자) */
     @Operation(
             summary = "운영자 답변 API",
             description = "문의에 답변을 저장하고 상태를 ANSWERED로 변경합니다."
