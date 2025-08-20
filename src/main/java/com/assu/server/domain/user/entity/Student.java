@@ -24,6 +24,7 @@ public class Student {
     @MapsId
     private Member member;
 
+    @Enumerated(EnumType.STRING)
     private Department department;
 
     @Enumerated(EnumType.STRING)
@@ -32,6 +33,7 @@ public class Student {
     @Pattern(regexp = "^[0-9]{1}-[1-2]$", message = "yearSemester는 Y-N 형식이어야 합니다. 예: 3-1")
     private String yearSemester;
 
+    @Enumerated(EnumType.STRING)
     private University university;
 
     private int stamp;
