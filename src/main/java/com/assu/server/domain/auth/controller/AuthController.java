@@ -1,6 +1,6 @@
 package com.assu.server.domain.auth.controller;
 
-import com.assu.server.domain.auth.dto.login.LoginRequest;
+import com.assu.server.domain.auth.dto.login.CommonLoginRequest;
 import com.assu.server.domain.auth.dto.login.LoginResponse;
 import com.assu.server.domain.auth.dto.login.RefreshResponse;
 import com.assu.server.domain.auth.dto.login.StudentLoginRequest;
@@ -21,16 +21,12 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartRequest;
 
 @Tag(name = "Auth", description = "인증/회원가입 API")
 @RestController
@@ -50,12 +46,6 @@ public class AuthController {
                     "- 입력한 휴대폰 번호로 1회용 인증번호(OTP)를 발송합니다.\n" +
                     "- 유효시간/재요청 제한 정책은 서버 설정에 따릅니다."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "인증번호 발송 성공",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (형식/필수값 오류)",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @PostMapping("/phone-numbers/send")
     public BaseResponse<Void> sendAuthNumber(
             @RequestBody @Valid PhoneAuthRequestDTO.PhoneAuthSendRequest request
@@ -70,12 +60,6 @@ public class AuthController {
                     "- 발송된 인증번호(OTP)를 검증합니다.\n" +
                     "- 성공 시 서버에 휴대폰 인증 상태가 기록됩니다."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "인증번호 검증 성공",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "400", description = "인증 실패/만료/형식 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @PostMapping("/phone-numbers/verify")
     public BaseResponse<Void> checkAuthNumber(
             @RequestBody @Valid PhoneAuthRequestDTO.PhoneAuthVerifyRequest request
@@ -94,14 +78,6 @@ public class AuthController {
                     "- 처리: users + ssu_auth 등 가입 레코드 생성, 휴대폰 인증 여부 확인.\n" +
                     "- 성공 시 201(Created)과 생성된 memberId 반환."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "회원가입 성공",
-                    content = @Content(schema = @Schema(implementation = SignUpResponse.class))),
-            @ApiResponse(responseCode = "400", description = "검증 실패/형식 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "409", description = "중복(전화번호 등)으로 인한 충돌",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @PostMapping(value = "/signup/student", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<SignUpResponse> signupStudent(
             @Valid @RequestBody StudentSignUpRequest request) {
@@ -116,14 +92,6 @@ public class AuthController {
                     "- 처리: users + common_auth 생성, 이메일 중복/비밀번호 규칙 검증.\n" +
                     "- 성공 시 201(Created)과 생성된 memberId 반환."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "회원가입 성공",
-                    content = @Content(schema = @Schema(implementation = SignUpResponse.class))),
-            @ApiResponse(responseCode = "400", description = "검증 실패/형식 오류(비밀번호 불일치 등)",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "409", description = "중복(전화/이메일)으로 인한 충돌",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @PostMapping(value = "/signup/partner", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public BaseResponse<SignUpResponse> signupPartner(
             @Valid @RequestPart("request")
@@ -155,14 +123,6 @@ public class AuthController {
                     "- 처리: users + common_auth 생성, 이메일 중복/비밀번호 규칙 검증.\n" +
                     "- 성공 시 201(Created)과 생성된 memberId 반환."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "회원가입 성공",
-                    content = @Content(schema = @Schema(implementation = SignUpResponse.class))),
-            @ApiResponse(responseCode = "400", description = "검증 실패/형식 오류(비밀번호 불일치 등)",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "409", description = "중복(전화/이메일)으로 인한 충돌",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @PostMapping(value = "/signup/admin", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public BaseResponse<SignUpResponse> signupAdmin(
             @Valid @RequestPart("request")
@@ -187,7 +147,7 @@ public class AuthController {
 
     // 로그인 (파트너/관리자 공통)
     @Operation(
-            summary = "로그인 API",
+            summary = "공통 로그인 API",
             description = "# v1.0 (2025-08-15)\n" +
                     "- `application/json`로 호출합니다.\n" +
                     "- 바디: `LoginRequest(email, password)`.\n" +
@@ -196,30 +156,22 @@ public class AuthController {
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true,
-            content = @Content(schema = @Schema(implementation = LoginRequest.class))
+            content = @Content(schema = @Schema(implementation = CommonLoginRequest.class))
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그인 성공",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
-            @ApiResponse(responseCode = "400", description = "검증 실패/형식 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패(자격 증명 오류)",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
-    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<LoginResponse> login(
-            @RequestBody @Valid LoginRequest request
+    @PostMapping(value = "/login/common", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResponse<LoginResponse> loginCommon(
+            @RequestBody @Valid CommonLoginRequest request
     ) {
-        return BaseResponse.onSuccess(SuccessStatus._OK, loginService.login(request));
+        return BaseResponse.onSuccess(SuccessStatus._OK, loginService.loginCommon(request));
     }
 
 
     // 학생 로그인
     @Operation(
             summary = "학생 로그인 API",
-            description = "# v1.0 (2025-08-15)\n" +
+            description = "# v1.1 (2025-08-18)\n" +
                     "- `application/json`로 호출합니다.\n" +
-                    "- 바디: `StudentLoginRequest(email, password)`.\n" +
+                    "- 바디: `바디: `StudentLoginRequest(studentNumber, studentPassword, school)`.\n" +
                     "- 처리: 자격 증명 검증 후 Access/Refresh 토큰 발급 및 저장.\n" +
                     "- 성공 시 200(OK)과 토큰/만료시각 반환."
     )
@@ -227,16 +179,8 @@ public class AuthController {
             required = true,
             content = @Content(schema = @Schema(implementation = StudentLoginRequest.class))
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그인 성공",
-                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
-            @ApiResponse(responseCode = "400", description = "검증 실패/형식 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패(자격 증명 오류)",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @PostMapping(value = "/login/student", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse<LoginResponse> login(
+    public BaseResponse<LoginResponse> loginStudent(
             @RequestBody @Valid StudentLoginRequest request
     ) {
         return BaseResponse.onSuccess(SuccessStatus._OK, loginService.loginStudent(request));
@@ -258,16 +202,6 @@ public class AuthController {
             @Parameter(name = "RefreshToken", description = "Refresh Token", required = true,
                     in = ParameterIn.HEADER, schema = @Schema(type = "string"))
     })
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "토큰 재발급 성공",
-                    content = @Content(schema = @Schema(implementation = RefreshResponse.class))),
-            @ApiResponse(responseCode = "400", description = "검증 실패/형식 오류",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패(토큰 오류/만료)",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "403", description = "접근 거부",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @PostMapping("/refresh")
     public BaseResponse<RefreshResponse> refreshToken(
             @RequestHeader("RefreshToken") String refreshToken
@@ -285,20 +219,14 @@ public class AuthController {
                     "- 처리: Refresh 무효화(선택), Access 블랙리스트 등록.\n" +
                     "- 성공 시 200(OK)."
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "로그아웃 성공",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class))),
-            @ApiResponse(responseCode = "401", description = "인증 실패(토큰 오류/만료)",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class)))
-    })
     @DeleteMapping("/logout")
     public BaseResponse<Void> logout(
             @RequestHeader("Authorization")
             @Parameter(name = "Authorization", description = "Access Token. 형식: `Bearer <token>`", required = true,
                             in = ParameterIn.HEADER, schema = @Schema(type = "string"))
-            String accessToken
+            String authorization
     ) {
-        logoutService.logout(accessToken);
+        logoutService.logout(authorization);
         return BaseResponse.onSuccess(SuccessStatus._OK, null);
     }
 
