@@ -57,6 +57,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 디바이스 토큰(DeviceToken) 에러
     DEVICE_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND,"DEVICE_4001","존재하지 않는 Device Token 입니다."),
+    DEVICE_TOKEN_NOT_OWNED(HttpStatus.FORBIDDEN, "DEVICE_4004","해당 토큰은 본인 소유가 아닙니다."),
     DEVICE_TOKEN_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"DEVICE_5001","Device Token 등록에 실패했습니다.")
 
     ;

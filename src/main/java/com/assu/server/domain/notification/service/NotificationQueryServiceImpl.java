@@ -1,6 +1,6 @@
 package com.assu.server.domain.notification.service;
 
-import com.assu.server.domain.auth.repository.MemberRepository;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.notification.converter.NotificationConverter;
 import com.assu.server.domain.notification.dto.NotificationResponseDTO;
 import com.assu.server.domain.notification.entity.Notification;

@@ -1,7 +1,7 @@
 package com.assu.server.infra;
 
-import com.assu.server.domain.auth.entity.Member;
 import com.assu.server.domain.deviceToken.repository.DeviceTokenRepository;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.notification.entity.Notification;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;

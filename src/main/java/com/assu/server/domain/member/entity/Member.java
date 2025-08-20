@@ -59,10 +59,6 @@ public class Member extends BaseEntity {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Partner partnerProfile;
 
-    // 스키마가 BIGINT라서 Long 사용 (필요 시 VARCHAR로 변경)
-    @Column(name = "fcm_token")
-    private Long fcmToken;
-
     // 연관관계 (1:1) — 양방향 필요 없으면 아래 필드 제거해도 됨
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private SSUAuth ssuAuth;

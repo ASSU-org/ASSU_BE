@@ -6,12 +6,14 @@ import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.domain.notification.service.NotificationQueryService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import java.nio.file.AccessDeniedException;
@@ -31,25 +33,27 @@ public class NotificationController {
     )
     @GetMapping
     public BaseResponse<Map<String, Object>> list(
+            @AuthenticationPrincipal PrincipalDetails pd,
             @RequestParam(defaultValue = "all") String status,   // all | unread
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "20") Integer size,
-            @RequestParam Long memberId
+            @RequestParam(defaultValue = "20") Integer size
     ) {
+        Long memberId = pd.getMember().getId();
         Map<String, Object> body = query.getNotifications(status, page, size, memberId);
         return BaseResponse.onSuccess(SuccessStatus._OK, body);
     }
-
 
     @Operation(
             summary = "알림 읽음 처리 API",
             description = "알림 아이디를 보내주세요"
     )
     @PostMapping("/{notificationId}/read")
-    public BaseResponse<String> markRead(@PathVariable Long notificationId,
-                         @RequestParam Long memberId) throws AccessDeniedException {
+    public BaseResponse<String> markRead(@AuthenticationPrincipal PrincipalDetails pd,
+                                         @PathVariable Long notificationId) throws AccessDeniedException {
+        Long memberId = pd.getMember().getId();
         command.markRead(notificationId, memberId);
-        return BaseResponse.onSuccess(SuccessStatus._OK,"The notification has been marked as read successfully." + notificationId);
+        return BaseResponse.onSuccess(SuccessStatus._OK,
+                "The notification has been marked as read successfully. id=" + notificationId);
     }
 
     @Operation(
@@ -64,12 +68,12 @@ public class NotificationController {
     }
 
     @Operation(summary = "알림 유형별 ON/OFF 토글 API")
-    @PutMapping("/{memberId}/{type}/toggle")
-    public BaseResponse<String> toggle(@PathVariable Long memberId,
+    @PutMapping("/{type}/toggle")
+    public BaseResponse<String> toggle(@AuthenticationPrincipal PrincipalDetails pd,
                                        @PathVariable NotificationType type) {
+        Long memberId = pd.getMember().getId();
         boolean newValue = command.toggle(memberId, type);
         return BaseResponse.onSuccess(SuccessStatus._OK,
                 "Notification setting toggled: now enabled=" + newValue);
     }
-
 }

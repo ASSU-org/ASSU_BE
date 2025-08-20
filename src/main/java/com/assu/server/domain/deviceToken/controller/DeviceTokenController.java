@@ -4,22 +4,28 @@ import com.assu.server.domain.deviceToken.dto.DeviceTokenRequest;
 import com.assu.server.domain.deviceToken.service.DeviceTokenService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("deviceTokens")
 @RequiredArgsConstructor
 public class DeviceTokenController {
+
     private final DeviceTokenService service;
+
     @Operation(
-            summary = "device Token 등록 API",
-            description = "멤버 아이디와 fcm Token을 보내주세요."
+            summary = "Device Token 등록 API",
+            description = "로그인 사용자 기준으로 FCM Device Token을 등록합니다."
     )
     @PostMapping("/register")
-    public BaseResponse<String> register(@RequestBody DeviceTokenRequest req,
-                                         @RequestParam Long memberId) {
+    public BaseResponse<String> register(@AuthenticationPrincipal PrincipalDetails pd,
+                                         @Valid @RequestBody DeviceTokenRequest req) {
+        Long memberId = pd.getMember().getId();
         service.register(req.getToken(), memberId);
         return BaseResponse.onSuccess(
                 SuccessStatus._OK,
@@ -28,12 +34,14 @@ public class DeviceTokenController {
     }
 
     @Operation(
-            summary = "device Token 등록 해제 API",
-            description = "로그아웃, 회원 탈퇴시 호출하시면 됩니다. 멤버의 tokenId를 보내주세요!"
+            summary = "Device Token 등록 해제 API",
+            description = "로그아웃/탈퇴 시 호출합니다. 자신의 토큰만 해제됩니다."
     )
     @DeleteMapping("/unregister/{tokenId}")
-    public BaseResponse<String> unregister(@PathVariable Long tokenId) {
-        service.unregister(tokenId);
+    public BaseResponse<String> unregister(@AuthenticationPrincipal PrincipalDetails pd,
+                                           @PathVariable Long tokenId) {
+        Long memberId = pd.getMember().getId();
+        service.unregister(tokenId, memberId); // 소유자 검증을 서비스에서 수행하도록 memberId 전달
         return BaseResponse.onSuccess(
                 SuccessStatus._OK,
                 "Device token unregistered successfully. tokenId=" + tokenId

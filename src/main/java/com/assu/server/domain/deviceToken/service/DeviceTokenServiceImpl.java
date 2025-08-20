@@ -1,9 +1,9 @@
 package com.assu.server.domain.deviceToken.service;
 
-import com.assu.server.domain.auth.entity.Member;
-import com.assu.server.domain.auth.repository.MemberRepository;
 import com.assu.server.domain.deviceToken.entity.DeviceToken;
 import com.assu.server.domain.deviceToken.repository.DeviceTokenRepository;
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
@@ -32,11 +32,15 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
 
     @Transactional
     @Override
-    public void unregister(Long tokenId) {
+    public void unregister(Long tokenId, Long memberId) {
         deviceTokenRepository.findById(tokenId)
-                .ifPresentOrElse(
-                        deviceToken -> deviceToken.setActive(false),
-                        () -> { throw new DatabaseException(ErrorStatus.DEVICE_TOKEN_NOT_FOUND); }
-                );
+                .ifPresentOrElse(deviceToken -> {
+                    if (!deviceToken.getMember().getId().equals(memberId)) {
+                        throw new DatabaseException(ErrorStatus.DEVICE_TOKEN_NOT_OWNED);
+                    }
+                    deviceToken.setActive(false);
+                }, () -> {
+                    throw new DatabaseException(ErrorStatus.DEVICE_TOKEN_NOT_FOUND);
+                });
     }
 }
