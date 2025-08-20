@@ -2,16 +2,13 @@ package com.assu.server.domain.auth.service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
-import com.assu.server.domain.auth.crypto.SchoolCredentialEncryptor;
 import com.assu.server.domain.auth.dto.signup.*;
 import com.assu.server.domain.auth.dto.signup.common.CommonInfoPayload;
 import com.assu.server.domain.auth.dto.signup.student.StudentInfoPayload;
-import com.assu.server.domain.auth.entity.CommonAuth;
-import com.assu.server.domain.auth.entity.SSUAuth;
-import com.assu.server.domain.auth.exception.CustomAuthException;
-import com.assu.server.domain.auth.repository.CommonAuthRepository;
-import com.assu.server.domain.auth.repository.SSUAuthRepository;
-import com.assu.server.domain.auth.security.JwtUtil;
+import com.assu.server.domain.auth.entity.AuthRealm;
+import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.security.adapter.RealmAuthAdapter;
+import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.domain.member.entity.Member;
@@ -25,9 +22,10 @@ import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @Service
@@ -35,16 +33,22 @@ import org.springframework.web.multipart.MultipartFile;
 public class SignUpServiceImpl implements SignUpService {
 
     private final MemberRepository memberRepository;
-    private final SSUAuthRepository ssuAuthRepository;
-    private final CommonAuthRepository commonAuthRepository;
     private final StudentRepository studentRepository;
     private final PartnerRepository partnerRepository;
     private final AdminRepository adminRepository;
 
-    private final PasswordEncoder passwordEncoder;           // 공통(파트너/관리자)용 BCrypt
-    private final SchoolCredentialEncryptor schoolEncryptor; // 학생용 AES-GCM
+    // Adapter 들을 주입받아서, signup 시에 사용
+    private final List<RealmAuthAdapter> realmAuthAdapters;
+
     private final AmazonS3Manager amazonS3Manager;
     private final JwtUtil jwtUtil;
+
+    private RealmAuthAdapter pickAdapter(AuthRealm realm) {
+        return realmAuthAdapters.stream()
+                .filter(a -> a.supports(realm))
+                .findFirst()
+                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION));
+    }
 
     /* 학생: JSON */
     @Override
@@ -52,13 +56,10 @@ public class SignUpServiceImpl implements SignUpService {
     public SignUpResponse signupStudent(StudentSignUpRequest req) {
         // 중복 체크
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
-        }
-        if (ssuAuthRepository.existsByStudentNumber(req.getStudentAuth().getStudentNumber())) {
-            throw new CustomAuthException(ErrorStatus.EXISTED_STUDENT);
+            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
         }
 
-        // member 생성
+        // 1) member 생성
         Member member = memberRepository.save(
                 Member.builder()
                         .phoneNum(req.getPhoneNumber())
@@ -68,18 +69,11 @@ public class SignUpServiceImpl implements SignUpService {
                         .build()
         );
 
-        // ssu_auth 생성(학생번호/암호화 PW(AES-GCM))
-        String cipher = schoolEncryptor.encrypt(req.getStudentAuth().getStudentPassword());
-        ssuAuthRepository.save(
-                SSUAuth.builder()
-                        .member(member)
-                        .studentNumber(req.getStudentAuth().getStudentNumber())
-                        .passwordCipher(cipher)
-                        .isAuthenticated(true) // 초기값(유세인트 검증 완료 여부에 맞게 조정)
-                        .build()
-        );
+        // 2) RealmAuthAdapter 로 자격 저장 (학교별 암호화 전략 반영됨)
+        RealmAuthAdapter adapter = pickAdapter(AuthRealm.valueOf(req.getStudentInfo().getUniversity().toString()));
+        adapter.registerCredentials(member, req.getStudentAuth().getStudentNumber(), req.getStudentAuth().getStudentPassword());
 
-        // student 프로필 생성
+        // 3) Student 프로필 생성
         StudentInfoPayload info = req.getStudentInfo();
         Major major;
         switch (info.getMajor()) {
@@ -105,8 +99,13 @@ public class SignUpServiceImpl implements SignUpService {
                         .build()
         );
 
-        // JWT 발급 및 저장
-        Tokens tokens = jwtUtil.issueAndPersistTokens(member, UserRole.STUDENT);
+        // 4) 토큰 발급
+        Tokens tokens = jwtUtil.issueTokens(
+                member.getId(),
+                req.getStudentAuth().getStudentNumber(),
+                UserRole.STUDENT,
+                adapter.authRealmValue()
+        );
 
         return SignUpResponse.builder()
                 .memberId(member.getId())
@@ -121,38 +120,30 @@ public class SignUpServiceImpl implements SignUpService {
     @Transactional
     public SignUpResponse signupPartner(PartnerSignUpRequest req, MultipartFile licenseImage) {
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
-        }
-        if (commonAuthRepository.existsByEmail(req.getCommonAuth().getEmail())) {
-            throw new CustomAuthException(ErrorStatus.EXISTED_EMAIL);
+            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
         }
 
+        // 1) member 생성
         Member member = memberRepository.save(
                 Member.builder()
                         .phoneNum(req.getPhoneNumber())
                         .isPhoneVerified(true)
                         .role(UserRole.PARTNER)
-                        .isActivated(ActivationStatus.SUSPEND) // 사업자 등록증 확인 후 활성화
+                        .isActivated(ActivationStatus.ACTIVE) // Todo 초기에 SUSPEND 로직 추가해야함, 허가 후 ACTIVE
                         .build()
         );
 
-        // CommonAuth: BCrypt 해시 저장
-        String pwHash = passwordEncoder.encode(req.getCommonAuth().getPassword());
-        commonAuthRepository.save(
-                CommonAuth.builder()
-                        .member(member)
-                        .email(req.getCommonAuth().getEmail())
-                        .password(pwHash)
-                        .isEmailVerified(false)
-                        .build()
-        );
+        // 2) RealmAuthAdapter 로 Common 자격 저장
+        RealmAuthAdapter adapter = pickAdapter(AuthRealm.COMMON);
+        adapter.registerCredentials(member, req.getCommonAuth().getEmail(), req.getCommonAuth().getPassword());
 
         // 파일 업로드 + 파트너 정보
         String keyPath = "partners/" + member.getId() + "/" + licenseImage.getOriginalFilename();
         String keyName = amazonS3Manager.generateKeyName(keyPath);
         String licenseUrl = amazonS3Manager.uploadFile(keyName, licenseImage);
-
         CommonInfoPayload info = req.getCommonInfo();
+
+        // 3) Partner 프로필 생성
         partnerRepository.save(
                 Partner.builder()
                         .member(member)
@@ -163,7 +154,13 @@ public class SignUpServiceImpl implements SignUpService {
                         .build()
         );
 
-        Tokens tokens = jwtUtil.issueAndPersistTokens(member, UserRole.PARTNER);
+        // 4) 토큰 발급
+        Tokens tokens = jwtUtil.issueTokens(
+                member.getId(),
+                req.getCommonAuth().getEmail(),
+                UserRole.PARTNER,
+                adapter.authRealmValue()
+        );
 
         return SignUpResponse.builder()
                 .memberId(member.getId())
@@ -178,36 +175,30 @@ public class SignUpServiceImpl implements SignUpService {
     @Transactional
     public SignUpResponse signupAdmin(AdminSignUpRequest req, MultipartFile signImage) {
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
-        }
-        if (commonAuthRepository.existsByEmail(req.getCommonAuth().getEmail())) {
-            throw new CustomAuthException(ErrorStatus.EXISTED_EMAIL);
+            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
         }
 
+        // 1) member 생성
         Member member = memberRepository.save(
                 Member.builder()
                         .phoneNum(req.getPhoneNumber())
                         .isPhoneVerified(true)
                         .role(UserRole.ADMIN)
-                        .isActivated(ActivationStatus.SUSPEND) // 인감 확인 후 활성화
+                        .isActivated(ActivationStatus.ACTIVE) // Todo 초기에 SUSPEND 로직 추가해야함, 허가 후 ACTIVE
                         .build()
         );
 
-        String pwHash = passwordEncoder.encode(req.getCommonAuth().getPassword());
-        commonAuthRepository.save(
-                CommonAuth.builder()
-                        .member(member)
-                        .email(req.getCommonAuth().getEmail())
-                        .password(pwHash)
-                        .isEmailVerified(false)
-                        .build()
-        );
+        // 2) RealmAuthAdapter 로 Common 자격 저장
+        RealmAuthAdapter adapter = pickAdapter(AuthRealm.COMMON);
+        adapter.registerCredentials(member, req.getCommonAuth().getEmail(), req.getCommonAuth().getPassword());
 
+        // 파일 업로드 + 관리자 정보
         String keyPath = "admins/" + member.getId() + "/" + signImage.getOriginalFilename();
         String keyName = amazonS3Manager.generateKeyName(keyPath);
         String signUrl = amazonS3Manager.uploadFile(keyName, signImage);
-
         CommonInfoPayload info = req.getCommonInfo();
+
+        // 3) Partner 프로필 생성
         adminRepository.save(
                 Admin.builder()
                         .member(member)
@@ -218,7 +209,13 @@ public class SignUpServiceImpl implements SignUpService {
                         .build()
         );
 
-        Tokens tokens = jwtUtil.issueAndPersistTokens(member, UserRole.ADMIN);
+        // 4) 토큰 발급
+        Tokens tokens = jwtUtil.issueTokens(
+                member.getId(),
+                req.getCommonAuth().getEmail(),
+                UserRole.ADMIN,
+                adapter.authRealmValue()
+        );
 
         return SignUpResponse.builder()
                 .memberId(member.getId())
