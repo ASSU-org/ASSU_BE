@@ -2,7 +2,6 @@ package com.assu.server.global.apiPayload.code.status;
 
 import com.assu.server.global.apiPayload.code.BaseErrorCode;
 import com.assu.server.global.apiPayload.code.ErrorReasonDTO;
-import com.sun.net.httpserver.HttpsServer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -16,6 +15,18 @@ public enum ErrorStatus implements BaseErrorCode {
     _UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COMMON401", "인증이 필요합니다."),
     _FORBIDDEN(HttpStatus.FORBIDDEN, "COMMON403", "금지된 요청입니다."),
 
+    // 인가 관련 에러
+    AUTHORIZATION_EXCEPTION(HttpStatus.UNAUTHORIZED, "AUTH4001", "인증에 실패하였습니다."),
+    JWT_ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH4002", "AccessToken이 만료되었습니다."),
+    JWT_REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH4003", "RefreshToken이 만료되었습니다."),
+    LOGOUT_USER(HttpStatus.UNAUTHORIZED, "AUTH4004", "로그아웃된 유저입니다."),
+    JWT_TOKEN_NOT_RECEIVED(HttpStatus.UNAUTHORIZED, "AUTH4005", "JWT 토큰이 전달되지 않았습니다."),
+    JWT_TOKEN_OUT_OF_FORM(HttpStatus.UNAUTHORIZED, "AUTH4006", "JWT 토큰의 형식이 올바르지 않습니다."),
+    REFRESH_TOKEN_NOT_EQUAL(HttpStatus.UNAUTHORIZED, "AUTH4007", "Refreash 토큰이 일치하지 않습니다."),
+
+    // 인증 에러
+    NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"AUTH_4007","전화번호 인증에 실패했습니다."),
+
     //페이징 에러
     PAGE_UNDER_ONE(HttpStatus.BAD_REQUEST,"PAGE_4001","페이지는 1이상이여야 합니다."),
     PAGE_SIZE_INVALID(HttpStatus.BAD_REQUEST,"PAGE_4002","size는 1~200 사이여야 합니다."),
@@ -24,13 +35,19 @@ public enum ErrorStatus implements BaseErrorCode {
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
     NO_SUCH_ADMIN(HttpStatus.NOT_FOUND,"MEMBER_4002","존재하지 않는 admin ID 입니다."),
-    NO_SUCH_PARTNER(HttpStatus.NOT_FOUND,"MEMBER_4002","존재하지 않는 partner ID 입니다."),
+    NO_SUCH_PARTNER(HttpStatus.NOT_FOUND,"MEMBER_4003","존재하지 않는 partner ID 입니다."),
+    NO_SUCH_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4004","존재하지 않는 student ID 입니다."),
+    EXISTED_PHONE(HttpStatus.NOT_FOUND,"MEMBER_4005","이미 존재하는 전화번호입니다."),
+    EXISTED_EMAIL(HttpStatus.NOT_FOUND,"MEMBER_4006","이미 존재하는 이메일입니다."),
+    EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4007","이미 존재하는 학번입니다."),
+
 
     // 채팅 에러
     NO_SUCH_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5001", "존재하지 않는 채팅방 ID 입니다."),
     NO_MEMBER_IN_THE_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5002", "해당 방에는 해당 사용자가 없습니다."),
     NO_MEMBER(HttpStatus.NOT_FOUND, "CHATTING_5003", "해당 방에는 사용자가 아무도 없습니다."),
-    NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
+    NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다.")
+
 
 
     // 문의(Inquiry)
