@@ -48,12 +48,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private ActivationStatus isActivated;  // ACTIVE, INACTIVE, SUSPEND
 
-    @Column(nullable = true, unique = true)
-    private String refreshToken;
-
-    @Column(nullable = true, unique = true)
-    private String accessToken;
-
     // 역할별 프로필 - 선택적으로 연관
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Student studentProfile;
