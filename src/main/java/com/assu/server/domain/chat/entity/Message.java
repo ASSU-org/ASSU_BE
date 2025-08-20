@@ -1,6 +1,6 @@
 package com.assu.server.domain.chat.entity;
 
-import com.assu.server.domain.auth.entity.Member;
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.chat.entity.enums.MessageType;
 
 import com.assu.server.domain.common.entity.BaseEntity;

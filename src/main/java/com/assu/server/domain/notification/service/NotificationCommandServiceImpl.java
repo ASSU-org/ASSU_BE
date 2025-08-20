@@ -1,7 +1,7 @@
 package com.assu.server.domain.notification.service;
 
-import com.assu.server.domain.auth.entity.Member;
-import com.assu.server.domain.auth.repository.MemberRepository;
+
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.notification.dto.QueueNotificationRequest;
 import com.assu.server.domain.notification.entity.Notification;
 import com.assu.server.domain.notification.entity.NotificationOutbox;

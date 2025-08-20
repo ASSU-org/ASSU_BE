@@ -1,6 +1,8 @@
-package com.assu.server.domain.auth.entity;
+package com.assu.server.domain.member.entity;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.auth.entity.CommonAuth;
+import com.assu.server.domain.auth.entity.SSUAuth;
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.enums.UserRole;
@@ -46,12 +48,6 @@ public class Member extends BaseEntity {
     @Column(name = "is_activated", nullable = false)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     private ActivationStatus isActivated;  // ACTIVE, INACTIVE, SUSPEND
-
-    @Column(nullable = true, unique = true)
-    private String refreshToken;
-
-    @Column(nullable = true, unique = true)
-    private String accessToken;
 
     // 역할별 프로필 - 선택적으로 연관
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)

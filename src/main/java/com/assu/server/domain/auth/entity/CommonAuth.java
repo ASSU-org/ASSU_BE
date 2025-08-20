@@ -1,6 +1,7 @@
 package com.assu.server.domain.auth.entity;
 
 import com.assu.server.domain.common.entity.BaseEntity;
+import com.assu.server.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
