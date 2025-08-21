@@ -18,7 +18,7 @@ import com.assu.server.domain.suggestion.repository.SuggestionRepository;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.DatabaseException;
+import com.assu.server.global.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
