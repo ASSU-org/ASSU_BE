@@ -31,3 +31,7 @@ logging:
   level:
     org.springframework.web: DEBUG
     org.springframework.web.client.DefaultRestClient: OFF
+
+kakao:
+  base-url: https://dapi.kakao.com
+  rest-api-key: ${KAKAO_REST_API_KEY}

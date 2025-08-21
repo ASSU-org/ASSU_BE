@@ -39,7 +39,7 @@ public class Store extends BaseEntity {
 
 	private String name;
 
-	private String adderess;
+	private String address;
 
 	private String detailAddress;
 

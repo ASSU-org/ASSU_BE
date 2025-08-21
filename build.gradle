@@ -29,6 +29,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
 	// spring security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -66,6 +67,10 @@ dependencies {
 
     implementation group: 'org.javassist', name: 'javassist', version: '3.15.0-GA'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+	// 공간 데이터
+	implementation("org.hibernate.orm:hibernate-spatial")
+	implementation("org.locationtech.jts:jts-core:1.19.0")
 }
 
 tasks.named('test') {

@@ -30,6 +30,14 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_MEMBER(HttpStatus.NOT_FOUND, "CHATTING_5003", "해당 방에는 사용자가 아무도 없습니다."),
     NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
 
+    // 스토어 에러
+    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE_6001", "존재하지 않는 가게입니다."),
+
+    // 주소 에러
+    NO_SUCH_ADDRESS(HttpStatus.NOT_FOUND, "ADDRESS_7001", "주소를 찾을 수 없습니다."),
+
+    // PaperContent 에러
+    NO_SUCH_CONTENT(HttpStatus.NOT_FOUND, "CONTENT_8001", "제휴 내용을 찾을 수 없습니다."),
 
     ;
 
