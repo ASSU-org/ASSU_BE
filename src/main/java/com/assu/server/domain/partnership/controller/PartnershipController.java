@@ -53,7 +53,7 @@ public class PartnershipController {
 
     @Operation(
             summary = "제휴 상태를 업데이트하는 API 입니다.",
-            description = "바꾸고 싶은 상태를 입력하세요(PENDING/ACTIVE/INACTIVE)"
+            description = "바꾸고 싶은 상태를 입력하세요(SUSPEND/ACTIVE/INACTIVE)"
     )
     @PatchMapping("/{partnershipId}/status")
     public BaseResponse<PartnershipResponseDTO.UpdateResponseDTO> updatePartnershipStatus(

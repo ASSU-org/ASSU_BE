@@ -1,5 +1,6 @@
 package com.assu.server.domain.partnership.dto;
 
+import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
 import lombok.*;
@@ -35,5 +36,12 @@ public class PartnershipRequestDTO {
     @Getter
     public static class PartnershipGoodsRequestDTO {
         private String goodsName;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class UpdateRequestDTO {
+        private String status;
     }
 }
