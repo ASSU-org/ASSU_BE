@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByPhoneNum(String phoneNum);
+    Member findMemberById(Long id);
+
 }

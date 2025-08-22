@@ -46,3 +46,6 @@ out/
 src/main/resources/application-secret.yml
 src/test/resources/application-test.yml
 src/test/resources/application-secret.yml
+
+### Firebase ###
+src/main/resources/firebase/
