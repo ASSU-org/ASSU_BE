@@ -41,4 +41,5 @@ public class Paper extends BaseEntity {
 	@JoinColumn(name = "store_id")
 	private Store store;
 
+	private String contractImageUrl;
 }

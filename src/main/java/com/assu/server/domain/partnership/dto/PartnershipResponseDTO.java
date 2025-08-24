@@ -61,4 +61,19 @@ public class PartnershipResponseDTO {
         private String newStatus;
         private LocalDateTime changedAt;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ManualPartnershipResponseDTO {
+        private Long storeId;
+        private boolean storeCreated;
+        private boolean storeActivated;
+        private String status;
+        private String contractImageUrl;
+        private String objectKey;
+        private WritePartnershipResponseDTO partnership;
+    }
 }

@@ -12,9 +12,16 @@ public interface PartnershipService {
             @RequestBody PartnershipRequestDTO.WritePartnershipRequestDTO request
     );
 
-    List<PartnershipResponseDTO.WritePartnershipResponseDTO> listPartnerships(boolean all);
+    List<PartnershipResponseDTO.WritePartnershipResponseDTO> listPartnershipsForAdmin(boolean all);
+    List<PartnershipResponseDTO.WritePartnershipResponseDTO> listPartnershipsForPartner(boolean all);
+
 
     PartnershipResponseDTO.WritePartnershipResponseDTO getPartnership(Long partnershipId);
 
     PartnershipResponseDTO.UpdateResponseDTO updatePartnershipStatus(Long partnershipId, PartnershipRequestDTO.UpdateRequestDTO request);
+
+    PartnershipResponseDTO.ManualPartnershipResponseDTO createManualPartnership(
+            PartnershipRequestDTO.ManualPartnershipRequestDTO request,
+            String filename, String contentType
+    );
 }

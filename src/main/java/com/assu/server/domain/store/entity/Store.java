@@ -12,10 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
@@ -34,12 +31,13 @@ public class Store extends BaseEntity {
 
 	private Integer rate;
 
+	@Setter
 	@Enumerated(EnumType.STRING)
 	private ActivationStatus isActivate;
 
 	private String name;
 
-	private String adderess;
+	private String address;
 
 	private String detailAddress;
 

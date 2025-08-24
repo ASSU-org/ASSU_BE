@@ -30,14 +30,38 @@ public class PartnershipController {
     }
 
     @Operation(
-            summary = "제휴를 조회하는 API 입니다.",
+            summary = "제휴 제안서를 수동으로 등록하는 API 입니다.",
+            description = "제공 서비스 종류(서비스 제공, 할인), 서비스 제공 기준(금액, 인원수), 서비스 제공 항목, 카테고리, 할인율을 상황에 맞게 작성해주시고 파일명과 타입(png/jpeg)를 설정해주세요."
+    )
+    @PostMapping("/passivity")
+    public BaseResponse<PartnershipResponseDTO.ManualPartnershipResponseDTO> createManualPartnership(
+            @RequestBody PartnershipRequestDTO.ManualPartnershipRequestDTO request,
+            @RequestParam(required = false) String filename,
+            @RequestParam(required = false) String contentType
+    ) {
+        return BaseResponse.onSuccess(SuccessStatus._OK, partnershipService.createManualPartnership(request, filename, contentType));
+    }
+
+    @Operation(
+            summary = "제휴 중인 가게를 조회하는 API 입니다.",
             description = "전체를 조회하려면 all을 true로, 가장 최근 두 건을 조회하려면 all을 false로 설정해주세요."
     )
-    @GetMapping
-    public BaseResponse<List<PartnershipResponseDTO.WritePartnershipResponseDTO>> list(
+    @GetMapping("/admin")
+    public BaseResponse<List<PartnershipResponseDTO.WritePartnershipResponseDTO>> listForAdmin(
             @RequestParam(name = "all", defaultValue = "false") boolean all
     ) {
-        return BaseResponse.onSuccess(SuccessStatus._OK, partnershipService.listPartnerships(all));
+        return BaseResponse.onSuccess(SuccessStatus._OK, partnershipService.listPartnershipsForAdmin(all));
+    }
+
+    @Operation(
+            summary = "제휴 중인 관리자를 조회하는 API 입니다.",
+            description = "전체를 조회하려면 all을 true로, 가장 최근 두 건을 조회하려면 all을 false로 설정해주세요."
+    )
+    @GetMapping("/partner")
+    public BaseResponse<List<PartnershipResponseDTO.WritePartnershipResponseDTO>> listForPartner(
+            @RequestParam(name = "all", defaultValue = "false") boolean all
+    ) {
+        return BaseResponse.onSuccess(SuccessStatus._OK, partnershipService.listPartnershipsForPartner(all));
     }
 
     @Operation(

@@ -44,4 +44,17 @@ public class PartnershipRequestDTO {
     public static class UpdateRequestDTO {
         private String status;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class ManualPartnershipRequestDTO {
+        private Long adminId;
+        private String storeName;
+        private String storeAddress;
+        private String storeDetailAddress;
+        private LocalDate partnershipPeriodStart;
+        private LocalDate partnershipPeriodEnd;
+        private List<PartnershipOptionRequestDTO> options;
+    }
 }

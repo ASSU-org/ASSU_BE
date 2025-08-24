@@ -22,7 +22,7 @@ public class SuggestionController {
             summary = "제휴 건의를 하는 API 입니다.",
             description = "건의대상, 제휴 희망 가게, 희망 혜택을 입력해주세요."
     )
-    @PostMapping()
+    @PostMapping
     public BaseResponse<SuggestionResponseDTO.WriteSuggestionResponseDTO> writeSuggestion(
             @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO suggestionRequestDTO
     ){
