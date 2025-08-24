@@ -1,6 +1,7 @@
 package com.assu.server.domain.partner.entity;
 
-import com.assu.server.domain.common.entity.Member;
+
+import com.assu.server.domain.member.entity.Member;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;

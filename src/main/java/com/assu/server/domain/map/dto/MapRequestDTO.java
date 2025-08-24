@@ -1,6 +1,5 @@
 package com.assu.server.domain.map.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 public class MapRequestDTO {

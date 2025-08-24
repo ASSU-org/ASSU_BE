@@ -1,7 +1,6 @@
 package com.assu.server.global.config;
 
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.DatabaseException;
 import com.assu.server.global.exception.exception.GeneralException;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
