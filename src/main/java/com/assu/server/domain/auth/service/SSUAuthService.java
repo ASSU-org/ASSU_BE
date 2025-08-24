@@ -1,6 +1,9 @@
 package com.assu.server.domain.auth.service;
 
 
+import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthResponse;
+
 public interface SSUAuthService {
-    // UsaintAuthReturnDto uSaintAuth(UsaintAuthParamDto usaintAuthParamDto) throws APIRequestFailedException, AuthFailedException, HTMLParseFailedException, UnsupportedMajorException;
+    USaintAuthResponse uSaintAuth(USaintAuthRequest uSaintAuthRequest);
 }

@@ -24,13 +24,18 @@ public enum ErrorStatus implements BaseErrorCode {
     JWT_TOKEN_OUT_OF_FORM(HttpStatus.UNAUTHORIZED, "AUTH4006", "JWT 토큰의 형식이 올바르지 않습니다."),
     REFRESH_TOKEN_NOT_EQUAL(HttpStatus.UNAUTHORIZED, "AUTH4007", "Refreash 토큰이 일치하지 않습니다."),
 
+    // 숭실대 관련 에러
+    SSU_SAINT_SSO_FAILED(HttpStatus.UNAUTHORIZED, "SSU4000", "숭실대학교 유세인트 SSO 로그인에 실패했습니다."),
+    SSU_SAINT_PORTAL_FAILED(HttpStatus.UNAUTHORIZED, "SSU4001", "숭실대학교 유세인트 포털 접근에 실패했습니다."),
+    SSU_SAINT_PARSE_FAILED(HttpStatus.UNAUTHORIZED, "SSU4002", "숭실대학교 유세인트 포털 크롤링 파싱에 실패했습니다."),
+    SSU_SAINT_UNSUPPORTED_MAJOR(HttpStatus.UNAUTHORIZED, "SSU4003", "지원하는 학과가 아닙니다."),
+
     // 인증 에러
     NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"AUTH_4007","전화번호 인증에 실패했습니다."),
 
     //페이징 에러
     PAGE_UNDER_ONE(HttpStatus.BAD_REQUEST,"PAGE_4001","페이지는 1이상이여야 합니다."),
     PAGE_SIZE_INVALID(HttpStatus.BAD_REQUEST,"PAGE_4002","size는 1~200 사이여야 합니다."),
-
 
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
@@ -48,12 +53,24 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_MEMBER(HttpStatus.NOT_FOUND, "CHATTING_5003", "해당 방에는 사용자가 아무도 없습니다."),
     NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
 
+    // 알림(Notification) 에러
+    INVALID_NOTIFICATION_STATUS_FILTER(HttpStatus.BAD_REQUEST,"NOTIFICATION_4001","유효하지 않은 알림 status 필터입니다. (all | unread 만 허용)"),
+    INVALID_NOTIFICATION_TYPE(HttpStatus.BAD_REQUEST,"NOTIFICATION_4002","지원하지 않는 알림 타입입니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND,"NOTIFICATION_4003","존재하지 않는 알림입니다."),
+    NOTIFICATION_ACCESS_DENIED(HttpStatus.FORBIDDEN,"NOTIFICATION_4004","해당 알림에 접근할 권한이 없습니다."),
+    MISSING_NOTIFICATION_FIELD(HttpStatus.BAD_REQUEST,"NOTIFICATION_4005","알림 생성에 필요한 필드가 누락되었습니다."),
 
     // 문의(Inquiry)
     INVALID_INQUIRY_STATUS_FILTER(HttpStatus.BAD_REQUEST,"INQUIRY_4001","status는 [all, waiting, answered] 중 하나여야 합니다."),
     NO_SUCH_INQUIRY(HttpStatus.NOT_FOUND,"INQUIRY_4002","존재하지 않는 문의입니다."),
     FORBIDDEN_INQUIRY(HttpStatus.FORBIDDEN,"INQUIRY_4003","해당 문의에 접근 권한이 없습니다."),
     ALREADY_ANSWERED(HttpStatus.CONFLICT,"INQUIRY_4091","이미 답변 완료된 문의입니다."),
+
+    // 디바이스 토큰(DeviceToken) 에러
+    DEVICE_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND,"DEVICE_4001","존재하지 않는 Device Token 입니다."),
+    DEVICE_TOKEN_NOT_OWNED(HttpStatus.FORBIDDEN, "DEVICE_4004","해당 토큰은 본인 소유가 아닙니다."),
+    DEVICE_TOKEN_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"DEVICE_5001","Device Token 등록에 실패했습니다.")
+
 
     ;
 
