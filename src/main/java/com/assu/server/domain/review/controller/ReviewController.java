@@ -40,7 +40,7 @@ public class ReviewController {
             @AuthenticationPrincipal PrincipalDetails pd
     ) {
         Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview());
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(memberId));
     }
 
     @Operation(
@@ -65,6 +65,6 @@ public class ReviewController {
             @AuthenticationPrincipal PrincipalDetails pd
     ){
         Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview());
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(memberId));
     }
 }
