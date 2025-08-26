@@ -9,7 +9,7 @@ import com.assu.server.domain.partnership.entity.Paper;
 import com.assu.server.domain.partnership.repository.PartnershipRepository;
 import com.assu.server.domain.user.service.StudentService;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.exception.exception.DatabaseException;
+import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,9 +26,8 @@ public class StudentAdminServiceImpl implements StudentAdminService {
 
     @Override
     @Transactional
-    public StudentAdminResponseDTO.CountAdminAuthResponseDTO getCountAdminAuth() {
-        //Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 6L;
+    public StudentAdminResponseDTO.CountAdminAuthResponseDTO getCountAdminAuth(Long memberId) {
+
         Long total = studentAdminRepository.countAllByAdminId(memberId);
         Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
@@ -38,9 +37,8 @@ public class StudentAdminServiceImpl implements StudentAdminService {
     }
     @Override
     @Transactional
-    public StudentAdminResponseDTO.NewCountAdminResponseDTO getNewStudentCountAdmin() {
-        //Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 5L;
+    public StudentAdminResponseDTO.NewCountAdminResponseDTO getNewStudentCountAdmin(Long memberId) {
+
         Long total = studentAdminRepository.countThisMonthByAdminId(memberId);
         Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
@@ -50,9 +48,8 @@ public class StudentAdminServiceImpl implements StudentAdminService {
 
     @Override
     @Transactional
-    public StudentAdminResponseDTO.CountUsagePersonResponseDTO getCountUsagePerson() {
-        //Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 5L;
+    public StudentAdminResponseDTO.CountUsagePersonResponseDTO getCountUsagePerson(Long memberId) {
+
         Long total = studentAdminRepository.countTodayUsersByAdmin(memberId);
         Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
@@ -62,9 +59,7 @@ public class StudentAdminServiceImpl implements StudentAdminService {
 
     @Override
     @Transactional
-    public StudentAdminResponseDTO.CountUsageResponseDTO getCountUsage() {
-        //Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 5L;
+    public StudentAdminResponseDTO.CountUsageResponseDTO getCountUsage(Long memberId) {
         Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
         String adminName =admin.getName();
@@ -79,9 +74,7 @@ public class StudentAdminServiceImpl implements StudentAdminService {
 
     @Override
     @Transactional
-    public StudentAdminResponseDTO.CountUsageListResponseDTO getCountUsageList() {
-        // Long memberId = SecurityUtil.getCurrentUserId();
-        Long memberId = 5L;
+    public StudentAdminResponseDTO.CountUsageListResponseDTO getCountUsageList(Long memberId) {
 
         Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));

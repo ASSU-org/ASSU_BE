@@ -4,8 +4,10 @@ import com.assu.server.domain.user.dto.StudentResponseDTO;
 import com.assu.server.domain.user.service.StudentService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,7 +21,10 @@ public class StudentController {
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/stamp")
-    public BaseResponse<StudentResponseDTO.CheckStampResponseDTO> getStamp() {
-        return BaseResponse.onSuccess(SuccessStatus._OK, studentService.getStamp());
+    public BaseResponse<StudentResponseDTO.CheckStampResponseDTO> getStamp(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentService.getStamp(memberId));
     }
 }

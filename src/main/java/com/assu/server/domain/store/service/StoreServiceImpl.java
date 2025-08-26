@@ -23,9 +23,8 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional
-    public StoreResponseDTO.WeeklyRankResponseDTO getWeeklyRank() {
-        // Long memberId = SecurityUtil.getCurrentUserId();
-        Long memberId = 2L;
+    public StoreResponseDTO.WeeklyRankResponseDTO getWeeklyRank(Long memberId) {
+
         Optional<Partner> partner = partnerRepository.findById(memberId);
         Store store = storeRepository.findByPartner(partner.orElse(null))
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
@@ -44,9 +43,8 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional
-    public StoreResponseDTO.ListWeeklyRankResponseDTO getListWeeklyRank() {
-        // Long memberId = SecurityUtil.getCurrentUserId();
-        Long memberId = 2L;
+    public StoreResponseDTO.ListWeeklyRankResponseDTO getListWeeklyRank(Long memberId) {
+
         Optional<Partner> partner = partnerRepository.findById(memberId);
         Store store = storeRepository.findByPartner(partner.orElse(null))
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));

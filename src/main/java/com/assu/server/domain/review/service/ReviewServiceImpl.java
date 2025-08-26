@@ -1,5 +1,6 @@
 package com.assu.server.domain.review.service;
 
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.review.converter.ReviewConverter;
@@ -14,9 +15,11 @@ import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
+import com.assu.server.global.util.PrincipalDetails;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,9 +37,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     @Override
-    public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request) {
-        //Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 1L;
+    public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId) {
         Long storeId = request.getStoreId(); //변수 선언
         List<MultipartFile> images = request.getReviewImage(); // 이미지 변수 선언
 
@@ -76,9 +77,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview() {
-        //Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 1L;
+    public List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId) {
         List<Review> reviews = reviewRepository.findByMemberId(memberId);
 
         return ReviewConverter.checkStudentReviewResultDTO(reviews);
@@ -86,10 +85,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview() {
-        //Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 2L;
-
+    public List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId) {
         Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
         System.out.println("파트너 id는 "+partner.getId());

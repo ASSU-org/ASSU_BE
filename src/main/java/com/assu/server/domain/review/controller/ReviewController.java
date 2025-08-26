@@ -5,8 +5,10 @@ import com.assu.server.domain.review.dto.ReviewResponseDTO;
 import com.assu.server.domain.review.service.ReviewService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +23,12 @@ public class ReviewController {
             description = "리뷰 내용과 별점, 리뷰 이미지를 입력해주세요."
     )
     @PostMapping()
-    public BaseResponse<ReviewResponseDTO.WriteReviewResponseDTO> writeReview(@RequestBody ReviewRequestDTO.WriteReviewRequestDTO writeReviewRequestDTO) {
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.writeReview(writeReviewRequestDTO));
+    public BaseResponse<ReviewResponseDTO.WriteReviewResponseDTO> writeReview(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @RequestBody ReviewRequestDTO.WriteReviewRequestDTO writeReviewRequestDTO
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.writeReview(writeReviewRequestDTO, memberId));
     }
 
     @Operation(
@@ -30,7 +36,10 @@ public class ReviewController {
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/student")
-    public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent() {
+    public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ) {
+        Long memberId = pd.getMember().getId();
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview());
     }
 
@@ -39,7 +48,11 @@ public class ReviewController {
             description = "삭제할 리뷰 ID를 입력해주세요."
     )
     @DeleteMapping("/{reviewId}")
-    public BaseResponse<ReviewResponseDTO.DeleteReviewResponseDTO> deleteReview(@PathVariable Long reviewId) {
+    public BaseResponse<ReviewResponseDTO.DeleteReviewResponseDTO> deleteReview(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @PathVariable Long reviewId) {
+        Long memberId = pd.getMember().getId();
+
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.deleteReview(reviewId));
     }
 
@@ -48,7 +61,10 @@ public class ReviewController {
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/partner")
-    public BaseResponse<List<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(){
+    public BaseResponse<List<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ){
+        Long memberId = pd.getMember().getId();
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview());
     }
 }
