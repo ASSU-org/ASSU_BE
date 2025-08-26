@@ -17,4 +17,14 @@ public class MapRequestDTO {
         private double lng4;
         private double lat4;
     }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class ConfirmRequest {
+        private String placeId;
+        private String name;
+        private String address;     // 지번
+        private String roadAddress; // 도로명
+        private Double longitude;   // x
+        private Double latitude;    // y
+    }
 }

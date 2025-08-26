@@ -16,6 +16,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Point;
 
 
 @Entity
@@ -42,5 +45,20 @@ public class Store extends BaseEntity {
 	private String address;
 
 	private String detailAddress;
+
+	@JdbcTypeCode(SqlTypes.GEOMETRY)
+	private Point point;
+
+	private double latitude;
+	private double longitude;
+
+	public void linkPartner(Partner partner) {
+		this.partner = partner;
+	}
+	public void setGeo(Double lat, Double lng, Point point) {
+		this.latitude = lat;
+		this.longitude = lng;
+		this.point = point;
+	}
 
 }

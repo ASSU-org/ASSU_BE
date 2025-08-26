@@ -75,8 +75,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 주소 에러
     NO_SUCH_ADDRESS(HttpStatus.NOT_FOUND, "ADDRESS_7001", "주소를 찾을 수 없습니다."),
+    // Paper 에러
+    NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_4001", "제휴를 찾을 수 없습니다."),
     // PaperContent 에러
-    NO_SUCH_CONTENT(HttpStatus.NOT_FOUND, "CONTENT_8001", "제휴 내용을 찾을 수 없습니다."),
+    NO_SUCH_CONTENT(HttpStatus.NOT_FOUND, "PAPER_4002", "제휴 내용을 찾을 수 없습니다."),
 
     ;
 

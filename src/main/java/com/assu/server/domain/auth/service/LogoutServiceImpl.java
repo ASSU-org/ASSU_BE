@@ -1,15 +1,10 @@
 package com.assu.server.domain.auth.service;
 
-import com.assu.server.domain.auth.exception.CustomAuthHandler;
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
-import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor

@@ -6,7 +6,7 @@ import com.assu.server.domain.auth.dto.signup.*;
 import com.assu.server.domain.auth.dto.signup.common.CommonInfoPayload;
 import com.assu.server.domain.auth.dto.signup.student.StudentInfoPayload;
 import com.assu.server.domain.auth.entity.AuthRealm;
-import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.security.adapter.RealmAuthAdapter;
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.assu.server.domain.common.enums.ActivationStatus;
@@ -15,13 +15,19 @@ import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
+import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
+import com.assu.server.global.config.KakaoLocalClient;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,11 +49,15 @@ public class SignUpServiceImpl implements SignUpService {
     private final AmazonS3Manager amazonS3Manager;
     private final JwtUtil jwtUtil;
 
+    private final KakaoLocalClient kakaoLocalClient;
+    private final GeometryFactory geometryFactory;
+    private final StoreRepository storeRepository;
+
     private RealmAuthAdapter pickAdapter(AuthRealm realm) {
         return realmAuthAdapters.stream()
                 .filter(a -> a.supports(realm))
                 .findFirst()
-                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION));
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION));
     }
 
     /* 학생: JSON */
@@ -56,7 +66,7 @@ public class SignUpServiceImpl implements SignUpService {
     public SignUpResponse signupStudent(StudentSignUpRequest req) {
         // 중복 체크
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
+            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
         }
 
         // 1) member 생성
@@ -120,7 +130,7 @@ public class SignUpServiceImpl implements SignUpService {
     @Transactional
     public SignUpResponse signupPartner(PartnerSignUpRequest req, MultipartFile licenseImage) {
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
+            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
         }
 
         // 1) member 생성
@@ -143,16 +153,46 @@ public class SignUpServiceImpl implements SignUpService {
         String licenseUrl = amazonS3Manager.uploadFile(keyName, licenseImage);
         CommonInfoPayload info = req.getCommonInfo();
 
+        String query = joinAddress(info.getAddress(), info.getDetailAddress());
+        var geo = kakaoLocalClient.searchAddress(query, null, null);
+        Double lat = geo != null ? geo.getLat() : null;
+        Double lng = geo != null ? geo.getLng() : null;
+        Point point = toPoint(lat, lng);
+
         // 3) Partner 프로필 생성
-        partnerRepository.save(
+        Partner partner = partnerRepository.save(
                 Partner.builder()
                         .member(member)
                         .name(info.getName())
                         .address(info.getAddress())
                         .detailAddress(info.getDetailAddress())
                         .licenseUrl(licenseUrl)
+                        .point(point)
+                        .latitude(lat)
+                        .longitude(lng)
                         .build()
         );
+
+        storeRepository.findBySameAddress(info.getAddress(), info.getDetailAddress())
+                .ifPresentOrElse(store -> {
+                    if (store.getPartner() != null || store.getPartner().getId().equals(partner.getId())) {
+                        store.linkPartner(partner);
+                        storeRepository.save(store);
+                    }
+                }, () -> {
+                    Store newly = Store.builder()
+                            .partner(partner)
+                            .rate(0)
+                            .isActivate(ActivationStatus.ACTIVE)
+                            .name(info.getName())
+                            .address(info.getAddress())
+                            .detailAddress(info.getDetailAddress())
+                            .latitude(lat)
+                            .longitude(lng)
+                            .point(point)
+                            .build();
+                    storeRepository.save(newly);
+                });
 
         // 4) 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
@@ -175,7 +215,7 @@ public class SignUpServiceImpl implements SignUpService {
     @Transactional
     public SignUpResponse signupAdmin(AdminSignUpRequest req, MultipartFile signImage) {
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
+            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
         }
 
         // 1) member 생성
@@ -198,6 +238,12 @@ public class SignUpServiceImpl implements SignUpService {
         String signUrl = amazonS3Manager.uploadFile(keyName, signImage);
         CommonInfoPayload info = req.getCommonInfo();
 
+        String query = joinAddress(info.getAddress(), info.getDetailAddress());
+        var geo = kakaoLocalClient.geocodeByAddress(query);
+        Double lat = geo != null ? geo.getLat() : null;
+        Double lng = geo != null ? geo.getLng() : null;
+        Point point = toPoint(lat, lng);
+
         // 3) Partner 프로필 생성
         adminRepository.save(
                 Admin.builder()
@@ -206,6 +252,9 @@ public class SignUpServiceImpl implements SignUpService {
                         .officeAddress(info.getAddress())
                         .detailAddress(info.getDetailAddress())
                         .signUrl(signUrl)
+                        .point(point)
+                        .latitude(lat)
+                        .longitude(lng)
                         .build()
         );
 
@@ -223,5 +272,18 @@ public class SignUpServiceImpl implements SignUpService {
                 .status(member.getIsActivated())
                 .tokens(tokens)
                 .build();
+    }
+
+    public Point toPoint(Double lat, Double lng) {
+        if (lat == null || lng == null) return null;
+        Point p = geometryFactory.createPoint(new Coordinate(lng, lat)); // x=lng, y=lat
+        p.setSRID(4326);
+        return p;
+    }
+
+    private String joinAddress(String addr, String detail) {
+        String a = (addr == null) ? "" : addr.trim();
+        String d = (detail == null) ? "" : detail.trim();
+        return (a + " " + d).trim();
     }
 }

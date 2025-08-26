@@ -3,12 +3,8 @@ package com.assu.server.domain.map.service;
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
 import com.assu.server.domain.common.enums.ActivationStatus;
-import com.assu.server.domain.map.converter.MapConverter;
 import com.assu.server.domain.map.dto.MapRequestDTO;
 import com.assu.server.domain.map.dto.MapResponseDTO;
-import com.assu.server.domain.map.entity.Location;
-import com.assu.server.domain.map.entity.enums.LocationOwnerType;
-import com.assu.server.domain.map.repository.MapRepository;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.partnership.entity.Paper;
@@ -19,7 +15,7 @@ import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.config.KakaoLocalClient;
-import com.assu.server.global.exception.exception.DatabaseException;
+import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
@@ -27,18 +23,13 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class MapServiceImpl implements MapService {
 
-    private final MapRepository mapRepository;
     private final AdminRepository adminRepository;
     private final PartnerRepository partnerRepository;
     private final StoreRepository storeRepository;
@@ -48,163 +39,79 @@ public class MapServiceImpl implements MapService {
     private final GeometryFactory geometryFactory;
 
     @Override
-    @Transactional
-    public MapResponseDTO.SavePinResponseDTO saveAdminPin() {
-//        Long adminId = SecurityUtil.getCurrentId();
-        Long adminId = 1L;
-
-        Admin admin = adminRepository.findById(adminId)
+    public List<MapResponseDTO.PartnerMapResponseDTO> getPartners(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
+        Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
-        String query = joinAddress(admin.getOfficeAddress(), admin.getDetailAddress());
-        if (query.isBlank()) throw new IllegalArgumentException("관리자 주소가 비어 있습니다.");
-
-        var geo = kakaoLocalClient.geocodeByAddress(query);
-        Location loc = upsert(LocationOwnerType.ADMIN, admin.getId(), admin.getName(), query, geo.getRoadAddress(), geo.getLat(), geo.getLng());
-
-        return MapConverter.toSavePinResponseDTO(loc);
-    }
-
-    @Override
-    @Transactional
-    public MapResponseDTO.SavePinResponseDTO savePartnerPin() {
-        //        Long partnerId = SecurityUtil.getCurrentId();
-        Long partnerId = 2L;
-
-        Partner partner = partnerRepository.findById(partnerId)
-                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
-
-        String query = joinAddress(partner.getAddress(), partner.getDetailAddress());
-        if (query.isBlank()) throw new IllegalArgumentException("파트너 주소가 비어 있습니다.");
-
-        var geo = kakaoLocalClient.geocodeByAddress(query);
-        Location loc = upsert(LocationOwnerType.PARTNER, partner.getId(), partner.getName(), query, geo.getRoadAddress(), geo.getLat(), geo.getLng());
-
-        return MapConverter.toSavePinResponseDTO(loc);
-    }
-
-    @Override
-    @Transactional
-    public MapResponseDTO.SavePinResponseDTO saveStorePin(Long storeId) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
-
-        String query = joinAddress(store.getAddress(), store.getDetailAddress());
-        if (query.isBlank()) throw new IllegalArgumentException("스토어 주소가 비어 있습니다.");
-
-        var geo = kakaoLocalClient.geocodeByAddress(query);
-        Location loc = upsert(LocationOwnerType.STORE, store.getId(), store.getName(), query, geo.getRoadAddress(), geo.getLat(), geo.getLng());
-
-        return MapConverter.toSavePinResponseDTO(loc);
-    }
-
-    @Override
-    public List<MapResponseDTO.PartnerMapResponseDTO> getPartners(MapRequestDTO.ViewOnMapDTO viewport) {
-//        Long adminId = SecurityUtil.getCurrentId();
-        Long adminId = 1L;
-        Admin admin = adminRepository.findById(adminId)
-                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
         String wkt = toWKT(viewport);
+        List<Partner> partners = partnerRepository.findAllWithinViewport(wkt);
 
-        List<Location> pins = mapRepository.findAllByCoordinates(LocationOwnerType.PARTNER.name(), wkt);
-
-        return pins.stream().map(pin -> {
-            Long partnerId = pin.getOwnerId();
-            Partner partner = partnerRepository.findById(partnerId)
-                    .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
-
-            Paper activePaper = paperRepository
-                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(admin.getId(), partnerId, ActivationStatus.ACTIVE)
+        return partners.stream().map(p -> {
+            Paper active = paperRepository.findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(memberId, p.getId(), ActivationStatus.ACTIVE)
                     .orElse(null);
-
-            boolean isPartnered = (activePaper != null);
-            Long partnershipId = (activePaper != null ? activePaper.getId() : null);
-            var start = (activePaper != null ? activePaper.getPartnershipPeriodStart() : null);
-            var end = (activePaper != null ? activePaper.getPartnershipPeriodEnd() : null);
 
             return MapResponseDTO.PartnerMapResponseDTO.builder()
-                    .pinId(pin.getId())
-                    .partnerId(partnerId)
-                    .name(partner != null ? partner.getName() : pin.getName())
-                    .address(pin.getRoadAddress() != null ? pin.getRoadAddress() : pin.getAddress())
-                    .isPartnered(isPartnered)
-                    .partnershipId(partnershipId)
-                    .partnershipStartDate(start)
-                    .partnershipEndDate(end)
-                    .latitude(pin.getLatitude())
-                    .longitude(pin.getLongitude())
+                    .partnerId(p.getId())
+                    .name(p.getName())
+                    .address(p.getAddress() != null ? p.getAddress() : p.getDetailAddress())
+                    .isPartnered(active != null)
+                    .partnershipId(active != null ? active.getId() : null)
+                    .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
+                    .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
+                    .latitude(p.getLatitude())
+                    .longitude(p.getLongitude())
                     .build();
         }).toList();
     }
 
     @Override
-    public List<MapResponseDTO.AdminMapResponseDTO> getAdmins(MapRequestDTO.ViewOnMapDTO viewport) {
-//        Long partnerId = SecurityUtil.getCurrentId();
-        Long partnerId = 2L;
+    public List<MapResponseDTO.AdminMapResponseDTO> getAdmins(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
 
-        Partner partner = partnerRepository.findById(partnerId)
+        Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+
         String wkt = toWKT(viewport);
+        List<Admin> admins = adminRepository.findAllWithinViewport(wkt);
 
-        List<Location> pins = mapRepository.findAllByCoordinates(LocationOwnerType.ADMIN.name(), wkt);
-
-        return pins.stream().map(pin -> {
-            Long adminId = pin.getOwnerId();
-            Admin admin = adminRepository.findById(adminId)
-                    .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
-
-            Paper activePaper = paperRepository
-                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(adminId, partner.getId(), ActivationStatus.ACTIVE)
+        return admins.stream().map(a -> {
+            Paper active = paperRepository.findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(a.getId(), memberId, ActivationStatus.ACTIVE)
                     .orElse(null);
 
-            boolean isPartnered = (activePaper != null);
-            Long partnershipId = (activePaper != null ? activePaper.getId() : null);
-            var start = (activePaper != null ? activePaper.getPartnershipPeriodStart() : null);
-            var end = (activePaper != null ? activePaper.getPartnershipPeriodEnd() : null);
-
             return MapResponseDTO.AdminMapResponseDTO.builder()
-                    .pinId(pin.getId())
-                    .adminId(adminId)
-                    .name(admin != null ? admin.getName() : pin.getName())
-                    .address(pin.getRoadAddress() != null ? pin.getRoadAddress() : pin.getAddress())
-                    .isPartnered(isPartnered)
-                    .partnershipId(partnershipId)
-                    .partnershipStartDate(start)
-                    .partnershipEndDate(end)
-                    .latitude(pin.getLatitude())
-                    .longitude(pin.getLongitude())
+                    .adminId(a.getId())
+                    .name(a.getName())
+                    .address(a.getOfficeAddress() != null ? a.getOfficeAddress() : a.getDetailAddress())
+                    .isPartnered(active != null)
+                    .partnershipId(active != null ? active.getId() : null)
+                    .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
+                    .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
+                    .latitude(a.getLatitude())
+                    .longitude(a.getLongitude())
                     .build();
         }).toList();
     }
 
     @Override
-    public List<MapResponseDTO.StoreMapResponseDTO> getStores(MapRequestDTO.ViewOnMapDTO viewport) {
+    public List<MapResponseDTO.StoreMapResponseDTO> getStores(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
         String wkt = toWKT(viewport);
+        List<Store> stores = storeRepository.findAllWithinViewport(wkt);
 
-        List<Location> pins = mapRepository.findAllByCoordinates(LocationOwnerType.STORE.name(), wkt);
+        return stores.stream().map(s -> {
+            boolean hasPartner = (s.getPartner() != null);
 
-        return pins.stream().map(pin -> {
-            Long storeId = pin.getOwnerId();
-            Store store = storeRepository.findById(storeId)
-                    .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
+            PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
+                    .orElse(null);
 
-            boolean hasPartner = store.getPartner() != null;
-
-            PaperContent content = paperContentRepository
-                    .findTopByPaperStoreIdOrderByIdDesc(storeId)
-                    .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_CONTENT));
-
-            Long adminId = paperRepository.findTopPaperByStoreId(storeId)
+            Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
                     .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
-                    .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+                    .orElse(null);
 
             return MapResponseDTO.StoreMapResponseDTO.builder()
-                    .pinId(pin.getId())
-                    .storeId(storeId)
+                    .storeId(s.getId())
                     .adminId(adminId)
-                    .name(store.getName())
-                    .address(pin.getRoadAddress() != null ? pin.getRoadAddress() : pin.getAddress())
-                    .rate(store.getRate())
+                    .name(s.getName())
+                    .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
+                    .rate(s.getRate())
                     .criterionType(content != null ? content.getCriterionType() : null)
                     .optionType(content != null ? content.getOptionType() : null)
                     .people(content != null ? content.getPeople() : null)
@@ -212,8 +119,8 @@ public class MapServiceImpl implements MapService {
                     .category(content != null ? content.getCategory() : null)
                     .discountRate(content != null ? content.getDiscount() : null)
                     .hasPartner(hasPartner)
-                    .latitude(pin.getLatitude())
-                    .longitude(pin.getLongitude())
+                    .latitude(s.getLatitude())
+                    .longitude(s.getLongitude())
                     .build();
         }).toList();
     }
@@ -222,28 +129,20 @@ public class MapServiceImpl implements MapService {
     public List<MapResponseDTO.StoreMapResponseDTO> searchStores(String keyword) {
         List<Store> stores = storeRepository.findByNameContainingIgnoreCaseOrderByIdDesc(keyword);
 
-        Map<Long, Location> locationMap = mapRepository
-                .findAllByOwnerTypeAndOwnerIdIn(LocationOwnerType.STORE, stores.stream().map(Store::getId).toList())
-                .stream().collect(Collectors.toMap(Location::getOwnerId, Function.identity()));
-
-        List<MapResponseDTO.StoreMapResponseDTO> result =  new ArrayList<>();
-        for(Store s : stores) {
-            Location pin = locationMap.get(s.getId());
-
-            Paper latest = paperRepository.findTopPaperByStoreId(s.getId()).orElse(null);
-            Long adminId = (latest != null && latest.getAdmin() != null) ? latest.getAdmin().getId() : null;
-
-            PaperContent content = paperContentRepository
-                    .findTopByPaperStoreIdOrderByIdDesc(s.getId())
+        return stores.stream().map(s -> {
+            boolean hasPartner = s.getPartner() != null;
+            PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
                     .orElse(null);
 
-            result.add(MapResponseDTO.StoreMapResponseDTO.builder()
-                    .pinId(pin != null ? pin.getId() : null)
+            Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
+                    .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
+                    .orElse(null);
+
+            return MapResponseDTO.StoreMapResponseDTO.builder()
                     .storeId(s.getId())
                     .adminId(adminId)
                     .name(s.getName())
-                    .address(pin != null
-                            ? (pin.getRoadAddress() != null ? pin.getRoadAddress() : pin.getAddress()) : null)
+                    .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
                     .rate(s.getRate())
                     .criterionType(content != null ? content.getCriterionType() : null)
                     .optionType(content != null ? content.getOptionType() : null)
@@ -251,86 +150,129 @@ public class MapServiceImpl implements MapService {
                     .cost(content != null ? content.getCost() : null)
                     .category(content != null ? content.getCategory() : null)
                     .discountRate(content != null ? content.getDiscount() : null)
-                    .hasPartner(s.getPartner() != null)
-                    .latitude(pin != null ? pin.getLatitude() : null)
-                    .longitude(pin != null ? pin.getLongitude() : null)
-                    .build());
-        }
-        return result;
+                    .hasPartner(hasPartner)
+                    .latitude(s.getLatitude())
+                    .longitude(s.getLongitude())
+                    .build();
+        }).toList();
     }
 
     @Override
-    public List<MapResponseDTO.PartnerMapResponseDTO> searchPartner(String keyword) {
-//        Long adminId = SecurityUtil.getCurrentId();
-        Long adminId = 1L;
+    public List<MapResponseDTO.PartnerMapResponseDTO> searchPartner(String keyword, Long memberId) {
 
-        List<Partner> partners = paperRepository
-                .findActivePartnersForAdminByKeyword(adminId, ActivationStatus.ACTIVE, keyword);
+        Admin admin = adminRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
-        Map<Long, Location> locationMap = mapRepository
-                .findAllByOwnerTypeAndOwnerIdIn(LocationOwnerType.PARTNER,
-                        partners.stream().map(Partner::getId).toList())
-                .stream().collect(Collectors.toMap(Location::getOwnerId, Function.identity()));
+        List<Partner> partners = partnerRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
 
-        List<MapResponseDTO.PartnerMapResponseDTO> result =  new ArrayList<>();
-        for(Partner p : partners) {
-            Location pin = locationMap.get(p.getId());
-            Paper active = paperRepository
-                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(adminId, p.getId(), ActivationStatus.ACTIVE)
-                    .orElse(null);
+        return partners.stream().map(p -> {
+                Paper active = paperRepository
+                                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(memberId, p.getId(), ActivationStatus.ACTIVE)
+                                    .orElse(null);
 
-            result.add(MapResponseDTO.PartnerMapResponseDTO.builder()
-                            .pinId(pin != null ? pin.getId() : null)
-                            .partnerId(p.getId())
-                            .name(p.getName())
-                            .address(pin != null && pin.getRoadAddress() != null ? pin.getRoadAddress() : (pin != null ? pin.getAddress() : null))
-                            .isPartnered(active != null)
-                            .partnershipId(active != null ? active.getId() : null)
-                            .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
-                            .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
-                            .latitude(pin != null ? pin.getLatitude() : null)
-                            .longitude(pin != null ? pin.getLongitude() : null)
-                    .build());
-        }
-        return result;
-    }
-
-    @Override
-    public List<MapResponseDTO.AdminMapResponseDTO> searchAdmin(String keyword) {
-//        Long partnerId = SecurityUtil.getCurrentId();
-        Long partnerId = 2L;
-
-        List<Admin> admins = paperRepository
-                .findActiveAdminsForPartnerByKeyword(partnerId, ActivationStatus.ACTIVE, keyword);
-
-        Map<Long, Location> locMap = mapRepository
-                .findAllByOwnerTypeAndOwnerIdIn(LocationOwnerType.ADMIN,
-                        admins.stream().map(Admin::getId).toList())
-                .stream().collect(Collectors.toMap(Location::getOwnerId, Function.identity()));
-
-        List<MapResponseDTO.AdminMapResponseDTO> result = new ArrayList<>();
-        for (Admin a : admins) {
-            Location pin = locMap.get(a.getId());
-            Paper active = paperRepository
-                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(
-                            a.getId(), partnerId, ActivationStatus.ACTIVE)
-                    .orElse(null);
-
-            result.add(MapResponseDTO.AdminMapResponseDTO.builder()
-                    .pinId(pin != null ? pin.getId() : null)
-                    .adminId(a.getId())
-                    .name(a.getName())
-                    .address(pin != null && pin.getRoadAddress() != null ? pin.getRoadAddress()
-                            : (pin != null ? pin.getAddress() : null))
-                    .isPartnered(active != null)
+                return MapResponseDTO.PartnerMapResponseDTO.builder()
+                    .partnerId(p.getId())
+                    .name(p.getName())
+                    .address(p.getAddress() != null ? p.getAddress() : p.getDetailAddress())
+                    .isPartnered(true)
                     .partnershipId(active != null ? active.getId() : null)
                     .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
                     .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
-                    .latitude(pin != null ? pin.getLatitude() : null)
-                    .longitude(pin != null ? pin.getLongitude() : null)
-                    .build());
-        }
-        return result;
+                    .latitude(p.getLatitude())
+                    .longitude(p.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    public List<MapResponseDTO.AdminMapResponseDTO> searchAdmin(String keyword, Long memberId) {
+
+        Partner partner = partnerRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+
+        List<Admin> admins = adminRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
+
+        return admins.stream().map(a -> {
+            Paper active = paperRepository
+                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(a.getId(), memberId, ActivationStatus.ACTIVE)
+                    .orElse(null);
+
+            return MapResponseDTO.AdminMapResponseDTO.builder()
+                    .adminId(a.getId())
+                    .name(a.getName())
+                    .address(a.getOfficeAddress() != null ? a.getOfficeAddress() : a.getDetailAddress())
+                    .isPartnered(true)
+                    .partnershipId(active != null ? active.getId() : null)
+                    .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
+                    .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
+                    .latitude(a.getLatitude())
+                    .longitude(a.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    public MapResponseDTO.PlaceSearchResponse search(String query, Double x, Double y, Integer radius, Integer page, Integer size, String sort) {
+        var resp = kakaoLocalClient.searchByKeyword(query, x, y, radius, page, size, sort);
+        var items = resp.getDocuments().stream().map(d ->
+                MapResponseDTO.PlaceItem.builder()
+                        .placeId(d.getId())
+                        .name(d.getPlace_name())
+                        .category(d.getCategory_name())
+                        .phone(d.getPhone())
+                        .address(d.getAddress_name())
+                        .roadAddress(d.getRoad_address_name())
+                        .longitude(d.getX() != null ? Double.valueOf(d.getX()) : null)
+                        .latitude(d.getY() != null ? Double.valueOf(d.getY()) : null)
+                        .distance(d.getDistance())
+                        .placeUrl(d.getPlace_url())
+                        .build()
+        ).collect(Collectors.toList());
+
+        return MapResponseDTO.PlaceSearchResponse.builder()
+                .items(items)
+                .totalCount(resp.getMeta() != null ? resp.getMeta().getTotal_count() : null)
+                .isEnd(resp.getMeta() != null ? resp.getMeta().getIs_end() : null)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public MapResponseDTO.ConfirmResponse confirmForAdmin(MapRequestDTO.ConfirmRequest request, Long adminId) {
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+        admin.setLatitude(request.getLatitude());
+        admin.setLongitude(request.getLongitude());
+        admin.setPoint(toPoint(request.getLongitude(), request.getLatitude())); // SRID=4326
+        // (주소를 바꿀지 여부는 정책대로) - 도로명이 있으면 대표주소로 사용
+        String display = pickDisplayAddress(request.getRoadAddress(), request.getAddress());
+        if (display != null) admin.setOfficeAddress(display);
+        return MapResponseDTO.ConfirmResponse.builder()
+                .ownerId(admin.getId()).ownerType("ADMIN")
+                .name(admin.getName())
+                .address(display)
+                .longitude(admin.getLongitude())
+                .latitude(admin.getLatitude())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public MapResponseDTO.ConfirmResponse confirmForPartner(MapRequestDTO.ConfirmRequest request, Long partnerId) {
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+        partner.setLatitude(request.getLatitude());
+        partner.setLongitude(request.getLongitude());
+        partner.setPoint(toPoint(request.getLongitude(), request.getLatitude()));
+        String display = pickDisplayAddress(request.getRoadAddress(), request.getAddress());
+        if (display != null) partner.setAddress(display);
+        return MapResponseDTO.ConfirmResponse.builder()
+                .ownerId(partner.getId()).ownerType("PARTNER")
+                .name(partner.getName())
+                .address(display)
+                .longitude(partner.getLongitude())
+                .latitude(partner.getLatitude())
+                .build();
     }
 
     private String toWKT(MapRequestDTO.ViewOnMapDTO v) {
@@ -344,27 +286,14 @@ public class MapServiceImpl implements MapService {
         );
     }
 
-    private String joinAddress(String addr, String detail) {
-        String a = (addr == null) ? "" : addr.trim();
-        String d = (detail == null) ? "" : detail.trim();
-        return (a + " " + d).trim();
-    }
-
-    public Location upsert(LocationOwnerType ownerType, Long ownerId, String name, String plainAddress, String roadAddress, Double lat, Double lng) {
-
-        Location loc = mapRepository.findByOwnerTypeAndOwnerId(ownerType, ownerId)
-                .orElseGet(() -> Location.builder().ownerType(ownerType).ownerId(ownerId).build());
-
-        loc.setName(name);
-        loc.setAddress(plainAddress);
-        loc.setRoadAddress(roadAddress);
-        loc.setLatitude(lat);
-        loc.setLongitude(lng);
-
+    private Point toPoint(Double lng, Double lat) {
+        if (lng == null || lat == null) return null;
         Point p = geometryFactory.createPoint(new Coordinate(lng, lat));
-        loc.setPoint(p);
-
-        return mapRepository.save(loc);
+        p.setSRID(4326);
+        return p;
     }
 
+    private String pickDisplayAddress(String road, String jibun) {
+        return (road != null && !road.isBlank()) ? road : jibun;
+    }
 }
