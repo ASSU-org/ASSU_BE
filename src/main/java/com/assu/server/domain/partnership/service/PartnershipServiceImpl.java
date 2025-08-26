@@ -19,24 +19,13 @@ import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.config.AmazonConfig;
 import com.assu.server.global.exception.DatabaseException;
-import com.assu.server.global.util.PrincipalDetails;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.security.SecurityUtil;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-
-import java.security.Principal;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,7 +52,7 @@ public class PartnershipServiceImpl implements PartnershipService {
             Long memberId
     ) {
         if (request == null || memberId == null) {
-            throw new DatabaseException(ErrorStatus.INVALID_REQUEST);
+            throw new DatabaseException(ErrorStatus._BAD_REQUEST);
         }
 
         Partner partner = partnerRepository.findById(memberId)
@@ -162,7 +151,7 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
 
         if(request == null || request.getStatus() == null){
-            throw new DatabaseException(ErrorStatus.INVALID_REQUEST);
+            throw new DatabaseException(ErrorStatus._BAD_REQUEST);
         }
 
         ActivationStatus prev = paper.getIsActivated();
@@ -186,7 +175,7 @@ public class PartnershipServiceImpl implements PartnershipService {
             MultipartFile contractImage) {
 
         if (request == null || adminId == null || request.getStoreAddress() == null)
-            throw new DatabaseException(ErrorStatus.INVALID_REQUEST);
+            throw new DatabaseException(ErrorStatus._BAD_REQUEST);
 
         Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
@@ -227,7 +216,6 @@ public class PartnershipServiceImpl implements PartnershipService {
                 amazonS3Manager.uploadFile(keyName, contractImage);
                 paper.updateContractImageKey(keyName);
                 paperRepository.save(paper);
-                String url = amazonS3Manager.generatePresignedUrl(keyName);
             } catch (Exception e) {
                 throw new DatabaseException(ErrorStatus.IMAGE_UPLOAD_FAILED);
             }
@@ -293,7 +281,7 @@ public class PartnershipServiceImpl implements PartnershipService {
         try {
             return ActivationStatus.valueOf(raw.trim().toUpperCase());
         } catch (Exception e) {
-            throw new DatabaseException(ErrorStatus.INVALID_REQUEST);
+            throw new DatabaseException(ErrorStatus._BAD_REQUEST);
         }
     }
 }

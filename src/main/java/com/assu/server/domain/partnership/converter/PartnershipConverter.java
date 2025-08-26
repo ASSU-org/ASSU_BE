@@ -23,7 +23,6 @@ public class PartnershipConverter {
             Admin admin,
             Partner partner,
             Store store
-
     ) {
         return Paper.builder()
                 .partnershipPeriodStart(partnershipRequestDTO.getPartnershipPeriodStart())

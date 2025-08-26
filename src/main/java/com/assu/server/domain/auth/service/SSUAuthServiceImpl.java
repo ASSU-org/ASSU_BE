@@ -1,171 +1,179 @@
 package com.assu.server.domain.auth.service;
 
 
+import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthResponse;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.user.entity.enums.Major;
+import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SSUAuthServiceImpl implements SSUAuthService {
-    /*
-    @NotNull
+
+    private final WebClient webClient;
+
+    private static final String USaintSSOUrl = "https://saint.ssu.ac.kr/webSSO/sso.jsp";
+    private static final String USaintPortalUrl = "https://saint.ssu.ac.kr/webSSUMain/main_student.jsp";
+
     @Override
-    public UsaintAuthReturnDto uSaintAuth(@NotNull UsaintAuthParamDto usaintAuthParamDto) throws APIRequestFailedException, AuthFailedException, HTMLParseFailedException, UnsupportedMajorException {
-        String sToken = usaintAuthParamDto.getSToken();
-        Integer sIdno = usaintAuthParamDto.getSIdno();
+    public USaintAuthResponse uSaintAuth(USaintAuthRequest uSaintAuthRequest) {
 
-        // Phase 1 : uSaint SSO
+        String sToken = uSaintAuthRequest.getSToken();
+        Integer sIdno = uSaintAuthRequest.getSIdno();
 
-        String uSaintSSORequestUrl = globalVariable.uSaintSSOUrl + "?sToken=" + sToken + "&sIdno=" + sIdno;
-
-        HashMap<String, String> uSaintSSORequestHeaders = new HashMap<>();
-        uSaintSSORequestHeaders.put("Cookie", "sToken=" + sToken + "; sIdno=" + sIdno);
-
-        APIRequestDto uSaintSSORequestDto = APIRequestDto.builder()
-                .headers(uSaintSSORequestHeaders)
-                .url(uSaintSSORequestUrl)
-                .build();
-
-        APIResponseDto uSaintSSOResponseDto;
+        // 1) SSO 로그인 요청
+        ResponseEntity<String> uSaintSSOResponseEntity;
         try {
-            uSaintSSOResponseDto = apiProvider.get(uSaintSSORequestDto);
-        }
-        catch (Exception e){
+            uSaintSSOResponseEntity = requestUSaintSSO(sToken, sIdno);
+        } catch (Exception e) {
             log.error("API request to uSaint SSO failed.", e);
-            throw new APIRequestFailedException();
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_SSO_FAILED);
         }
 
-        if(!uSaintSSOResponseDto.getBody().contains("location.href = \"/irj/portal\";")){
-            log.error("Student authentication with sToken {} and sIdno {} failed.", sToken, sIdno);
-            throw new AuthFailedException();
+        if (uSaintSSOResponseEntity == null || uSaintSSOResponseEntity.getBody() == null) {
+            log.error("Empty response from USaint SSO. sToken={}, sIdno={}", sToken, sIdno);
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_SSO_FAILED);
         }
 
-        Map<String, List<String>> uSaintSSOResponseHeaders = uSaintSSOResponseDto.getHeaders();
-        List<String> setCookieList = uSaintSSOResponseHeaders.get("set-cookie");
+        String body = uSaintSSOResponseEntity.getBody();
+        if (!body.contains("location.href = \"/irj/portal\";")) {
+            log.error("Invalid SSO response. sToken={}, sIdno={}", sToken, sIdno);
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_SSO_FAILED);
+        }
+
+        // 쿠키 추출
+        HttpHeaders headers = uSaintSSOResponseEntity.getHeaders();
+        List<String> setCookieList = headers.get(HttpHeaders.SET_COOKIE);
+
         StringBuilder uSaintPortalCookie = new StringBuilder();
-
-        for(String setCookie : setCookieList){
-            setCookie = setCookie.split(";")[0];
-            uSaintPortalCookie.append(setCookie).append("; ");
+        if (setCookieList != null) {
+            for (String setCookie : setCookieList) {
+                setCookie = setCookie.split(";")[0];
+                uSaintPortalCookie.append(setCookie).append("; ");
+            }
         }
 
-        // Phase 2 : uSaint Portal
-
-        String uSaintPortalRequestUrl = globalVariable.uSaintPortalUrl;
-
-        HashMap<String, String> uSaintPortalRequestHeaders = new HashMap<>();
-        uSaintPortalRequestHeaders.put("Cookie", uSaintPortalCookie.toString());
-
-        APIRequestDto uSaintPortalRequestDto = APIRequestDto.builder()
-                .headers(uSaintPortalRequestHeaders)
-                .url(uSaintPortalRequestUrl)
-                .build();
-
-        APIResponseDto uSaintPortalResponseDto;
+        // 2) 포털 접근
+        ResponseEntity<String> portalResponse;
         try {
-            uSaintPortalResponseDto = apiProvider.get(uSaintPortalRequestDto);
-        }
-        catch (Exception e){
+            portalResponse = requestUSaintPortal(uSaintPortalCookie);
+        } catch (Exception e) {
             log.error("API request to uSaint Portal failed.", e);
-            throw new APIRequestFailedException();
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_PORTAL_FAILED);
         }
 
-        String uSaintPortalResponseBody = uSaintPortalResponseDto.getBody();
-        UsaintAuthReturnDto usaintAuthReturnDto = UsaintAuthReturnDto.builder().build();
+        if (portalResponse == null || portalResponse.getBody() == null) {
+            log.error("Empty response from uSaint Portal. cookie={}", uSaintPortalCookie);
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_PORTAL_FAILED);
+        }
 
-        Document uSaintPortalDocument = Jsoup.parse(uSaintPortalResponseBody);
-        Element uSaintPortalNameBox = uSaintPortalDocument.getElementsByClass("main_box09").first();
-        Element uSaintPortalInfoBox = uSaintPortalDocument.getElementsByClass("main_box09_con").first();
-        if(uSaintPortalNameBox == null){
-            log.error("uSaintPortalNameBox is null.");
+        String uSaintPortalResponseBody = portalResponse.getBody();
+        USaintAuthResponse usaintAuthResponse = USaintAuthResponse.builder().build();
+
+        // 3) HTML 파싱
+        Document doc;
+        try {
+            doc = Jsoup.parse(uSaintPortalResponseBody);
+        } catch (Exception e) {
+            log.error("Jsoup parsing failed.", e);
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_PARSE_FAILED);
+        }
+
+        Element nameBox = doc.getElementsByClass("main_box09").first();
+        Element infoBox = doc.getElementsByClass("main_box09_con").first();
+
+        if (nameBox == null || infoBox == null) {
+            log.error("Portal HTML structure parsing failed.");
             log.debug(uSaintPortalResponseBody);
-            throw new HTMLParseFailedException();
-        }
-        if(uSaintPortalInfoBox == null){
-            log.error("uSaintPortalInfoBox is null.");
-            log.debug(uSaintPortalResponseBody);
-            throw new HTMLParseFailedException();
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_PARSE_FAILED);
         }
 
-        Element uSaintPortalNameBoxSpan = uSaintPortalNameBox.getElementsByTag("span").first();
-        if(uSaintPortalNameBoxSpan == null || uSaintPortalNameBoxSpan.text().equals("")){
-            log.error("uSaintPortalNameBoxSpan is null or empty.");
-            log.debug(uSaintPortalResponseBody);
-            throw new HTMLParseFailedException();
+        // 이름 추출
+        Element span = nameBox.getElementsByTag("span").first();
+        if (span == null || span.text().isEmpty()) {
+            log.error("Student name span not found or empty.");
+            throw new CustomAuthException(ErrorStatus.SSU_SAINT_PARSE_FAILED);
         }
-        String studentName = uSaintPortalNameBoxSpan.text();
-        studentName = studentName.split("님")[0];
-        usaintAuthReturnDto.setName(studentName);
+        usaintAuthResponse.setName(span.text().split("님")[0]);
 
-        Elements uSaintPortalInfoBoxLis = uSaintPortalInfoBox.getElementsByTag("li");
+        // 학번, 소속, 학적 상태, 학년학기 추출
+        Elements infoLis = infoBox.getElementsByTag("li");
+        for (Element li : infoLis) {
+            Element dt = li.getElementsByTag("dt").first();
+            Element strong = li.getElementsByTag("strong").first();
 
-        for(Element uSaintPortalInfoBoxLi : uSaintPortalInfoBoxLis){
-            Element dt = uSaintPortalInfoBoxLi.getElementsByTag("dt").first();
-            if(dt == null){
-                log.error("dt in uSaintPortalInfoBoxLi is null.");
-                log.debug(uSaintPortalResponseBody);
-                throw new HTMLParseFailedException();
+            if (dt == null || strong == null || strong.text().isEmpty()) {
+                log.error("Missing dt/strong in infoBox. li={}", li);
+                throw new CustomAuthException(ErrorStatus.SSU_SAINT_PARSE_FAILED);
             }
 
-            Element strong = uSaintPortalInfoBoxLi.getElementsByTag("strong").first();
-            if(strong == null || strong.text().equals("")){
-                log.error("strong in uSaintPortalInfoBoxLi is null or empty.");
-                log.debug(uSaintPortalResponseBody);
-                throw new HTMLParseFailedException();
-            }
-
-            if(dt.text().equals("학번")){
-                try{
-                    usaintAuthReturnDto.setId(Integer.valueOf(strong.text()));
+            switch (dt.text()) {
+                case "학번" -> {
+                    try {
+                        usaintAuthResponse.setId(Integer.valueOf(strong.text()));
+                    } catch (NumberFormatException e) {
+                        log.error("Invalid studentId format: {}", strong.text());
+                        throw new CustomAuthException(ErrorStatus.SSU_SAINT_PARSE_FAILED);
+                    }
                 }
-                catch(NumberFormatException e){
-                    log.error("studentId in strong is not an integer.");
-                    log.debug(uSaintPortalResponseBody);
-                    throw new HTMLParseFailedException();
+                case "소속" -> {
+                    // 원본 문자열 저장
+                    String majorStr = strong.text();
+
+                    // 매핑된 Enum 값 저장
+                    switch (majorStr) {
+                        case "컴퓨터학부" -> usaintAuthResponse.setMajor(Major.COM);
+                        case "소프트웨어학부" -> usaintAuthResponse.setMajor(Major.SW);
+                        case "글로벌미디어학부" -> usaintAuthResponse.setMajor(Major.GM);
+                        case "미디어경영학과" -> usaintAuthResponse.setMajor(Major.MB);
+                        case "AI융합학부" -> usaintAuthResponse.setMajor(Major.AI);
+                        case "전자정보공학부" -> usaintAuthResponse.setMajor(Major.EE);
+                        case "정보보호학과" -> usaintAuthResponse.setMajor(Major.IP);
+                        default -> {
+                            log.debug("{} is not a supported major.", majorStr);
+                            throw new CustomAuthException(ErrorStatus.SSU_SAINT_UNSUPPORTED_MAJOR);
+                        }
+                    }
                 }
-            }
-            else if(dt.text().equals("소속")){
-                usaintAuthReturnDto.setMajor(strong.text());
-            }
-            else if(dt.text().equals("과정/학적")){
-                usaintAuthReturnDto.setStatus(strong.text());
-            }
-
-        }
-
-        if(usaintAuthReturnDto.getMajor().contains("전자정보공학부")){
-            usaintAuthReturnDto.setMajor("infocom");
-            return usaintAuthReturnDto;
-        }
-
-        switch (usaintAuthReturnDto.getMajor()) {
-            case "컴퓨터학부" -> usaintAuthReturnDto.setMajor(Major.COM);
-            case "소프트웨어학부" -> usaintAuthReturnDto.setMajor(Major.SW);
-            case "글로벌미디어학부" -> usaintAuthReturnDto.setMajor(Major.GM);
-            case "미디어경영학과" -> usaintAuthReturnDto.setMajor(Major.MB);
-            case "AI융합학부" -> usaintAuthReturnDto.setMajor(Major.AI);
-            case "전자정보공학부" -> usaintAuthReturnDto.setMajor(Major.EE);
-            case "정보보호학과" -> usaintAuthReturnDto.setMajor(Major.IP);
-            default -> {
-                log.debug("{} is not a supported major.", usaintAuthReturnDto.getMajor());
-                throw new UnsupportedMajorException();
+                case "과정/학적" -> usaintAuthResponse.setEnrollmentStatus(strong.text());
+                case "학년/학기" -> usaintAuthResponse.setYearSemester(strong.text());
             }
         }
 
-        return usaintAuthReturnDto;
+        return usaintAuthResponse;
     }
-    */
 
+    private ResponseEntity<String> requestUSaintSSO(String sToken, Integer sIdno) {
+        String url = USaintSSOUrl + "?sToken=" + sToken + "&sIdno=" + sIdno;
+
+        return webClient.get()
+                .uri(url)
+                .header("Cookie", "sToken=" + sToken + "; sIdno=" + sIdno)
+                .retrieve()
+                .toEntity(String.class)   // ResponseEntity<String> 전체 반환 (body + header 포함)
+                .block();                 // 동기 방식
+    }
+
+    private ResponseEntity<String> requestUSaintPortal(StringBuilder cookie) {
+        return webClient.get()
+                .uri(USaintPortalUrl)
+                .header(HttpHeaders.COOKIE, cookie.toString()) // StringBuilder → String 변환
+                .retrieve()
+                .toEntity(String.class)
+                .block();
+    }
 }

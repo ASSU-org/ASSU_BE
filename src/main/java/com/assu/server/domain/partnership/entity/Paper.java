@@ -41,6 +41,7 @@ public class Paper extends BaseEntity {
 	@JoinColumn(name = "store_id")
 	private Store store;
 
+	@Column(name = "contract_image_key", length = 512)
 	private String contractImageKey;
 
 	public void updateContractImageKey(String key) { this.contractImageKey = key; }

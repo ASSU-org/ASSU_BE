@@ -1,6 +1,6 @@
 package com.assu.server.domain.auth.security.jwt;
 
-import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -71,14 +71,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     /**
      * Authorization 헤더가 존재하고 Bearer 포맷인지 확인한다.
      * 
-     * @throws CustomAuthHandler 헤더 누락/형식 오류
+     * @throws CustomAuthException 헤더 누락/형식 오류
      */
     private static void requireBearerAuthorizationHeader(String authorizationHeader) {
         if (authorizationHeader == null) {
-            throw new CustomAuthHandler(ErrorStatus.JWT_TOKEN_NOT_RECEIVED);
+            throw new CustomAuthException(ErrorStatus.JWT_TOKEN_NOT_RECEIVED);
         }
         if (!authorizationHeader.startsWith("Bearer ")) {
-            throw new CustomAuthHandler(ErrorStatus.JWT_TOKEN_OUT_OF_FORM);
+            throw new CustomAuthException(ErrorStatus.JWT_TOKEN_OUT_OF_FORM);
         }
     }
 
@@ -104,7 +104,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 // Bearer 헤더 검증
                 requireBearerAuthorizationHeader(authorizationHeader);
                 if (refreshToken == null) {
-                    throw new CustomAuthHandler(ErrorStatus.JWT_TOKEN_NOT_RECEIVED);
+                    throw new CustomAuthException(ErrorStatus.JWT_TOKEN_NOT_RECEIVED);
                 }
 
                 // Access 토큰: 서명만 검증(만료 허용) 및 블랙리스트 확인(JTI)
@@ -113,7 +113,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String accessJti = accessClaims.getId();
                 Boolean accessBlacklisted = redisTemplate.hasKey("blacklist:" + accessJti);
                 if (Boolean.TRUE.equals(accessBlacklisted)) {
-                    throw new CustomAuthHandler(ErrorStatus.LOGOUT_USER);
+                    throw new CustomAuthException(ErrorStatus.LOGOUT_USER);
                 }
 
                 // Refresh 토큰: 서명/만료 검증 + Redis 저장 여부 확인
@@ -125,7 +125,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 Boolean refreshExists = redisTemplate.hasKey(refreshKey);
                 if (Boolean.FALSE.equals(refreshExists)) {
                     // 저장된 RT가 없으면 유효하지 않은 재발급 시도
-                    throw new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION);
+                    throw new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION);
                 }
 
                 // 컨텍스트에 만료된 Access 토큰으로부터 Authentication 복원
@@ -136,7 +136,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             } catch (Exception exception) {
                 log.error("인증 과정 중, 예상치 못한 예외 발생: {}", exception.getMessage(), exception);
-                throw new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION);
+                throw new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION);
             }
         }
 
@@ -158,7 +158,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         } catch (Exception exception) {
             log.error("인증 과정 중, 예상치 못한 예외 발생: {}", exception.getMessage(), exception);
-            throw new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION);
+            throw new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION);
         }
     }
 }
