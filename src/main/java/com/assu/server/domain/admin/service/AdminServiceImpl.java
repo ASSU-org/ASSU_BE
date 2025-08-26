@@ -20,9 +20,8 @@ public class AdminServiceImpl implements AdminService {
     private final PartnerRepository partnerRepository;
 
     @Override
-    public AdminResponseDTO.RandomPartnerResponseDTO suggestRandomPartner() {
-//        Long adminId = SecurityUtil.getCurrentId();
-        Long adminId = 1L;
+    public AdminResponseDTO.RandomPartnerResponseDTO suggestRandomPartner(Long adminId) {
+
         Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
@@ -44,6 +43,5 @@ public class AdminServiceImpl implements AdminService {
                 .partnerAddress(picked.getAddress())
                 .partnerDetailAddress(picked.getDetailAddress())
                 .build();
-
     }
 }

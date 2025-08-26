@@ -34,13 +34,12 @@ public class SuggestionServiceImpl implements SuggestionService {
     private final StudentRepository studentRepository;
 
     @Override
-    public SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestion(SuggestionRequestDTO.WriteSuggestionRequestDTO request) {
-//        Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 9L;
+    public SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestion(SuggestionRequestDTO.WriteSuggestionRequestDTO request, Long userId) {
+
         Admin admin = adminRepository.findById(request.getAdminId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
-        Student student = studentRepository.findById(memberId)
+        Student student = studentRepository.findById(userId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STUDENT));
 
         Suggestion suggestion = SuggestionConverter.toSuggestionEntity(request, admin, student);
@@ -50,10 +49,7 @@ public class SuggestionServiceImpl implements SuggestionService {
     }
 
     @Override
-    public List<SuggestionResponseDTO.GetSuggestionResponseDTO> getSuggestions() {
-        // Long adminId = SecurityUtil.getCurrentUserId();
-        Long adminId = 1L;
-
+    public List<SuggestionResponseDTO.GetSuggestionResponseDTO> getSuggestions(Long adminId) {
         List<Suggestion> list = suggestionRepository
                 .findAllSuggestions(adminId);
 

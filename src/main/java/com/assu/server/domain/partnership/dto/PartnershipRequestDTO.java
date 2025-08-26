@@ -13,11 +13,9 @@ public class PartnershipRequestDTO {
 
     @Getter
     public static class WritePartnershipRequestDTO {
+        private Long adminId; // 제안 학생회 아이디
         private LocalDate partnershipPeriodStart;
         private LocalDate partnershipPeriodEnd;
-        private Long adminId; // 제안 학생회 아이디
-        private Long partnerId; // 제안자  아이디
-        private Long storeId; // 제안 가게 아이디
         private List<PartnershipOptionRequestDTO> options; // 동적으로 받는 제안 항목
     }
 
@@ -49,7 +47,6 @@ public class PartnershipRequestDTO {
     @Setter
     @NoArgsConstructor
     public static class ManualPartnershipRequestDTO {
-        private Long adminId;
         private String storeName;
         private String storeAddress;
         private String storeDetailAddress;

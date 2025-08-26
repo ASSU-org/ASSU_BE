@@ -23,10 +23,7 @@ public class PartnerServiceImpl implements PartnerService {
     private final AdminRepository adminRepository;
 
     @Override
-    public PartnerResponseDTO.RandomAdminResponseDTO getRandomAdmin() {
-        //        Long adminId = SecurityUtil.getCurrentId();
-        Long partnerId = 5L;
-
+    public PartnerResponseDTO.RandomAdminResponseDTO getRandomAdmin(Long partnerId) {
         Partner partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
 

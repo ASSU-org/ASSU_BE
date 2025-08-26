@@ -5,8 +5,10 @@ import com.assu.server.domain.suggestion.dto.SuggestionResponseDTO;
 import com.assu.server.domain.suggestion.service.SuggestionService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,22 +21,27 @@ public class SuggestionController {
     private final SuggestionService suggestionService;
 
     @Operation(
-            summary = "제휴 건의를 하는 API 입니다.",
-            description = "건의대상, 제휴 희망 가게, 희망 혜택을 입력해주세요."
+            summary = "제휴 건의 API",
+            description = "건의대상, 제휴 희망 가게, 희망 혜택을 입력하세요."
     )
     @PostMapping
     public BaseResponse<SuggestionResponseDTO.WriteSuggestionResponseDTO> writeSuggestion(
-            @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO suggestionRequestDTO
+            @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO suggestionRequestDTO,
+            @AuthenticationPrincipal PrincipalDetails pd
     ){
-        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.writeSuggestion(suggestionRequestDTO));
+        Long userId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.writeSuggestion(suggestionRequestDTO, userId));
     }
 
     @Operation(
-            summary = "제휴 건의를 조회하는 API 입니다.",
+            summary = "제휴 건의 조회 API",
             description = "모든 제휴 건의를 조회합니다."
     )
     @GetMapping("/list")
-    public BaseResponse<List<SuggestionResponseDTO.GetSuggestionResponseDTO>> getSuggestions() {
-        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.getSuggestions());
+    public BaseResponse<List<SuggestionResponseDTO.GetSuggestionResponseDTO>> getSuggestions(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ) {
+        Long adminId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.getSuggestions(adminId));
     }
 }

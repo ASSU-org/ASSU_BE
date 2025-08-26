@@ -39,7 +39,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EXISTED_PHONE(HttpStatus.NOT_FOUND,"MEMBER_4005","이미 존재하는 전화번호입니다."),
     EXISTED_EMAIL(HttpStatus.NOT_FOUND,"MEMBER_4006","이미 존재하는 이메일입니다."),
     EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4007","이미 존재하는 학번입니다."),
-
+    NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "MEMBER_4008", "제휴업체를 찾을 수 없습니다."),
 
     // 채팅 에러
     NO_SUCH_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5001", "존재하지 않는 채팅방 ID 입니다."),
@@ -48,37 +48,16 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_MESSAGE(HttpStatus.NOT_FOUND, "CHATTING_5004", "해당 방에는 메시지가 아무것 없습니다."),
 
     // 스토어 에러
-    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE_6001", "존재하지 않는 가게입니다."),
-
-    // 혜택 없음 에러
-    OPTION_NOT_EMPTY(HttpStatus.BAD_REQUEST, "OPTION_7001", "혜택은 한 가지 이상이어야 합니다."),
-
-    // 벨류(금액, 인원수) 에러
-    VALUE_IS_REQUIRED(HttpStatus.NOT_FOUND, "VALUE_8001", "값을 알 수 없습니다."),
-
-    // 서비스 아이템 에러
-    SERVICE_ITEM_REQUIRED(HttpStatus.NOT_FOUND, "SERVICE_ITEM_9001", "서비스 품목은 한 가지 이상이어야 합니다."),
-
-    // 카테고리 에러
-    CATEGORY_REQUIRED(HttpStatus.NOT_FOUND, "CATEGORY_10001", "품목에 대한 카테고리가 설정되어야 합니다."),
-
-    // 할인율 에러
-    DISCOUNT_RATE_REQUIRED(HttpStatus.NOT_FOUND, "DISCOUNT_11001", "할인율 값을 알 수 없습니다."),
-
-    // 혜택 타입 에러
-    UNSUPPORTED_OPTION_TYPE(HttpStatus.NOT_FOUND, "OPTION_7002", "지원하지 않는 혜택 항목입니다."),
-
-    // 제휴 아이디 에러
-    NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_12001", "존재하지 않는 제휴입니다."),
-
-    // 어드민 찾기 에러
-    NO_AVAILABLE_ADMIN(HttpStatus.NOT_FOUND, "ADMIN_5002", "제휴단체를 찾을 수 없습니다."),
-
-    // 파트너 찾기 에러
-    NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "PARTNER_5502", "제휴업체를 찾을 수 없습니다."),
+    NO_SUCH_STORE(HttpStatus.NOT_FOUND, "STORE_6001", "존재하지 않는 가게입니다"),
 
     // 유효하지 않은 요청
-    INVALID_REQUEST(HttpStatus.NOT_FOUND, "INVALID_13001", "유효하지 않은 요청입니다."),
+    INVALID_REQUEST(HttpStatus.NOT_FOUND, "INVALID_7001", "유효하지 않은 요청입니다."),
+
+    // 제휴 에러
+    NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_9001", "제휴를 찾을 수 없습니다."),
+
+    // 이미지 업로드 실패
+    IMAGE_UPLOAD_FAILED(HttpStatus.NOT_FOUND,"IMAGE_8001", "이미지 업로드에 실패했습니다."),
 
     ;
 

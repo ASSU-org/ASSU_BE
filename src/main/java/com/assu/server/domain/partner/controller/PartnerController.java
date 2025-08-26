@@ -4,8 +4,10 @@ import com.assu.server.domain.partner.dto.PartnerResponseDTO;
 import com.assu.server.domain.partner.service.PartnerService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,7 +22,10 @@ public class PartnerController {
             description = "제휴하지 않은 어드민 중 두 곳을 랜덤으로 조회합니다."
     )
     @GetMapping("/admin-recommend")
-    public BaseResponse<PartnerResponseDTO.RandomAdminResponseDTO> randomAdminRecommend(){
-        return BaseResponse.onSuccess(SuccessStatus._OK, partnerService.getRandomAdmin());
+    public BaseResponse<PartnerResponseDTO.RandomAdminResponseDTO> randomAdminRecommend(
+            @AuthenticationPrincipal PrincipalDetails pd
+            ){
+        Long partnerId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, partnerService.getRandomAdmin(partnerId));
     }
 }

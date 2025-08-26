@@ -73,7 +73,6 @@ public class PartnershipResponseDTO {
         private boolean storeActivated;
         private String status;
         private String contractImageUrl;
-        private String objectKey;
         private WritePartnershipResponseDTO partnership;
     }
 }

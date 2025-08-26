@@ -13,9 +13,10 @@ import java.util.List;
 public interface SuggestionService {
 
     SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestion(
-            @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO request
+            @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO request,
+            Long userId
     );
 
-    List<SuggestionResponseDTO.GetSuggestionResponseDTO> getSuggestions();
+    List<SuggestionResponseDTO.GetSuggestionResponseDTO> getSuggestions(Long adminId);
 
 }

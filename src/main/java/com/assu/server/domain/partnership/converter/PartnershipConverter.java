@@ -10,6 +10,7 @@ import com.assu.server.domain.partnership.entity.Paper;
 import com.assu.server.domain.partnership.entity.PaperContent;
 import com.assu.server.domain.store.entity.Store;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -79,52 +80,99 @@ public class PartnershipConverter {
         return batches;
     }
 
+    public static Paper toPaperForManual(
+            Admin admin, Store store,
+            LocalDate start, LocalDate end,
+            ActivationStatus status
+    ) {
+        return Paper.builder()
+                .admin(admin)
+                .store(store)
+                .partner(null)
+                .isActivated(status)
+                .partnershipPeriodStart(start)
+                .partnershipPeriodEnd(end)
+                .build();
+    }
+
+    public static List<PaperContent> toPaperContentsForManual(
+            List<PartnershipRequestDTO.PartnershipOptionRequestDTO> options,
+            Paper paper
+    ) {
+        if (options == null || options.isEmpty()) return List.of();
+        List<PaperContent> list = new ArrayList<>(options.size());
+        for (var o : options) {
+            list.add(PaperContent.builder()
+                    .paper(paper)
+                    .optionType(o.getOptionType())
+                    .criterionType(o.getCriterionType())
+                    .people(o.getPeople())
+                    .cost(o.getCost())
+                    .category(o.getCategory())
+                    .discount(o.getDiscountRate())
+                    .build());
+        }
+        return list;
+    }
+
+    public static List<Goods> toGoodsForContent(
+            PartnershipRequestDTO.PartnershipOptionRequestDTO option,
+            PaperContent content
+    ) {
+        if (option.getGoods() == null || option.getGoods().isEmpty()) return List.of();
+        List<Goods> batch = new ArrayList<>(option.getGoods().size());
+        for (var g : option.getGoods()) {
+            batch.add(Goods.builder()
+                    .content(content)
+                    .belonging(g.getGoodsName())
+                    .build());
+        }
+        return batch;
+    }
+
+
     public static PartnershipResponseDTO.WritePartnershipResponseDTO writePartnershipResultDTO(
             Paper paper,
             List<PaperContent> contents,
             List<List<Goods>> goodsBatches
     ) {
         List<PartnershipResponseDTO.PartnershipOptionResponseDTO> optionDTOS = new ArrayList<>();
-        int n = contents == null ? 0 : contents.size();
-        for(int i = 0;i < n;i++){
-            PaperContent pc = contents.get(i);
-            List<Goods> goods = (goodsBatches != null && goodsBatches.size() > i)
-                    ? goodsBatches.get(i) : List.of();
-            optionDTOS.add(optionResultDTO(pc, goods));
+        if (contents != null) {
+            for (int i = 0; i < contents.size(); i++) {
+                PaperContent pc = contents.get(i);
+                List<Goods> goods = (goodsBatches != null && goodsBatches.size() > i)
+                        ? goodsBatches.get(i) : List.of();
+                optionDTOS.add(
+                        PartnershipResponseDTO.PartnershipOptionResponseDTO.builder()
+                                .optionType(pc.getOptionType())
+                                .criterionType(pc.getCriterionType())
+                                .people(pc.getPeople())
+                                .cost(pc.getCost())
+                                .category(pc.getCategory())
+                                .discountRate(pc.getDiscount())
+                                .goods(goodsResultDTO(goods))
+                                .build()
+                );
+            }
         }
-
         return PartnershipResponseDTO.WritePartnershipResponseDTO.builder()
                 .partnershipId(paper.getId())
                 .partnershipPeriodStart(paper.getPartnershipPeriodStart())
                 .partnershipPeriodEnd(paper.getPartnershipPeriodEnd())
-                .adminId(paper.getAdmin() == null ? null : paper.getAdmin().getId())
-                .partnerId(paper.getStore() == null ? null : paper.getPartner().getId())
-                .storeId(paper.getStore() == null ? null : paper.getStore().getId())
+                .adminId(paper.getAdmin()    != null ? paper.getAdmin().getId()     : null)
+                .partnerId(paper.getPartner()!= null ? paper.getPartner().getId()   : null) // 수동등록이면 null
+                .storeId(paper.getStore()    != null ? paper.getStore().getId()     : null)
                 .options(optionDTOS)
                 .build();
     }
 
-    public static PartnershipResponseDTO.PartnershipOptionResponseDTO optionResultDTO(
-            PaperContent pc, List<Goods> goods
-    ) {
-        return PartnershipResponseDTO.PartnershipOptionResponseDTO.builder()
-                .optionType(pc.getOptionType())
-                .criterionType(pc.getCriterionType())
-                .people(pc.getPeople())
-                .cost(pc.getCost())
-                .category(pc.getCategory())
-                .discountRate(pc.getDiscount())
-                .goods(goodsResultDTO(goods))
-                .build();
-    }
-
     public static List<PartnershipResponseDTO.PartnershipGoodsResponseDTO> goodsResultDTO(List<Goods> goods) {
-        if(goods == null || goods.isEmpty()) return List.of();
+        if (goods == null || goods.isEmpty()) return List.of();
         return goods.stream()
                 .map(g -> PartnershipResponseDTO.PartnershipGoodsResponseDTO.builder()
                         .goodsId(g.getId())
                         .goodsName(g.getBelonging())
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 }
