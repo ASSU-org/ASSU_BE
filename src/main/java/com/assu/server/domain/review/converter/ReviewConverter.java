@@ -4,6 +4,7 @@ import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.review.dto.ReviewRequestDTO;
 import com.assu.server.domain.review.dto.ReviewResponseDTO;
 import com.assu.server.domain.review.entity.Review;
+import com.assu.server.domain.review.entity.ReviewPhoto;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.user.entity.Student;
 
@@ -19,6 +20,9 @@ public class ReviewConverter {
                 .content(review.getContent())
 //                .memberId(review.getStudent().getId())
                 .createdAt(review.getCreatedAt())
+                .reviewImageUrls(review.getImageList().stream()
+                        .map(ReviewPhoto::getPhotoUrl)
+                        .collect(Collectors.toList()))
                 //한 리뷰 여러개 사진 but 하나로 묶임 추가 고려해보기 --추후에 !!
                 .build(); //리스폰스 리턴
     }
@@ -30,7 +34,7 @@ public class ReviewConverter {
                 .store(store)
                 .partner(partner)
                 .student(student)
-            //    .imageList(request.getReviewImage())
+                //    .imageList(request.getReviewImage())
                 .build();
     }
     public static ReviewResponseDTO.CheckStudentReviewResponseDTO checkStudentReviewResultDTO(Review review){
@@ -40,6 +44,9 @@ public class ReviewConverter {
                 .content(review.getContent())
                 .createdAt(review.getCreatedAt())
                 .storeId(review.getStore().getId())
+                .reviewImageUrls(review.getImageList().stream()
+                        .map(ReviewPhoto::getPhotoUrl)
+                        .collect(Collectors.toList()))
                 .build();
     }
     public static List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReviewResultDTO(List<Review> reviews){
@@ -55,6 +62,9 @@ public class ReviewConverter {
                 .content(review.getContent())
                 .rate(review.getRate())
                 .createdAt(review.getCreatedAt())
+                .reviewImageUrls(review.getImageList().stream()
+                        .map(ReviewPhoto::getPhotoUrl)
+                        .collect(Collectors.toList()))
                 .build();
 
     }

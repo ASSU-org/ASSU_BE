@@ -19,6 +19,7 @@ public class ReviewResponseDTO {
         private Integer rate;
         private LocalDateTime createdAt;
         private Long memberId;
+        private List<String> reviewImageUrls;
     }
     @Getter
     @NoArgsConstructor
@@ -30,7 +31,7 @@ public class ReviewResponseDTO {
         private String content;
         private Integer rate;
         private LocalDateTime createdAt;
-        //private List<ReviewPhoto> reviewImage;
+        private List<String> reviewImageUrls;
     }
     @Getter
     @NoArgsConstructor
@@ -44,7 +45,7 @@ public class ReviewResponseDTO {
         private Integer rate;
         private LocalDateTime createdAt;
         private String sortBy; // 정렬기준 -> 최신, 별점, 오래된 순
-        //private List<ReviewPhoto> reviewImage;
+        private List<String> reviewImageUrls;
     }
 
 
