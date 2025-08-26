@@ -17,7 +17,7 @@ public class StudentController {
     private final StudentService studentService;
 
     @Operation(
-            summary = "스탬프 조회",
+            summary = "스탬프 조회 API",
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/stamp")

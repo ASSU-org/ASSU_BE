@@ -9,7 +9,7 @@ import com.assu.server.domain.auth.entity.AuthRealm;
 import com.assu.server.domain.auth.security.adapter.RealmAuthAdapter;
 import com.assu.server.domain.auth.security.token.LoginUsernamePasswordAuthenticationToken;
 import com.assu.server.domain.member.entity.Member;
-import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class LoginServiceImpl implements LoginService {
         return realmAuthAdapters.stream()
                 .filter(a -> a.supports(realm))
                 .findFirst()
-                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION));
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION));
     }
 
     /**

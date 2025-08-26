@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/studentAdmin")
+@RequestMapping("/dashBoard")
 public class StudentAdminController {
     private final StudentAdminService studentAdminService;
     @Operation(

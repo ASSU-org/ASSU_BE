@@ -6,7 +6,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Id;
-import com.assu.server.domain.common.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
