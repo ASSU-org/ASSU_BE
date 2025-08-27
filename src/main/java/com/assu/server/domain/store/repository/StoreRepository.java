@@ -11,14 +11,11 @@ import java.util.Optional;
 public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query("""
-        select s
-        from Store s
-        where lower(s.address) = lower(:address)
-          and (
-                (:detail is null and (s.detailAddress is null or s.detailAddress = ''))
-             or (lower(coalesce(s.detailAddress, '')) = lower(coalesce(:detail, '')))
-          )
-        """)
+        SELECT s FROM Store s
+        WHERE s.address = :address
+          AND ((:detail IS NULL AND s.detailAddress IS NULL) OR s.detailAddress = :detail)
+    """)
+
     Optional<Store> findBySameAddress(
             @Param("address") String address,
             @Param("detail") String detail

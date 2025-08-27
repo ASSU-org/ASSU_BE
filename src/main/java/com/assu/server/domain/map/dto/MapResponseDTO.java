@@ -62,35 +62,17 @@ public class MapResponseDTO {
         private Double longitude;
     }
 
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-    public static class PlaceItem {
-        private String placeId;         // Kakao place id (문자열)
+    @Getter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class PlaceSuggestionDTO {
+        private String placeId;         // kakao place id
         private String name;            // place_name
-        private String category;        // category_name
-        private String phone;           // phone
-        private String address;         // address_name(지번)
-        private String roadAddress;     // road_address_name(도로명)
-        private Double longitude;       // x
+        private String category;        // category_name or category_group_name
+        private String address;         // 지번 주소
+        private String roadAddress;     // 도로명 주소
+        private String phone;           // 전화
+        private String placeUrl;        // 카카오 상세 URL
         private Double latitude;        // y
-        private String distance;        // 기준좌표 주면 미터(문자열)
-        private String placeUrl;        // place_url
-    }
-
-    @Getter @Setter
-    @NoArgsConstructor @AllArgsConstructor @Builder
-    public static class PlaceSearchResponse {
-        private List<PlaceItem> items;
-        private Integer totalCount;
-        private Boolean isEnd;
-    }
-
-    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-    public static class ConfirmResponse {
-        private Long ownerId;
-        private String ownerType;   // ADMIN / PARTNER / STORE
-        private String name;
-        private String address;     // 저장된 대표 주소(도로명 우선)
-        private Double longitude;
-        private Double latitude;
+        private Double longitude;       // x
+        private Integer distance;       // m (좌표바이어스/카테고리 검색 시 제공)
     }
 }

@@ -13,8 +13,4 @@ public interface MapService {
     List<MapResponseDTO.StoreMapResponseDTO>   searchStores(String keyword);
     List<MapResponseDTO.PartnerMapResponseDTO> searchPartner(String keyword, Long memberId);
     List<MapResponseDTO.AdminMapResponseDTO>   searchAdmin(String keyword, Long memberId);
-
-    MapResponseDTO.PlaceSearchResponse search(String query, Double x, Double y, Integer radius, Integer page, Integer size, String sort);
-    MapResponseDTO.ConfirmResponse confirmForAdmin(MapRequestDTO.ConfirmRequest request, Long adminId);
-    MapResponseDTO.ConfirmResponse confirmForPartner(MapRequestDTO.ConfirmRequest request, Long partnerId);
 }

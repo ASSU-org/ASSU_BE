@@ -36,6 +36,9 @@ public class SecurityConfig {
                                 "/auth/phone-numbers/**"
                         ).permitAll()
 
+                        // 지도 API 공개
+                        .requestMatchers("/map/**").permitAll()
+
                         // 로그아웃은 인증 필요
                         .requestMatchers("/auth/logout").authenticated()
 

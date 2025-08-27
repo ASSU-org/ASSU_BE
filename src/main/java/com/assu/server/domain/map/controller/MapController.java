@@ -4,6 +4,7 @@ import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.domain.map.dto.MapRequestDTO;
 import com.assu.server.domain.map.dto.MapResponseDTO;
 import com.assu.server.domain.map.service.MapService;
+import com.assu.server.domain.map.service.PlaceSearchService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
@@ -22,6 +23,7 @@ import java.util.List;
 public class MapController {
 
     private final MapService mapService;
+    private final PlaceSearchService placeSearchService;
 
     @Operation(
             summary = "주변 장소 조회 API",
@@ -48,7 +50,7 @@ public class MapController {
             description = "검색어를 입력해주세요. (user → store 전체조회 / admin → 제휴중인 partner 조회 / partner → 제휴중인 admin 조회)"
     )
     @GetMapping("/search")
-    public BaseResponse<?> search(
+    public BaseResponse<?> getLocationsByKeyword(
             @RequestParam("searchKeyword") @NotNull String keyword,
             @AuthenticationPrincipal PrincipalDetails pd
     ) {
@@ -70,6 +72,19 @@ public class MapController {
             }
             default -> BaseResponse.onFailure(ErrorStatus._BAD_REQUEST, null);
         };
+    }
+
+    @Operation(
+            summary = "주소 입력 시 장소 검색용 API",
+            description = "검색어를 기반으로 장소를 검색하여 리스트로 반환합니다. limit로 개수를 제한할 수 있습니다."
+    )
+    @GetMapping("/place")
+    public BaseResponse<List<MapResponseDTO.PlaceSuggestionDTO>> search(
+            @RequestParam("searchKeyword") String query,
+            @RequestParam(value = "limit", required = false) Integer size
+    ) {
+        List<MapResponseDTO.PlaceSuggestionDTO> list = placeSearchService.unifiedSearch(query, size);
+        return BaseResponse.onSuccess(SuccessStatus._OK, list);
     }
 
 }

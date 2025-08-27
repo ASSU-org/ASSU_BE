@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -153,10 +154,14 @@ public class SignUpServiceImpl implements SignUpService {
         String licenseUrl = amazonS3Manager.uploadFile(keyName, licenseImage);
         CommonInfoPayload info = req.getCommonInfo();
 
-        String query = joinAddress(info.getAddress(), info.getDetailAddress());
-        var geo = kakaoLocalClient.searchAddress(query, null, null);
-        Double lat = geo != null ? geo.getLat() : null;
-        Double lng = geo != null ? geo.getLng() : null;
+        Double lat = null, lng = null;
+        String displayAddr = info.getAddress();
+        if (info.getSelectedPlace() != null) {
+            var sp = info.getSelectedPlace();
+            lat = sp.getLatitude();
+            lng = sp.getLongitude();
+            displayAddr = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
+        }
         Point point = toPoint(lat, lng);
 
         // 3) Partner 프로필 생성
@@ -164,7 +169,7 @@ public class SignUpServiceImpl implements SignUpService {
                 Partner.builder()
                         .member(member)
                         .name(info.getName())
-                        .address(info.getAddress())
+                        .address(displayAddr)
                         .detailAddress(info.getDetailAddress())
                         .licenseUrl(licenseUrl)
                         .point(point)
@@ -173,26 +178,28 @@ public class SignUpServiceImpl implements SignUpService {
                         .build()
         );
 
-        storeRepository.findBySameAddress(info.getAddress(), info.getDetailAddress())
-                .ifPresentOrElse(store -> {
-                    if (store.getPartner() != null || store.getPartner().getId().equals(partner.getId())) {
-                        store.linkPartner(partner);
-                        storeRepository.save(store);
-                    }
-                }, () -> {
-                    Store newly = Store.builder()
-                            .partner(partner)
-                            .rate(0)
-                            .isActivate(ActivationStatus.ACTIVE)
-                            .name(info.getName())
-                            .address(info.getAddress())
-                            .detailAddress(info.getDetailAddress())
-                            .latitude(lat)
-                            .longitude(lng)
-                            .point(point)
-                            .build();
-                    storeRepository.save(newly);
-                });
+        // store 생성/연결
+        Optional<Store> storeOpt = storeRepository.findBySameAddress(displayAddr, info.getDetailAddress());
+        if (storeOpt.isPresent()) {
+            Store store = storeOpt.get();
+            store.linkPartner(partner);
+            store.setName(info.getName());
+            store.setGeo(lat, lng, point);
+            storeRepository.save(store);
+        } else {
+            Store newly = Store.builder()
+                    .partner(partner)
+                    .rate(0)
+                    .isActivate(ActivationStatus.ACTIVE)
+                    .name(info.getName())
+                    .address(displayAddr)
+                    .detailAddress(info.getDetailAddress())
+                    .latitude(lat)
+                    .longitude(lng)
+                    .point(point)
+                    .build();
+            storeRepository.save(newly);
+        }
 
         // 4) 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
@@ -238,10 +245,14 @@ public class SignUpServiceImpl implements SignUpService {
         String signUrl = amazonS3Manager.uploadFile(keyName, signImage);
         CommonInfoPayload info = req.getCommonInfo();
 
-        String query = joinAddress(info.getAddress(), info.getDetailAddress());
-        var geo = kakaoLocalClient.geocodeByAddress(query);
-        Double lat = geo != null ? geo.getLat() : null;
-        Double lng = geo != null ? geo.getLng() : null;
+        Double lat = null, lng = null;
+        String displayAddr = info.getAddress();
+        if (info.getSelectedPlace() != null) {
+            var sp = info.getSelectedPlace();
+            lat = sp.getLatitude();
+            lng = sp.getLongitude();
+            displayAddr = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
+        }
         Point point = toPoint(lat, lng);
 
         // 3) Partner 프로필 생성
@@ -249,7 +260,7 @@ public class SignUpServiceImpl implements SignUpService {
                 Admin.builder()
                         .member(member)
                         .name(info.getName())
-                        .officeAddress(info.getAddress())
+                        .officeAddress(displayAddr)
                         .detailAddress(info.getDetailAddress())
                         .signUrl(signUrl)
                         .point(point)
@@ -281,9 +292,7 @@ public class SignUpServiceImpl implements SignUpService {
         return p;
     }
 
-    private String joinAddress(String addr, String detail) {
-        String a = (addr == null) ? "" : addr.trim();
-        String d = (detail == null) ? "" : detail.trim();
-        return (a + " " + d).trim();
+    private String pickDisplayAddress(String road, String jibun) {
+        return (road != null && !road.isBlank()) ? road : jibun;
     }
 }
