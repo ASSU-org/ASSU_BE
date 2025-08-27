@@ -24,7 +24,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.SQLOutput;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,48 +41,64 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     @Override
-    public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId) {
-        Long storeId = request.getStoreId(); //변수 선언
-        List<MultipartFile> images = request.getReviewImage(); // 이미지 변수 선언
+    public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId, List<MultipartFile> reviewImages) {
+        // createReview 메서드 호출로 통합
+        Review review = createReview(memberId, request.getStoreId(), request, reviewImages);
+        return ReviewConverter.writeReviewResultDTO(review);
+    }
 
-        //존재여부 검증
+    private Review createReview(Long memberId, Long storeId, ReviewRequestDTO.WriteReviewRequestDTO request, List<MultipartFile> images) {
+        // 존재여부 검증
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(()-> new DatabaseException(ErrorStatus.NO_SUCH_STORE)); //없을 경우!!
-        Partner partner = partnerRepository.findById(request.getPartnerId()) //파라미터 변수 선언 없이 바로 받기
-                .orElseThrow(()-> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
+        Partner partner = partnerRepository.findById(request.getPartnerId())
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
         Student student = studentRepository.findById(memberId)
-                .orElseThrow(()-> new DatabaseException(ErrorStatus.NO_SUCH_STUDENT));
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STUDENT));
 
+        // 리뷰 엔티티 생성 및 저장
         Review review = ReviewConverter.toReviewEntity(request, store, partner, student);
+        reviewRepository.save(review); // ID 생성을 위해 먼저 저장
 
-        reviewRepository.save(review); //먼저 Review 저장
-
-        //이미지 업로드 처리
+        // 이미지 처리
         if (images != null && !images.isEmpty()) {
             try {
-                for (MultipartFile image : images) {
-                    String keyName = amazonS3Manager.generateKeyName("review-images");
-                    amazonS3Manager.uploadFile(keyName, image);
+                for (int i = 0; i < images.size(); i++) {
+                    String keyName = generateReviewImageKeyName(memberId, review.getId(), i + 1);
+                    amazonS3Manager.uploadFile(keyName, images.get(i));
                     String presignedUrl = amazonS3Manager.generatePresignedUrl(keyName);
 
                     ReviewPhoto reviewPhoto = ReviewPhoto.builder()
                             .review(review)
                             .photoUrl(presignedUrl)
+                            .keyName(keyName)
                             .build();
+
                     review.getImageList().add(reviewPhoto);
                 }
             } catch (Exception e) {
-                throw new DatabaseException(ErrorStatus.IMAGE_UPLOAD_FAILED); //ErrorStatus에 추가 필요
+                throw new DatabaseException(ErrorStatus.IMAGE_UPLOAD_FAILED);
             }
         }
-        reviewRepository.save(review);//rep에서 데이터 상하차 저장
-        //잘 저장 됏어요!!
-        return ReviewConverter.writeReviewResultDTO(review);//객체를 dto로 바꿔서 사용자에게 보여줌 -> controller
+
+        return reviewRepository.save(review);
+    }    private String generateReviewImageKeyName(Long memberId, Long reviewId, int imageIndex) {
+        LocalDateTime now = LocalDateTime.now();
+        String year = String.valueOf(now.getYear());
+        String month = String.format("%02d", now.getMonthValue());
+
+        // 기존 generateKeyName 방식을 참고하되 더 체계적으로
+        return String.format("reviews/images/%s/%s/user%d/review%d_img%d_%s",
+                year, month, memberId, reviewId, imageIndex, UUID.randomUUID());
     }
 
     @Override
     public List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId) {
         List<Review> reviews = reviewRepository.findByMemberId(memberId);
+
+        for (Review review : reviews) {
+            updateReviewImageUrls(review);
+        }
 
         return ReviewConverter.checkStudentReviewResultDTO(reviews);
     }
@@ -88,12 +108,15 @@ public class ReviewServiceImpl implements ReviewService {
     public List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId) {
         Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
-        System.out.println("파트너 id는 "+partner.getId());
         Store store = storeRepository.findByPartner(partner)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
-        //List<Review> reviews = reviewRepository.findByStoreId(store.getId());
-        List<Review> reviews = reviewRepository.findByStoreIdOrderByCreatedAtDesc(store.getId()); //최신순 정렬
+        List<Review> reviews = reviewRepository.findByStoreIdOrderByCreatedAtDesc(store.getId());
+
+        for (Review review : reviews) {
+            updateReviewImageUrls(review);
+        }
+
         return ReviewConverter.checkPartnerReviewResultDTO(reviews);
     }
     @Override
@@ -101,5 +124,14 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(Long reviewId) {
         reviewRepository.deleteById(reviewId);
         return ReviewConverter.deleteReviewResultDTO(reviewId);
+    }
+    private void updateReviewImageUrls(Review review) {
+        for (ReviewPhoto reviewPhoto : review.getImageList()) {
+            if (reviewPhoto.getKeyName() != null) {
+                String freshUrl = amazonS3Manager.generatePresignedUrl(reviewPhoto.getKeyName());
+                // ReviewPhoto 엔티티에 URL 업데이트 (일시적으로, DB에는 저장하지 않음)
+                reviewPhoto.updatePhotoUrl(freshUrl);
+            }
+        }
     }
 }

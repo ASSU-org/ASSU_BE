@@ -7,10 +7,16 @@ import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
@@ -19,20 +25,22 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
     @Operation(
-            summary = "리뷰 작성 API입니다.",
+            summary = "리뷰 작성 API",
             description = "리뷰 내용과 별점, 리뷰 이미지를 입력해주세요."
+
     )
-    @PostMapping()
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public BaseResponse<ReviewResponseDTO.WriteReviewResponseDTO> writeReview(
             @AuthenticationPrincipal PrincipalDetails pd,
-            @RequestBody ReviewRequestDTO.WriteReviewRequestDTO writeReviewRequestDTO
+            @RequestPart("request") ReviewRequestDTO.WriteReviewRequestDTO request,
+            @RequestPart(value = "reviewImages", required = false) List<MultipartFile> reviewImages
     ) {
         Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.writeReview(writeReviewRequestDTO, memberId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.writeReview(request, memberId, reviewImages));
     }
 
     @Operation(
-            summary = "내가 쓴 리뷰 조회 API입니다.",
+            summary = "내가 쓴 리뷰 조회 API",
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/student")
@@ -44,7 +52,7 @@ public class ReviewController {
     }
 
     @Operation(
-            summary = "내가 쓴 리뷰 삭제 API입니다.",
+            summary = "내가 쓴 리뷰 삭제 API",
             description = "삭제할 리뷰 ID를 입력해주세요."
     )
     @DeleteMapping("/{reviewId}")
@@ -57,7 +65,7 @@ public class ReviewController {
     }
 
     @Operation(
-            summary = "내 가게 리뷰 조회 API입니다.",
+            summary = "내 가게 리뷰 조회 API",
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/partner")

@@ -49,7 +49,8 @@ public enum ErrorStatus implements BaseErrorCode {
     EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4007","이미 존재하는 학번입니다."),
 
     //리뷰 이미지 에러
-    IMAGE_UPLOAD_FAILED(HttpStatus.NOT_FOUND,"REVIEW_4001", "존재하지 않는 리뷰이미지 입니다"),
+    IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"REVIEW_4001", "리뷰 이미지 업로드에 실패했습니다"),
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND,"REVIEW_4001", "존재하지 않는 리뷰이미지 입니다"),
     // 채팅 에러
     NO_SUCH_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5001", "존재하지 않는 채팅방 ID 입니다."),
     NO_MEMBER_IN_THE_ROOM(HttpStatus.NOT_FOUND, "CHATTING_5002", "해당 방에는 해당 사용자가 없습니다."),
