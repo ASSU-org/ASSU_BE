@@ -2,7 +2,7 @@ package com.assu.server.domain.auth.security.adapter;
 
 import com.assu.server.domain.auth.entity.AuthRealm;
 import com.assu.server.domain.auth.entity.CommonAuth;
-import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.repository.CommonAuthRepository;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.member.entity.Member;
@@ -23,7 +23,7 @@ public class CommonAuthAdapter implements RealmAuthAdapter {
     @Override
     public UserDetails loadUserDetails(String email) {
         CommonAuth ca = commonAuthRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.NO_SUCH_MEMBER));
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER));
         var m = ca.getMember();
         boolean enabled = m.getIsActivated() == ActivationStatus.ACTIVE;
         String authority = "ROLE_" + m.getRole().name();
@@ -39,14 +39,14 @@ public class CommonAuthAdapter implements RealmAuthAdapter {
 
     @Override public Member loadMember(String email) {
         return commonAuthRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.NO_SUCH_MEMBER))
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER))
                 .getMember();
     }
 
     @Override
     public void registerCredentials(Member member, String email, String rawPassword) {
         if (commonAuthRepository.existsByEmail(email)) {
-            throw new CustomAuthHandler(ErrorStatus.EXISTED_EMAIL);
+            throw new CustomAuthException(ErrorStatus.EXISTED_EMAIL);
         }
         String hash = passwordEncoder.encode(rawPassword);
         commonAuthRepository.save(

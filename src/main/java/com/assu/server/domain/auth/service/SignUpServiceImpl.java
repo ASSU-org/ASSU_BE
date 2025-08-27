@@ -6,7 +6,7 @@ import com.assu.server.domain.auth.dto.signup.*;
 import com.assu.server.domain.auth.dto.signup.common.CommonInfoPayload;
 import com.assu.server.domain.auth.dto.signup.student.StudentInfoPayload;
 import com.assu.server.domain.auth.entity.AuthRealm;
-import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.security.adapter.RealmAuthAdapter;
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.assu.server.domain.common.enums.ActivationStatus;
@@ -47,7 +47,7 @@ public class SignUpServiceImpl implements SignUpService {
         return realmAuthAdapters.stream()
                 .filter(a -> a.supports(realm))
                 .findFirst()
-                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION));
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION));
     }
 
     /* 학생: JSON */
@@ -56,7 +56,7 @@ public class SignUpServiceImpl implements SignUpService {
     public SignUpResponse signupStudent(StudentSignUpRequest req) {
         // 중복 체크
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
+            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
         }
 
         // 1) member 생성
@@ -120,7 +120,7 @@ public class SignUpServiceImpl implements SignUpService {
     @Transactional
     public SignUpResponse signupPartner(PartnerSignUpRequest req, MultipartFile licenseImage) {
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
+            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
         }
 
         // 1) member 생성
@@ -175,7 +175,7 @@ public class SignUpServiceImpl implements SignUpService {
     @Transactional
     public SignUpResponse signupAdmin(AdminSignUpRequest req, MultipartFile signImage) {
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
-            throw new CustomAuthHandler(ErrorStatus.EXISTED_PHONE);
+            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
         }
 
         // 1) member 생성
