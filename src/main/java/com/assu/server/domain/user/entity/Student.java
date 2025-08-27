@@ -10,6 +10,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -42,4 +45,6 @@ public class Student {
 
     @Enumerated(EnumType.STRING)
     private Major major;
+    //@OneToMany(mappedBy = "user")
+    //private List<AdminUser> adminUsers = new ArrayList<>();
 }

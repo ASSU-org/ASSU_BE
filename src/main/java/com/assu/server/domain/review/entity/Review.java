@@ -44,8 +44,14 @@ public class Review extends BaseEntity {
 	@JoinColumn(name = "store_id")
 	private Store store;
 
-	@OneToMany(mappedBy= "review", cascade = CascadeType.ALL)
-	private final List<ReviewPhoto> imageList = new ArrayList<>();
+	@OneToMany(mappedBy = "review", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private List<ReviewPhoto> imageList = new ArrayList<>();
+	public List<ReviewPhoto> getImageList() {
+		if (imageList == null) {
+			imageList = new ArrayList<>();
+		}
+		return imageList;
+	}
 
 	private Integer rate;
 	private String content;
