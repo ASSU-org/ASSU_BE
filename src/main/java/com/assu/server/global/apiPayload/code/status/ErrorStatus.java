@@ -47,6 +47,11 @@ public enum ErrorStatus implements BaseErrorCode {
     EXISTED_PHONE(HttpStatus.NOT_FOUND,"MEMBER_4005","이미 존재하는 전화번호입니다."),
     EXISTED_EMAIL(HttpStatus.NOT_FOUND,"MEMBER_4006","이미 존재하는 이메일입니다."),
     EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4007","이미 존재하는 학번입니다."),
+    NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "MEMBER_4009", "제휴업체를 찾을 수 없습니다."),
+    // 제휴 에러
+    NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_9001", "제휴를 찾을 수 없습니다."),
+
+
 
     //리뷰 이미지 에러
     IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"REVIEW_4001", "리뷰 이미지 업로드에 실패했습니다"),

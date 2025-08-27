@@ -5,19 +5,12 @@ import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.store.entity.Store;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -29,11 +22,12 @@ public class Paper extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	private String partnershipPeriod; //  이게 뭘로 들어오는거지. 그냥 LocalDate  로 하는게 낫지 않나?
+	private LocalDate partnershipPeriodStart; //  LocalDate vs String
+	private LocalDate partnershipPeriodEnd;
 
-	@Enumerated(EnumType.STRING)
+	@Setter
+    @Enumerated(EnumType.STRING)
 	private ActivationStatus isActivated;
-
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")
@@ -47,4 +41,8 @@ public class Paper extends BaseEntity {
 	@JoinColumn(name = "store_id")
 	private Store store;
 
+	@Column(name = "contract_image_key", length = 512)
+	private String contractImageKey;
+
+	public void updateContractImageKey(String key) { this.contractImageKey = key; }
 }

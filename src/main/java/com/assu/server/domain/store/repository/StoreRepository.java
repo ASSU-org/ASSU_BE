@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface StoreRepository extends JpaRepository<Store,Long> {
     Optional<Store> findByPartner(Partner  partner);
 
+    Optional<Store> findByNameAndAddressAndDetailAddress(String name, String address, String detailAddress);
     // [이번 주] 전체 스토어 중 특정 storeId의 주간 순위/건수 1건
     @Query(value = """
         WITH w AS (
