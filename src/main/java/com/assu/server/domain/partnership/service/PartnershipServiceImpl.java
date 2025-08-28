@@ -106,7 +106,7 @@ public class PartnershipServiceImpl implements PartnershipService {
         Admin admin = adminRepository.findById(request.getAdminId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
-        Store store = storeRepository.findByPartner_Id(partner.getId())
+        Store store = storeRepository.findByPartner(partner)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
         return writePartnership(request, admin, partner, store);
