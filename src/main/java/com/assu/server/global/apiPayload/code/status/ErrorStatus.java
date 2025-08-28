@@ -2,7 +2,6 @@ package com.assu.server.global.apiPayload.code.status;
 
 import com.assu.server.global.apiPayload.code.BaseErrorCode;
 import com.assu.server.global.apiPayload.code.ErrorReasonDTO;
-import com.sun.net.httpserver.HttpsServer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -40,6 +39,8 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
+    NO_STUENT_TYPE(HttpStatus.BAD_REQUEST, "MEMBER4002", "학생 타입이 아닌 멤버입니다."),
+
     NO_SUCH_ADMIN(HttpStatus.NOT_FOUND,"MEMBER_4002","존재하지 않는 admin ID 입니다."),
     NO_SUCH_PARTNER(HttpStatus.NOT_FOUND,"MEMBER_4003","존재하지 않는 partner ID 입니다."),
     NO_SUCH_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4004","존재하지 않는 student ID 입니다."),
@@ -51,8 +52,13 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "MEMBER_4009", "제휴업체를 찾을 수 없습니다."),
 
     // 제휴 에러
-    NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_4001", "제휴를 찾을 수 없습니다."),
+    NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_9001", "제휴를 찾을 수 없습니다."),
     NO_SUCH_CONTENT(HttpStatus.NOT_FOUND, "PAPER_4002", "제휴 내용을 찾을 수 없습니다."),
+
+    // session 에러
+    NO_SUCH_SESSION(HttpStatus.NOT_FOUND, "SESSION4001", "존재하지 않는 session ID입니다."),
+    SESSION_NOT_OPENED(HttpStatus.BAD_REQUEST, "SESSION4002", "만료되었거나 인증이 완료된 session ID입니다."),
+    DOUBLE_CERTIFIED_USER(HttpStatus.BAD_REQUEST, "SESSION4003", "이미 인증된 유저입니다."),
 
     //리뷰 이미지 에러
     IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"REVIEW_4001", "리뷰 이미지 업로드에 실패했습니다"),
@@ -83,7 +89,6 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 주소 에러
     NO_SUCH_ADDRESS(HttpStatus.NOT_FOUND, "ADDRESS_7001", "주소를 찾을 수 없습니다."),
-
 
     ;
 

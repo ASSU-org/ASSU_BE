@@ -1,4 +1,6 @@
 package com.assu.server.domain.partnership.dto;
+import java.util.List;
+import lombok.Getter;
 
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.map.dto.SelectedPlacePayload;
@@ -8,11 +10,16 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 public class PartnershipRequestDTO {
-
+    @Getter
+    public static class finalRequest{
+        String placeName;
+        String partnershipContent;
+        Long contentId;
+        Long discount;
+        List<Long> userIds;
+    }
     @Getter
     public static class WritePartnershipRequestDTO {
         private Long adminId; // 제안 학생회 아이디

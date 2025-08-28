@@ -35,8 +35,6 @@ public class PaperContent extends BaseEntity {
 
 	private Integer people;
 
-	private String belonging;
-
 	private Long cost;
 
 	private String category;

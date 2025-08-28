@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "ssu_auth",
         indexes = {
-                @Index(name = "ux_ssu_auth_student_id", columnList = "student_id", unique = true)
+                @Index(name = "ux_ssu_auth_student_id", columnList = "student_number", unique = true)
         }
 )
 @Getter

@@ -12,6 +12,8 @@ public interface PaperContentRepository extends JpaRepository<PaperContent, Long
 
     Optional<PaperContent> findTopByPaperStoreIdOrderByIdDesc(Long storeId);
 
+	List<PaperContent> findByPaperId(Long paperId);
+
     @Query("""
            select distinct pc
            from PaperContent pc

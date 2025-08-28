@@ -43,4 +43,13 @@ public class BaseResponse<T> {
     public static <T> BaseResponse<T> onFailure(String code, String message, T data) {
         return new BaseResponse<>(false, code, message, data);
     }
+
+    public static <T> BaseResponse<T> onSuccessWithoutData(BaseCode code) {
+        return new BaseResponse<>(
+            true,
+            code.getReasonHttpStatus().getCode(),
+            code.getReasonHttpStatus().getMessage(),
+            null
+        );
+    }
 }

@@ -1,7 +1,12 @@
 package com.assu.server.domain.admin.entity;
 
+
+import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.domain.member.entity.Member;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
@@ -42,9 +47,16 @@ public class Admin {
 
     private LocalDateTime signVerifiedAt;
 
+    @Enumerated(EnumType.STRING)
+    private Major major;
+
     @JdbcTypeCode(SqlTypes.GEOMETRY)
     private Point point;
 
     private double latitude;
     private double longitude;
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
 }

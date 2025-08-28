@@ -24,7 +24,6 @@ public class SuggestionConverter {
     }
 
     public static Suggestion toSuggestionEntity(SuggestionRequestDTO.WriteSuggestionRequestDTO suggestionRequestDTO, Admin admin, Student student){
-//        여기서 뭘 할거냐면 사용자에게서 데이터를 받았으면 걔를 return 하면서 entity로
         return Suggestion.builder()
                 .admin(admin)
                 .student(student)

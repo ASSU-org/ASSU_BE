@@ -13,6 +13,7 @@ import com.assu.server.domain.notification.repository.NotificationRepository;
 import com.assu.server.domain.notification.repository.NotificationSettingRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
+import com.assu.server.global.exception.GeneralException;
 import com.assu.server.infra.NotificationFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,9 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
     @Transactional
     @Override
     public Notification createAndQueue(Long receiverId, NotificationType type, Long refId, Map<String, Object> ctx) {
-        Member member = memberRepository.findMemberById(receiverId);
+        Member member = memberRepository.findMemberById(receiverId).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
+        );
         if (member == null) {
             throw new DatabaseException(ErrorStatus.NO_SUCH_MEMBER);
         }
@@ -130,7 +133,9 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
 
         if (!enabled) {
             // 기록만 남기고 발송은 스킵
-            var member = memberRepository.findMemberById(req.getReceiverId());
+            var member = memberRepository.findMemberById(req.getReceiverId()).orElseThrow(
+                () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
+            );
             var notification = notificationFactory.create(member, type, refId, ctx);
             notificationRepository.save(notification);
             return;
@@ -142,10 +147,14 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
     @Transactional
     @Override
     public boolean toggle(Long memberId, NotificationType type) {
+
+        Member member = memberRepository.findMemberById(memberId).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
+        );
         NotificationSetting setting = notificationSettingRepository
                 .findByMemberIdAndType(memberId, type)
                 .orElse(NotificationSetting.builder()
-                        .member(memberRepository.findMemberById(memberId))
+                        .member(member)
                         .type(type)
                         .enabled(true) // 기본값
                         .build());

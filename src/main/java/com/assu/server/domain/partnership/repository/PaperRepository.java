@@ -16,6 +16,16 @@ import java.util.Optional;
 
 public interface PaperRepository extends JpaRepository<Paper, Long> {
 
+	@Query("SELECT p FROM Paper p " +
+		"WHERE p.store.id = :storeId " +
+		"AND p.admin.id = :adminId " +
+		"AND p.isActivated = :status")
+	List<Paper> findByStoreIdAndAdminIdAndStatus(
+		@Param("storeId")Long storeId,
+		@Param("adminId")Long adminId,
+		@Param("status")ActivationStatus status);
+
+
     // Admin 기준 (ACTIVE)
     List<Paper> findByAdmin_IdAndIsActivated(Long adminId, ActivationStatus status, Sort sort);
     Page<Paper> findByAdmin_IdAndIsActivated(Long adminId, ActivationStatus status, Pageable pageable);

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>Certify Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h1>WebSocket Certify Test</h1>
+
+<div>
+    <label>세션 ID: <input id="sessionId" type="text" value="1"></label><br>
+    <label>adminName: <input id="adminId" type="text" value="2"></label><br>
+    <button onclick="connect()">Connect & Subscribe</button>
+    <button onclick="sendCertify()">Send Certify</button>
+</div>
+
+<pre id="log" style="background:#eee; padding:10px; height:300px; overflow:auto;"></pre>
+
+<script>
+    let stompClient = null;
+
+    function log(msg) {
+        document.getElementById("log").textContent += msg + "\n";
+    }
+
+    function connect() {
+        const socket = new SockJS('http://localhost:8080/ws');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, () => {
+            const sessionId = document.getElementById("sessionId").value;
+            const topic = `/certification/progress/${sessionId}`;
+            stompClient.subscribe(topic, (message) => {
+                log("Received: " + message.body);
+            });
+            log("Connected & Subscribed to " + topic);
+        });
+    }
+
+
+    function sendCertify() {
+        if (!stompClient || !stompClient.connected) {
+            log("Not connected.");
+            return;
+        }
+        const payload = {
+            adminId: parseInt(document.getElementById("adminId").value),
+            sessionId: parseInt(document.getElementById("sessionId").value)
+        };
+        stompClient.send("/certification/certify", {}, JSON.stringify(payload));
+        log("Sent: " + JSON.stringify(payload));
+    }
+</script>
+</body>
+</html>
