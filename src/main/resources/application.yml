@@ -8,10 +8,11 @@ spring:
     active: local # 여기에 local, blue, green 셋중 하나로 입력
   config:
     import:
-      - classpath:application-secret.yml
+      - optional:classpath:application-secret.yml
+      - optional:file:/app/config/application-secret.yml
   jpa:
     hibernate:
-      ddl-auto: update # 여기
+      ddl-auto: update
     properties:
       hibernate:
         jdbc:

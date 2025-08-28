@@ -35,6 +35,6 @@ public class Suggestion extends BaseEntity {
 	@JoinColumn(name = "student_id")
 	private Student student;
 
-	private String shopName;
+	private String storeName;
 	private String content;
 }

@@ -2,7 +2,7 @@ package com.assu.server.domain.auth.security.jwt;
 
 import com.assu.server.domain.auth.dto.signup.Tokens;
 import com.assu.server.domain.auth.entity.AuthRealm;
-import com.assu.server.domain.auth.exception.CustomAuthHandler;
+import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.member.repository.MemberRepository;
@@ -125,15 +125,15 @@ public class JwtUtil {
      * Access 토큰 서명/만료 검증.
      * @param token Access 토큰
      * @return 유효한 Claims
-     * @throws CustomAuthHandler 만료/서명 오류
+     * @throws CustomAuthException 만료/서명 오류
      */
     public Claims validateToken(String token) {
         try {
             return Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(token).getBody();
         } catch (ExpiredJwtException exception) {
-            throw new CustomAuthHandler(ErrorStatus.JWT_ACCESS_TOKEN_EXPIRED);
+            throw new CustomAuthException(ErrorStatus.JWT_ACCESS_TOKEN_EXPIRED);
         } catch (Exception exception) {
-            throw new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION);
+            throw new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION);
         }
     }
 
@@ -142,7 +142,7 @@ public class JwtUtil {
      * - 재발급 시 사용.
      * @param token Access 토큰
      * @return Claims(만료된 토큰도 반환)
-     * @throws CustomAuthHandler 서명 오류
+     * @throws CustomAuthException 서명 오류
      */
     public Claims validateTokenOnlySignature(String token) {
         try {
@@ -150,7 +150,7 @@ public class JwtUtil {
         } catch (ExpiredJwtException exception) {
             return exception.getClaims(); // 만료되어도 Claims는 사용
         } catch (Exception exception) {
-            throw new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION);
+            throw new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION);
         }
     }
 
@@ -158,15 +158,15 @@ public class JwtUtil {
      * Refresh 토큰 서명/만료 검증.
      * - Redis 저장값과의 매칭은 호출부 정책에 따라 별도로 수행 가능.
      * @param refreshToken Refresh 토큰
-     * @throws CustomAuthHandler 만료/서명 오류
+     * @throws CustomAuthException 만료/서명 오류
      */
     public void validateRefreshToken(String refreshToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key()).build().parseClaimsJws(refreshToken).getBody();
         } catch (ExpiredJwtException exception) {
-            throw new CustomAuthHandler(ErrorStatus.JWT_REFRESH_TOKEN_EXPIRED);
+            throw new CustomAuthException(ErrorStatus.JWT_REFRESH_TOKEN_EXPIRED);
         } catch (Exception exception) {
-            throw new CustomAuthHandler(ErrorStatus.AUTHORIZATION_EXCEPTION);
+            throw new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION);
         }
     }
 
@@ -184,7 +184,7 @@ public class JwtUtil {
 
         // DB 조회
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.NO_SUCH_MEMBER));
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER));
 
         // PrincipalDetails 빌드
         PrincipalDetails principal = PrincipalDetails.builder()
@@ -214,7 +214,7 @@ public class JwtUtil {
 
         Long userId = ((Number) claims.get("userId")).longValue();
         Member member = memberRepository.findById(userId)
-                .orElseThrow(() -> new CustomAuthHandler(ErrorStatus.NO_MEMBER));
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_MEMBER));
 
         UserRole role = UserRole.valueOf((String) claims.get("role"));
         String authRealmString = (String) claims.get("authRealm");
@@ -255,14 +255,14 @@ public class JwtUtil {
     /**
      * Access 토큰이 블랙리스트에 포함되어 있지 않은지 확인.
      * @param accessToken Access 토큰
-     * @throws CustomAuthHandler 블랙리스트에 포함된 경우
+     * @throws CustomAuthException 블랙리스트에 포함된 경우
      */
     public void assertNotBlacklisted(String accessToken) {
         Claims claims = validateTokenOnlySignature(accessToken);
         String jti = claims.getId();
         Boolean exists = redisTemplate.hasKey("blacklist:" + jti);
         if (Boolean.TRUE.equals(exists)) {
-            throw new CustomAuthHandler(ErrorStatus.LOGOUT_USER);
+            throw new CustomAuthException(ErrorStatus.LOGOUT_USER);
         }
     }
 
@@ -314,7 +314,7 @@ public class JwtUtil {
         String refreshKey = String.format("refresh:%d:%s", memberId, refreshJti);
         String savedRefreshToken = redisTemplate.opsForValue().get(refreshKey);
         if (savedRefreshToken == null || !savedRefreshToken.equals(refreshToken)) {
-            throw new CustomAuthHandler(ErrorStatus.REFRESH_TOKEN_NOT_EQUAL);
+            throw new CustomAuthException(ErrorStatus.REFRESH_TOKEN_NOT_EQUAL);
         }
 
         // 4) 기존 RT 삭제 후 새 토큰 발급

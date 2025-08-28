@@ -13,11 +13,18 @@ import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-
+import com.assu.server.domain.user.dto.StudentResponseDTO;
+import com.assu.server.domain.user.service.StudentService;
+import com.assu.server.global.apiPayload.BaseResponse;
+import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "유저 관련 api", description = "유저와 관련된 로직을 처리하는 api")
 @RequiredArgsConstructor
+@RequestMapping("/user")
 public class StudentController {
+
+	private final StudentService studentService;
 
 	@GetMapping("/partnership/{year}/{month}")
 	@Operation(summary = "유저의 제휴 내역을 조회", description = "건수 및 금액으로 조회")
@@ -26,4 +33,17 @@ public class StudentController {
 	){
 		return null;
 	}
+
+
+    @Operation(
+            summary = "스탬프 조회 API",
+            description = "Authorization 후에 사용해주세요."
+    )
+    @GetMapping("/stamp")
+    public BaseResponse<StudentResponseDTO.CheckStampResponseDTO> getStamp(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentService.getStamp(memberId));
+    }
 }

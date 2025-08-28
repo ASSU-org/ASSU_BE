@@ -1,8 +1,12 @@
 package com.assu.server.domain.partnership.entity;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,9 +21,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Entity
@@ -50,7 +51,7 @@ public class PaperContent extends BaseEntity {
 
 	private Long discount;
 
-	@OneToMany(mappedBy = "content")
+	@OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Goods> goods = new ArrayList<>();
 
 }
