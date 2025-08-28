@@ -4,6 +4,8 @@ import com.assu.server.global.apiPayload.code.BaseCode;
 import com.assu.server.global.apiPayload.code.ReasonDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -28,8 +30,23 @@ public enum SuccessStatus implements BaseCode {
     REPORT_PROFILE_VIEW_SUCCESS(HttpStatus.OK, "REPORT_200", "계정 신고의 정보가 성공적으로 조회되었습니다."),
     REPORT_PROFILE_SUCCESS(HttpStatus.OK, "REPORT_201", "계정을 성공적으로 신고했습니다."),
     REPORT_ADMIN_VIEW_SUCCESS(HttpStatus.OK, "REPORT_200","관리자용 신고 기록이 성공적으로 조회되었습니다."),
-    REPORT_ADMIN_PROCESSED(HttpStatus.OK,"REPORT_204","신고가 성공적으로 처리되었습니다.")
+    REPORT_ADMIN_PROCESSED(HttpStatus.OK,"REPORT_204","신고가 성공적으로 처리되었습니다."),
 
+    // 제휴 성공
+    PAPER_STORE_HISTORY_SUCCESS(HttpStatus.OK, "PAPER201", "가게 별 제휴 내용이 성공적으로 조회되었습니다."),
+    USER_PAPER_REQUEST_SUCCESS(HttpStatus.OK, "PAPER202", "제휴 요청이 성공적으로 처리되었습니다."),
+
+
+    // 그룹 인증
+    GROUP_SESSION_CREATE(HttpStatus.OK, "GROUP201", "인증 세션 생성 및 대표자 구독이 완료되었습니다."),
+    GROUP_CERTIFICATION_SUCCESS(HttpStatus.OK, "GROUP202", "그룹 인증 세션에 대한 인증이 완료되었습니다."),
+
+
+    // 개인 인증
+    PERSONAL_CERTIFICATION_SUCCESS(HttpStatus.OK, "PERSONAL201", "개인 인증이 완료 되었습니다."),
+
+    // 베스트 조회
+    BEST_STORE_SUCCESS(HttpStatus.OK, "STORE205", "베스트 매장 조회에 성공하였습니다")
     ;
 
     private final HttpStatus httpStatus;

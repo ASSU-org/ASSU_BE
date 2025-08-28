@@ -1,5 +1,22 @@
 package com.assu.server.domain.partnership.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.partnership.converter.PartnershipConverter;
+import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
+import com.assu.server.domain.user.entity.PartnershipUsage;
+import com.assu.server.domain.user.entity.Student;
+import com.assu.server.domain.user.repository.PartnershipUsageRepository;
+import com.assu.server.domain.user.repository.StudentRepository;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
 import com.assu.server.domain.common.enums.ActivationStatus;
@@ -30,9 +47,37 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class PartnershipServiceImpl implements PartnershipService {
+
+	private final PartnershipUsageRepository partnershipUsageRepository;
+	private final StudentRepository studentRepository;
+
+	public void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member){
+
+
+		List<PartnershipUsage> usages = new ArrayList<>();
+
+		// 1) 요청한 member 본인
+		usages.add(PartnershipConverter.toPartnershipUsage(dto, member.getStudentProfile()));
+
+		List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
+		// 2) dto의 userIds에 있는 다른 사용자들
+		for (Long userId : userIds) {
+			Student student = studentRepository.getReferenceById(userId);
+			usages.add(PartnershipConverter.toPartnershipUsage(dto, student));
+			student.setStamp();
+		}
+
+		partnershipUsageRepository.saveAll(usages);
+		
+	}
+
+
 
     private final PaperRepository paperRepository;
     private final PaperContentRepository paperContentRepository;
@@ -284,4 +329,5 @@ public class PartnershipServiceImpl implements PartnershipService {
             throw new DatabaseException(ErrorStatus._BAD_REQUEST);
         }
     }
+
 }

@@ -6,6 +6,8 @@ import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
+import com.assu.server.global.exception.GeneralException;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,9 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
     @Transactional
     @Override
     public void register(String tokenId, Long memberId) {
-        Member member = memberRepository.findMemberById(memberId);
+        Member member = memberRepository.findMemberById(memberId).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
+        );
         if (member == null) {
             throw new DatabaseException(ErrorStatus.NO_SUCH_MEMBER);
         }

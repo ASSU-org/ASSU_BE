@@ -1,11 +1,14 @@
 package com.assu.server.domain.store.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+
 
 public class StoreResponseDTO {
     @Getter
@@ -16,7 +19,13 @@ public class StoreResponseDTO {
             private Long rank;           // 그 주 순위(1부터)
             private Long usageCount;     // 그 주 사용 건수
     }
-
+	@AllArgsConstructor
+	@RequiredArgsConstructor
+	@Builder
+	@Getter
+	public static class todayBest{
+		List<String> bestStores;
+	}
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -26,4 +35,5 @@ public class StoreResponseDTO {
         private String storeName;
         private List<WeeklyRankResponseDTO> items; // 과거→현재 (6개)
     }
+
 }

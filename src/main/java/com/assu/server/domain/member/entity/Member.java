@@ -45,8 +45,7 @@ public class Member extends BaseEntity {
     private UserRole role;  // STUDENT, ADMIN, PARTNER
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_activated", nullable = false)
-    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(nullable = false)
     private ActivationStatus isActivated;  // ACTIVE, INACTIVE, SUSPEND
 
     // 역할별 프로필 - 선택적으로 연관

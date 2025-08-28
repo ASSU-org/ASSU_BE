@@ -1,15 +1,18 @@
 package com.assu.server.global.util;
 
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.auth.entity.AuthRealm;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.domain.member.entity.Member;
 import lombok.Builder;
 import lombok.Getter;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 
 import java.util.Collection;
 import java.util.List;
@@ -72,4 +75,5 @@ public class PrincipalDetails implements UserDetails {
     public boolean isEnabled() {
         return member.getIsActivated().equals(ActivationStatus.ACTIVE); // 사용자가 Disabled면 DisabledException 방지/반영
     }
+
 }

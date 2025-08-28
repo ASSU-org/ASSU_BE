@@ -1,4 +1,6 @@
 package com.assu.server.domain.partnership.entity;
+import java.time.LocalDate;
+
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.common.enums.ActivationStatus;
@@ -22,9 +24,9 @@ public class Paper extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+
 	private LocalDate partnershipPeriodStart; //  LocalDate vs String
 	private LocalDate partnershipPeriodEnd;
-
 	@Setter
     @Enumerated(EnumType.STRING)
 	private ActivationStatus isActivated;

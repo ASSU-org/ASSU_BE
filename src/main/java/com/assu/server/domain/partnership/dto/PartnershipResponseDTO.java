@@ -1,5 +1,6 @@
 package com.assu.server.domain.partnership.dto;
 
+
 import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
 import lombok.*;

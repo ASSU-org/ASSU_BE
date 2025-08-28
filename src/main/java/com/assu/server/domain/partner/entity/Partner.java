@@ -38,4 +38,8 @@ public class Partner {
     private Boolean isLicenseVerified;
 
     private LocalDateTime licenseVerifiedAt;
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
 }

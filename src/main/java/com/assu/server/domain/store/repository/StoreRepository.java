@@ -1,14 +1,14 @@
 package com.assu.server.domain.store.repository;
 
-import com.assu.server.domain.partner.entity.Partner;
-import com.assu.server.domain.store.entity.Store;
+
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.partner.entity.Partner;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface StoreRepository extends JpaRepository<Store,Long> {
     Optional<Store> findByPartner(Partner  partner);
@@ -96,4 +96,7 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
         ORDER BY pw.weekStart ASC
         """, nativeQuery = true)
     List<GlobalWeeklyRankRow> findGlobalWeeklyTrendLast6Weeks(@Param("storeId") Long storeId);
+    Optional<Store> findByName(String name);
+    Optional<Store> findById(Long id);
+
 }

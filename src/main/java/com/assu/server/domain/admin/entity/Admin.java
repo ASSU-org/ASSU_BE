@@ -1,7 +1,12 @@
 package com.assu.server.domain.admin.entity;
 
+
+import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.domain.member.entity.Member;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
@@ -38,4 +43,11 @@ public class Admin {
     private Boolean isSignVerified;
 
     private LocalDateTime signVerifiedAt;
+
+    @Enumerated(EnumType.STRING)
+    private Major major;
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
 }

@@ -1,18 +1,19 @@
 package com.assu.server.domain.store.service;
 
+
+import java.util.List;
+import org.springframework.stereotype.Service;
+import com.assu.server.domain.store.dto.StoreResponseDTO;
+import com.assu.server.domain.store.repository.StoreRepository;
+import com.assu.server.domain.user.repository.PartnershipUsageRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.store.converter.StoreConverter;
-import com.assu.server.domain.store.dto.StoreResponseDTO;
 import com.assu.server.domain.store.entity.Store;
-import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,7 +21,17 @@ import java.util.Optional;
 public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
     private final PartnerRepository partnerRepository;
+	private final PartnershipUsageRepository partnershipUsageRepository;
 
+	@Override
+	@Transactional
+	public StoreResponseDTO.todayBest getTodayBestStore() {
+		List<String> bestStores = partnershipUsageRepository.findTodayPopularPartnership();
+
+		return StoreResponseDTO.todayBest.builder()
+			.bestStores(bestStores)
+			.build();
+	}
     @Override
     @Transactional
     public StoreResponseDTO.WeeklyRankResponseDTO getWeeklyRank(Long memberId) {

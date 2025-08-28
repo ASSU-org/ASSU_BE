@@ -45,6 +45,15 @@ public class Student {
 
     @Enumerated(EnumType.STRING)
     private Major major;
-    //@OneToMany(mappedBy = "user")
-    //private List<AdminUser> adminUsers = new ArrayList<>();
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
+    public void setStamp() {
+        if(this.stamp ==10)
+            this.stamp=1;
+        else
+            this.stamp++;
+    }
 }

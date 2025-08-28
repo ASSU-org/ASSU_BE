@@ -1,5 +1,7 @@
 package com.assu.server.domain.partnership.service;
 
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.partnership.dto.PartnershipResponseDTO;
 import com.assu.server.global.util.PrincipalDetails;
@@ -15,7 +17,9 @@ public interface PartnershipService {
             @RequestBody PartnershipRequestDTO.WritePartnershipRequestDTO request,
             Long memberId
     );
-
+    
+    void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member);
+    
     List<PartnershipResponseDTO.WritePartnershipResponseDTO> listPartnershipsForAdmin(boolean all, Long partnerId);
     List<PartnershipResponseDTO.WritePartnershipResponseDTO> listPartnershipsForPartner(boolean all, Long adminId);
 
@@ -29,4 +33,5 @@ public interface PartnershipService {
             Long adminId,
             MultipartFile contractImage
     );
+
 }
