@@ -13,6 +13,6 @@ public class SelectedPlacePayload {
     private String name;
     private String address;
     private String roadAddress;
-    private Double longitude;
     private Double latitude;
+    private Double longitude;
 }

@@ -17,7 +17,6 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
-
 @Getter
 @Setter
 @DynamicUpdate
@@ -27,6 +26,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 public class Member extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

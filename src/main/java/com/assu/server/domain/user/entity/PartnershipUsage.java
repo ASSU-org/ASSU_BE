@@ -35,6 +35,5 @@ public class PartnershipUsage extends BaseEntity {
 	private String partnershipContent;
 	private Boolean isReviewed;
 	private Integer discount;
-
-
+	private Long paperId;
 }

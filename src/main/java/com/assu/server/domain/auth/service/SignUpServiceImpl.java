@@ -153,15 +153,13 @@ public class SignUpServiceImpl implements SignUpService {
         String keyName = amazonS3Manager.generateKeyName(keyPath);
         String licenseUrl = amazonS3Manager.uploadFile(keyName, licenseImage);
         CommonInfoPayload info = req.getCommonInfo();
+        var sp = Optional.ofNullable(info.getSelectedPlace())
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus._BAD_REQUEST)); // selectedPlace 필수
 
-        Double lat = null, lng = null;
-        String displayAddr = info.getAddress();
-        if (info.getSelectedPlace() != null) {
-            var sp = info.getSelectedPlace();
-            lat = sp.getLatitude();
-            lng = sp.getLongitude();
-            displayAddr = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
-        }
+        // selectedPlace로부터 주소/좌표 생성
+        String address = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
+        Double lat = sp.getLatitude();
+        Double lng = sp.getLongitude();
         Point point = toPoint(lat, lng);
 
         // 3) Partner 프로필 생성
@@ -169,7 +167,7 @@ public class SignUpServiceImpl implements SignUpService {
                 Partner.builder()
                         .member(member)
                         .name(info.getName())
-                        .address(displayAddr)
+                        .address(address)
                         .detailAddress(info.getDetailAddress())
                         .licenseUrl(licenseUrl)
                         .point(point)
@@ -179,7 +177,7 @@ public class SignUpServiceImpl implements SignUpService {
         );
 
         // store 생성/연결
-        Optional<Store> storeOpt = storeRepository.findBySameAddress(displayAddr, info.getDetailAddress());
+        Optional<Store> storeOpt = storeRepository.findBySameAddress(address, info.getDetailAddress());
         if (storeOpt.isPresent()) {
             Store store = storeOpt.get();
             store.linkPartner(partner);
@@ -192,7 +190,7 @@ public class SignUpServiceImpl implements SignUpService {
                     .rate(0)
                     .isActivate(ActivationStatus.ACTIVE)
                     .name(info.getName())
-                    .address(displayAddr)
+                    .address(address)
                     .detailAddress(info.getDetailAddress())
                     .latitude(lat)
                     .longitude(lng)
@@ -244,15 +242,13 @@ public class SignUpServiceImpl implements SignUpService {
         String keyName = amazonS3Manager.generateKeyName(keyPath);
         String signUrl = amazonS3Manager.uploadFile(keyName, signImage);
         CommonInfoPayload info = req.getCommonInfo();
+        var sp = Optional.ofNullable(info.getSelectedPlace())
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus._BAD_REQUEST)); // selectedPlace 필수
 
-        Double lat = null, lng = null;
-        String displayAddr = info.getAddress();
-        if (info.getSelectedPlace() != null) {
-            var sp = info.getSelectedPlace();
-            lat = sp.getLatitude();
-            lng = sp.getLongitude();
-            displayAddr = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
-        }
+        // selectedPlace로부터 주소/좌표 생성
+        String address = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
+        Double lat = sp.getLatitude();
+        Double lng = sp.getLongitude();
         Point point = toPoint(lat, lng);
 
         // 3) Partner 프로필 생성
@@ -260,7 +256,7 @@ public class SignUpServiceImpl implements SignUpService {
                 Admin.builder()
                         .member(member)
                         .name(info.getName())
-                        .officeAddress(displayAddr)
+                        .officeAddress(address)
                         .detailAddress(info.getDetailAddress())
                         .signUrl(signUrl)
                         .point(point)

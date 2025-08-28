@@ -22,7 +22,7 @@ public class ChatController {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Operation(
-            summary = "채팅방 목록을 조회하는 API 입니다.",
+            summary = "채팅방 목록 조회 API",
             description = "Request Header에 User id를 입력해 주세요."
     )
     @GetMapping("/rooms")
@@ -31,7 +31,7 @@ public class ChatController {
     }
 
     @Operation(
-            summary = "채팅방을 생성하는 API 입니다.",
+            summary = "채팅방 생성 API",
             description = "상대방의 id를 request body에 입력해 주세요"
     )
     @PostMapping("/create/rooms")
@@ -40,7 +40,7 @@ public class ChatController {
     }
 
     @Operation(
-            summary = "채팅 API 입니다.",
+            summary = "채팅 API",
             description = "roomId, senderId, message를 입력해 주세요"
     )
     @MessageMapping("/send")
@@ -51,7 +51,7 @@ public class ChatController {
     }
 
     @Operation(
-            summary = "메시지 읽음 처리 API 입니다.",
+            summary = "메시지 읽음 처리 API",
             description = "roomId를 입력해 주세요."
     )
     @PatchMapping("rooms/{roomId}/read")
@@ -62,7 +62,7 @@ public class ChatController {
     }
 
     @Operation(
-            summary = "채팅방 상세 조회 API 입니다.",
+            summary = "채팅방 상세 조회 API",
             description = "roomId를 입력해 주세요."
     )
     @GetMapping("rooms/{roomId}/messages")
@@ -72,8 +72,8 @@ public class ChatController {
     }
 
     @Operation(
-            summary = "채팅방을 나가는 API 입니다." +
-                    "참여자가 2명이면 채팅방이 살아있지만, 이미 한 명이 나갔다면 채팅방이 삭제됩니다.",
+            summary = "채팅방 나가기 API" +
+                    " (참여자가 2명이면 채팅방이 살아있지만, 이미 한 명이 나갔다면 채팅방이 삭제됩니다.)",
             description = "roomId를 입력해 주세요."
     )
     @DeleteMapping("rooms/{roomId}/leave")

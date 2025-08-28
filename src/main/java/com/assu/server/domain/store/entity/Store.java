@@ -34,6 +34,7 @@ public class Store extends BaseEntity {
 
 	private Integer rate;
 
+	@Setter
 	@Enumerated(EnumType.STRING)
 	private ActivationStatus isActivate;
 
