@@ -50,12 +50,10 @@ public class CertificationController {
 	@MessageMapping("/certify")
 	@Operation(summary = "그룹 세션 인증 api", description = "그룹에 대한 세션 인증 요청을 보냅니다.")
 	public ResponseEntity<BaseResponse<Void>> certifyGroup(
-		CertificationRequestDTO.groupSessionRequest dto  // 나중에 여기에 Security + WebSocket 설정 완료한 후
-		// @AuthenticationPrincipal 넣어주기
+		CertificationRequestDTO.groupSessionRequest dto  , PrincipalDetails pd
 
 	) {
-		Member member = memberRepository.findMemberById(4L).orElseThrow(
-			() -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER));
+		Member member = pd.getMember();
 
 		certificationService.handleCertification(dto, member);
 
