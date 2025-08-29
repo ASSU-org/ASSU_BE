@@ -42,7 +42,10 @@ public class SecurityConfig {
 								"/sub/**",
 								"/auth/**",
 								"/certification/**",
-								"/store/**")
+								"/store/**",
+							"/proposal",
+							"/partnership/**",
+							"/user/**")
 						.permitAll()
 
                         // 로그아웃은 인증 필요

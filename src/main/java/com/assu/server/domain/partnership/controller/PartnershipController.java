@@ -28,12 +28,13 @@ import java.util.List;
 @RestController
 @Tag(name = "제휴 요청 api", description = "최종적으로 @@ 제휴를 요청할때 사용하는 api ")
 @RequiredArgsConstructor
+@RequestMapping("/partnership")
 public class PartnershipController {
 
 	private final PartnershipService partnershipService;
 
 
-	@PostMapping("/parntership/usage")
+	@PostMapping("/usage")
 	@Operation(summary= "유저의 인증 후 최종적으로 호출", description = "인증완료 화면 전에 바로 호출되어 유저의 제휴 내역에 데이터가 들어가게 됩니다. (개인 인증인 경우도 포함됩니다.)")
 	public ResponseEntity<BaseResponse<PaperResponseDTO.partnershipContent>> finalPartnershipRequest(
 		@AuthenticationPrincipal PrincipalDetails userDetails,@RequestBody PartnershipRequestDTO.finalRequest dto

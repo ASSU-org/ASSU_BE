@@ -64,6 +64,7 @@ public class PartnershipServiceImpl implements PartnershipService {
 
 		// 1) 요청한 member 본인
 		usages.add(PartnershipConverter.toPartnershipUsage(dto, member.getStudentProfile()));
+        member.getStudentProfile().setStamp();
 
 		List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
 		// 2) dto의 userIds에 있는 다른 사용자들
