@@ -13,6 +13,9 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Id;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 
@@ -46,6 +49,12 @@ public class Admin {
 
     @Enumerated(EnumType.STRING)
     private Major major;
+
+    @JdbcTypeCode(SqlTypes.GEOMETRY)
+    private Point point;
+
+    private double latitude;
+    private double longitude;
 
     public void setMember(Member member) {
         this.member = member;

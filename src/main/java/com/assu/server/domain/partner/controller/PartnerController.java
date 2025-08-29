@@ -18,7 +18,7 @@ public class PartnerController {
     private final PartnerService partnerService;
 
     @Operation(
-            summary = "제휴하지 않은 어드민을 추천하는 API 입니다.",
+            summary = "어드민 추천 API",
             description = "제휴하지 않은 어드민 중 두 곳을 랜덤으로 조회합니다."
     )
     @GetMapping("/admin-recommend")

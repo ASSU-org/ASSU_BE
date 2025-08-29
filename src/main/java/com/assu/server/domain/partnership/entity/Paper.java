@@ -9,10 +9,7 @@ import com.assu.server.domain.store.entity.Store;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -30,6 +27,7 @@ public class Paper extends BaseEntity {
 	@Setter
     @Enumerated(EnumType.STRING)
 	private ActivationStatus isActivated;
+
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "admin_id")

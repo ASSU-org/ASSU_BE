@@ -50,8 +50,10 @@ public enum ErrorStatus implements BaseErrorCode {
     EXISTED_EMAIL(HttpStatus.NOT_FOUND,"MEMBER_4006","이미 존재하는 이메일입니다."),
     EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4007","이미 존재하는 학번입니다."),
     NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "MEMBER_4009", "제휴업체를 찾을 수 없습니다."),
+
     // 제휴 에러
     NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_9001", "제휴를 찾을 수 없습니다."),
+    NO_SUCH_CONTENT(HttpStatus.NOT_FOUND, "PAPER_4002", "제휴 내용을 찾을 수 없습니다."),
 
     // session 에러
     NO_SUCH_SESSION(HttpStatus.NOT_FOUND, "SESSION4001", "존재하지 않는 session ID입니다."),
@@ -83,8 +85,10 @@ public enum ErrorStatus implements BaseErrorCode {
     // 디바이스 토큰(DeviceToken) 에러
     DEVICE_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND,"DEVICE_4001","존재하지 않는 Device Token 입니다."),
     DEVICE_TOKEN_NOT_OWNED(HttpStatus.FORBIDDEN, "DEVICE_4004","해당 토큰은 본인 소유가 아닙니다."),
-    DEVICE_TOKEN_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"DEVICE_5001","Device Token 등록에 실패했습니다.")
+    DEVICE_TOKEN_REGISTER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR,"DEVICE_5001","Device Token 등록에 실패했습니다."),
 
+    // 주소 에러
+    NO_SUCH_ADDRESS(HttpStatus.NOT_FOUND, "ADDRESS_7001", "주소를 찾을 수 없습니다."),
 
     ;
 

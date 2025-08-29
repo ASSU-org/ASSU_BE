@@ -1,6 +1,8 @@
 package com.assu.server.domain.auth.dto.signup.common;
 
+import com.assu.server.domain.map.dto.SelectedPlacePayload;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,9 +17,9 @@ public class CommonInfoPayload {
     @Size(min = 1, max = 50) @NotBlank
     private String name;
 
-    @Size(min = 1, max = 255) @NotBlank
-    private String address;
-
     @Size(max = 255)
     private String detailAddress;
+
+    @NotNull
+    private SelectedPlacePayload selectedPlace;
 }

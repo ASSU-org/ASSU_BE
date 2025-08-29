@@ -96,6 +96,27 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
         ORDER BY pw.weekStart ASC
         """, nativeQuery = true)
     List<GlobalWeeklyRankRow> findGlobalWeeklyTrendLast6Weeks(@Param("storeId") Long storeId);
+
+    @Query("""
+        SELECT s FROM Store s
+        WHERE s.address = :address
+          AND ((:detail IS NULL AND s.detailAddress IS NULL) OR s.detailAddress = :detail)
+    """)
+
+    Optional<Store> findBySameAddress(
+            @Param("address") String address,
+            @Param("detail") String detail
+    );
+
+    @Query(value = """
+        SELECT s.*
+        FROM store s
+        WHERE s.point IS NOT NULL
+          AND ST_Contains(ST_GeomFromText(:wkt, 4326), s.point)
+        """, nativeQuery = true)
+    List<Store> findAllWithinViewport(@Param("wkt") String wkt);
+
+    List<Store> findByNameContainingIgnoreCaseOrderByIdDesc(String name);
     Optional<Store> findByName(String name);
     Optional<Store> findById(Long id);
 

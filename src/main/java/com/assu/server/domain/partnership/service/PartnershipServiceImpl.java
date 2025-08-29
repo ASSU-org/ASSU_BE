@@ -22,8 +22,6 @@ import com.assu.server.domain.admin.repository.AdminRepository;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
-import com.assu.server.domain.partnership.converter.PartnershipConverter;
-import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.partnership.dto.PartnershipResponseDTO;
 import com.assu.server.domain.partnership.entity.Goods;
 import com.assu.server.domain.partnership.entity.Paper;
@@ -34,14 +32,10 @@ import com.assu.server.domain.partnership.repository.PaperRepository;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.config.AmazonConfig;
 import com.assu.server.global.exception.DatabaseException;
 import com.assu.server.infra.s3.AmazonS3Manager;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -78,7 +72,7 @@ public class PartnershipServiceImpl implements PartnershipService {
 		}
 
 		partnershipUsageRepository.saveAll(usages);
-		
+
 	}
 
 
@@ -92,8 +86,6 @@ public class PartnershipServiceImpl implements PartnershipService {
     private final StoreRepository storeRepository;
 
     private final AmazonS3Manager amazonS3Manager;
-    private final AmazonConfig amazonConfig;
-
 
     @Override
     public PartnershipResponseDTO.WritePartnershipResponseDTO writePartnershipAsPartner(
@@ -223,14 +215,16 @@ public class PartnershipServiceImpl implements PartnershipService {
             Long adminId,
             MultipartFile contractImage) {
 
-        if (request == null || adminId == null || request.getStoreAddress() == null)
+        if (request == null || adminId == null)
             throw new DatabaseException(ErrorStatus._BAD_REQUEST);
 
         Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
+        String address = pickDisplayAddress(request.getSelectedPlace().getRoadAddress(), request.getSelectedPlace().getAddress());
+
         Store store = storeRepository
-                .findByNameAndAddressAndDetailAddress(request.getStoreName(), request.getStoreAddress(), request.getStoreDetailAddress())
+                .findByNameAndAddressAndDetailAddress(request.getStoreName(), address, request.getStoreDetailAddress())
                 .orElse(null);
 
         boolean created = false;
@@ -239,7 +233,7 @@ public class PartnershipServiceImpl implements PartnershipService {
         if (store == null) {
             store = Store.builder()
                     .name(request.getStoreName())
-                    .address(request.getStoreAddress())
+                    .address(address)
                     .detailAddress(request.getStoreDetailAddress())
                     .rate(0)
                     .isActivate(ActivationStatus.SUSPEND)
@@ -334,4 +328,7 @@ public class PartnershipServiceImpl implements PartnershipService {
         }
     }
 
+    private String pickDisplayAddress(String road, String jibun) {
+        return (road != null && !road.isBlank()) ? road : jibun;
+    }
 }

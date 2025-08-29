@@ -69,6 +69,7 @@ public class PartnershipController {
             @RequestPart("request") @Parameter PartnershipRequestDTO.ManualPartnershipRequestDTO request,
             @Parameter(
                     description = "계약서 이미지 파일",
+                    required = true,
                     content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
                             schema = @Schema(type = "string", format = "binary"))
             )

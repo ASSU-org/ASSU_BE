@@ -20,7 +20,7 @@ public class AdminController {
     private final AdminService adminService;
 
     @Operation(
-            summary = "제휴하지 않은 파트너를 추천하는 API 입니다.",
+            summary = "파트너 추천 API",
             description = "제휴하지 않은 파트너 중 한 곳을 랜덤으로 조회합니다."
     )
     @GetMapping("/partner-recommend")

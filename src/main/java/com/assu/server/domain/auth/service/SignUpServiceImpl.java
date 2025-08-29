@@ -15,17 +15,24 @@ import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
+import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
+import com.assu.server.global.config.KakaoLocalClient;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -42,6 +49,10 @@ public class SignUpServiceImpl implements SignUpService {
 
     private final AmazonS3Manager amazonS3Manager;
     private final JwtUtil jwtUtil;
+
+    private final KakaoLocalClient kakaoLocalClient;
+    private final GeometryFactory geometryFactory;
+    private final StoreRepository storeRepository;
 
     private RealmAuthAdapter pickAdapter(AuthRealm realm) {
         return realmAuthAdapters.stream()
@@ -142,17 +153,51 @@ public class SignUpServiceImpl implements SignUpService {
         String keyName = amazonS3Manager.generateKeyName(keyPath);
         String licenseUrl = amazonS3Manager.uploadFile(keyName, licenseImage);
         CommonInfoPayload info = req.getCommonInfo();
+        var sp = Optional.ofNullable(info.getSelectedPlace())
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus._BAD_REQUEST)); // selectedPlace 필수
+
+        // selectedPlace로부터 주소/좌표 생성
+        String address = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
+        Double lat = sp.getLatitude();
+        Double lng = sp.getLongitude();
+        Point point = toPoint(lat, lng);
 
         // 3) Partner 프로필 생성
-        partnerRepository.save(
+        Partner partner = partnerRepository.save(
                 Partner.builder()
                         .member(member)
                         .name(info.getName())
-                        .address(info.getAddress())
+                        .address(address)
                         .detailAddress(info.getDetailAddress())
                         .licenseUrl(licenseUrl)
+                        .point(point)
+                        .latitude(lat)
+                        .longitude(lng)
                         .build()
         );
+
+        // store 생성/연결
+        Optional<Store> storeOpt = storeRepository.findBySameAddress(address, info.getDetailAddress());
+        if (storeOpt.isPresent()) {
+            Store store = storeOpt.get();
+            store.linkPartner(partner);
+            store.setName(info.getName());
+            store.setGeo(lat, lng, point);
+            storeRepository.save(store);
+        } else {
+            Store newly = Store.builder()
+                    .partner(partner)
+                    .rate(0)
+                    .isActivate(ActivationStatus.ACTIVE)
+                    .name(info.getName())
+                    .address(address)
+                    .detailAddress(info.getDetailAddress())
+                    .latitude(lat)
+                    .longitude(lng)
+                    .point(point)
+                    .build();
+            storeRepository.save(newly);
+        }
 
         // 4) 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
@@ -197,15 +242,26 @@ public class SignUpServiceImpl implements SignUpService {
         String keyName = amazonS3Manager.generateKeyName(keyPath);
         String signUrl = amazonS3Manager.uploadFile(keyName, signImage);
         CommonInfoPayload info = req.getCommonInfo();
+        var sp = Optional.ofNullable(info.getSelectedPlace())
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus._BAD_REQUEST)); // selectedPlace 필수
+
+        // selectedPlace로부터 주소/좌표 생성
+        String address = pickDisplayAddress(sp.getRoadAddress(), sp.getAddress());
+        Double lat = sp.getLatitude();
+        Double lng = sp.getLongitude();
+        Point point = toPoint(lat, lng);
 
         // 3) Partner 프로필 생성
         adminRepository.save(
                 Admin.builder()
                         .member(member)
                         .name(info.getName())
-                        .officeAddress(info.getAddress())
+                        .officeAddress(address)
                         .detailAddress(info.getDetailAddress())
                         .signUrl(signUrl)
+                        .point(point)
+                        .latitude(lat)
+                        .longitude(lng)
                         .build()
         );
 
@@ -223,5 +279,16 @@ public class SignUpServiceImpl implements SignUpService {
                 .status(member.getIsActivated())
                 .tokens(tokens)
                 .build();
+    }
+
+    public Point toPoint(Double lat, Double lng) {
+        if (lat == null || lng == null) return null;
+        Point p = geometryFactory.createPoint(new Coordinate(lng, lat)); // x=lng, y=lat
+        p.setSRID(4326);
+        return p;
+    }
+
+    private String pickDisplayAddress(String road, String jibun) {
+        return (road != null && !road.isBlank()) ? road : jibun;
     }
 }

@@ -2,8 +2,11 @@ package com.assu.server.domain.partnership.dto;
 import java.util.List;
 import lombok.Getter;
 
+import com.assu.server.domain.common.enums.ActivationStatus;
+import com.assu.server.domain.map.dto.SelectedPlacePayload;
 import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -54,7 +57,7 @@ public class PartnershipRequestDTO {
     @NoArgsConstructor
     public static class ManualPartnershipRequestDTO {
         private String storeName;
-        private String storeAddress;
+        @NotNull private SelectedPlacePayload selectedPlace;
         private String storeDetailAddress;
         private LocalDate partnershipPeriodStart;
         private LocalDate partnershipPeriodEnd;
