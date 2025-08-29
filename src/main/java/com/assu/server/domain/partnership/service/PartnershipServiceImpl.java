@@ -69,9 +69,12 @@ public class PartnershipServiceImpl implements PartnershipService {
 		List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
 		// 2) dto의 userIds에 있는 다른 사용자들
 		for (Long userId : userIds) {
-			Student student = studentRepository.getReferenceById(userId);
-			usages.add(PartnershipConverter.toPartnershipUsage(dto, student));
-			student.setStamp();
+            if(userId != member.getId()){
+                Student student = studentRepository.getReferenceById(userId);
+                usages.add(PartnershipConverter.toPartnershipUsage(dto, student));
+                student.setStamp();
+            }
+
 		}
 
 		partnershipUsageRepository.saveAll(usages);
