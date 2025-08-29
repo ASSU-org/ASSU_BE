@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.user.dto.StudentResponseDTO;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.util.PrincipalDetails;
@@ -31,7 +32,10 @@ public class StudentController {
 	public ResponseEntity<BaseResponse<StudentResponseDTO.myPartnership>> getMyPartnership(
 		@PathVariable int year, @PathVariable int month, @AuthenticationPrincipal PrincipalDetails userDetails
 	){
-		return null;
+		Member member = userDetails.getMember();
+		StudentResponseDTO.myPartnership result = studentService.getMyPartnership(member.getId(), year, month);
+
+		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.PARTNERSHIP_HISTORY_SUCCESS, result));
 	}
 
 
