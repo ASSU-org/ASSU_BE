@@ -1,0 +1,235 @@
+package com.assu.server.domain.map.service;
+
+import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.admin.repository.AdminRepository;
+import com.assu.server.domain.common.enums.ActivationStatus;
+import com.assu.server.domain.map.dto.MapRequestDTO;
+import com.assu.server.domain.map.dto.MapResponseDTO;
+import com.assu.server.domain.partner.entity.Partner;
+import com.assu.server.domain.partner.repository.PartnerRepository;
+import com.assu.server.domain.partnership.entity.Paper;
+import com.assu.server.domain.partnership.entity.PaperContent;
+import com.assu.server.domain.partnership.repository.PaperContentRepository;
+import com.assu.server.domain.partnership.repository.PaperRepository;
+import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.store.repository.StoreRepository;
+import com.assu.server.global.apiPayload.code.status.ErrorStatus;
+import com.assu.server.global.config.KakaoLocalClient;
+import com.assu.server.global.exception.DatabaseException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class MapServiceImpl implements MapService {
+
+    private final AdminRepository adminRepository;
+    private final PartnerRepository partnerRepository;
+    private final StoreRepository storeRepository;
+    private final KakaoLocalClient kakaoLocalClient;
+    private final PaperContentRepository paperContentRepository;
+    private final PaperRepository paperRepository;
+    private final GeometryFactory geometryFactory;
+
+    @Override
+    public List<MapResponseDTO.PartnerMapResponseDTO> getPartners(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
+        Admin admin = adminRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+
+        String wkt = toWKT(viewport);
+        List<Partner> partners = partnerRepository.findAllWithinViewport(wkt);
+
+        return partners.stream().map(p -> {
+            Paper active = paperRepository.findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(memberId, p.getId(), ActivationStatus.ACTIVE)
+                    .orElse(null);
+
+            return MapResponseDTO.PartnerMapResponseDTO.builder()
+                    .partnerId(p.getId())
+                    .name(p.getName())
+                    .address(p.getAddress() != null ? p.getAddress() : p.getDetailAddress())
+                    .isPartnered(active != null)
+                    .partnershipId(active != null ? active.getId() : null)
+                    .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
+                    .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
+                    .latitude(p.getLatitude())
+                    .longitude(p.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    public List<MapResponseDTO.AdminMapResponseDTO> getAdmins(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
+
+        Partner partner = partnerRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+
+        String wkt = toWKT(viewport);
+        List<Admin> admins = adminRepository.findAllWithinViewport(wkt);
+
+        return admins.stream().map(a -> {
+            Paper active = paperRepository.findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(a.getId(), memberId, ActivationStatus.ACTIVE)
+                    .orElse(null);
+
+            return MapResponseDTO.AdminMapResponseDTO.builder()
+                    .adminId(a.getId())
+                    .name(a.getName())
+                    .address(a.getOfficeAddress() != null ? a.getOfficeAddress() : a.getDetailAddress())
+                    .isPartnered(active != null)
+                    .partnershipId(active != null ? active.getId() : null)
+                    .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
+                    .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
+                    .latitude(a.getLatitude())
+                    .longitude(a.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    public List<MapResponseDTO.StoreMapResponseDTO> getStores(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
+        String wkt = toWKT(viewport);
+        List<Store> stores = storeRepository.findAllWithinViewport(wkt);
+
+        return stores.stream().map(s -> {
+            boolean hasPartner = (s.getPartner() != null);
+
+            PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
+                    .orElse(null);
+
+            Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
+                    .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
+                    .orElse(null);
+
+            return MapResponseDTO.StoreMapResponseDTO.builder()
+                    .storeId(s.getId())
+                    .adminId(adminId)
+                    .name(s.getName())
+                    .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
+                    .rate(s.getRate())
+                    .criterionType(content != null ? content.getCriterionType() : null)
+                    .optionType(content != null ? content.getOptionType() : null)
+                    .people(content != null ? content.getPeople() : null)
+                    .cost(content != null ? content.getCost() : null)
+                    .category(content != null ? content.getCategory() : null)
+                    .discountRate(content != null ? content.getDiscount() : null)
+                    .hasPartner(hasPartner)
+                    .latitude(s.getLatitude())
+                    .longitude(s.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    public List<MapResponseDTO.StoreMapResponseDTO> searchStores(String keyword) {
+        List<Store> stores = storeRepository.findByNameContainingIgnoreCaseOrderByIdDesc(keyword);
+
+        return stores.stream().map(s -> {
+            boolean hasPartner = s.getPartner() != null;
+            PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
+                    .orElse(null);
+
+            Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
+                    .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
+                    .orElse(null);
+
+            return MapResponseDTO.StoreMapResponseDTO.builder()
+                    .storeId(s.getId())
+                    .adminId(adminId)
+                    .name(s.getName())
+                    .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
+                    .rate(s.getRate())
+                    .criterionType(content != null ? content.getCriterionType() : null)
+                    .optionType(content != null ? content.getOptionType() : null)
+                    .people(content != null ? content.getPeople() : null)
+                    .cost(content != null ? content.getCost() : null)
+                    .category(content != null ? content.getCategory() : null)
+                    .discountRate(content != null ? content.getDiscount() : null)
+                    .hasPartner(hasPartner)
+                    .latitude(s.getLatitude())
+                    .longitude(s.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    public List<MapResponseDTO.PartnerMapResponseDTO> searchPartner(String keyword, Long memberId) {
+
+        Admin admin = adminRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+
+        List<Partner> partners = partnerRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
+
+        return partners.stream().map(p -> {
+                Paper active = paperRepository
+                                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(memberId, p.getId(), ActivationStatus.ACTIVE)
+                                    .orElse(null);
+
+                return MapResponseDTO.PartnerMapResponseDTO.builder()
+                    .partnerId(p.getId())
+                    .name(p.getName())
+                    .address(p.getAddress() != null ? p.getAddress() : p.getDetailAddress())
+                    .isPartnered(true)
+                    .partnershipId(active != null ? active.getId() : null)
+                    .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
+                    .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
+                    .latitude(p.getLatitude())
+                    .longitude(p.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    @Override
+    public List<MapResponseDTO.AdminMapResponseDTO> searchAdmin(String keyword, Long memberId) {
+
+        Partner partner = partnerRepository.findById(memberId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+
+        List<Admin> admins = adminRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
+
+        return admins.stream().map(a -> {
+            Paper active = paperRepository
+                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(a.getId(), memberId, ActivationStatus.ACTIVE)
+                    .orElse(null);
+
+            return MapResponseDTO.AdminMapResponseDTO.builder()
+                    .adminId(a.getId())
+                    .name(a.getName())
+                    .address(a.getOfficeAddress() != null ? a.getOfficeAddress() : a.getDetailAddress())
+                    .isPartnered(true)
+                    .partnershipId(active != null ? active.getId() : null)
+                    .partnershipStartDate(active != null ? active.getPartnershipPeriodStart() : null)
+                    .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
+                    .latitude(a.getLatitude())
+                    .longitude(a.getLongitude())
+                    .build();
+        }).toList();
+    }
+
+    private String toWKT(MapRequestDTO.ViewOnMapDTO v) {
+        return String.format(
+                "POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))",
+                v.getLng1(), v.getLat1(),
+                v.getLng2(), v.getLat2(),
+                v.getLng3(), v.getLat3(),
+                v.getLng4(), v.getLat4(),
+                v.getLng1(), v.getLat1()
+        );
+    }
+
+    private Point toPoint(Double lng, Double lat) {
+        if (lng == null || lat == null) return null;
+        Point p = geometryFactory.createPoint(new Coordinate(lng, lat));
+        p.setSRID(4326);
+        return p;
+    }
+
+    private String pickDisplayAddress(String road, String jibun) {
+        return (road != null && !road.isBlank()) ? road : jibun;
+    }
+}
