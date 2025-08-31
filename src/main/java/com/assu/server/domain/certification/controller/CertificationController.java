@@ -36,13 +36,11 @@ public class CertificationController {
 	@PostMapping("/certification/session")
 	@Operation(summary = "세션 정보를 요청하는 api", description = "인원 수 기준이 요구되는 제휴일 때 세션을 만들고, 대표자 QR에 담을 정보를 요청하는 api 입니다.")
 	public ResponseEntity<BaseResponse<CertificationResponseDTO.getSessionIdResponse>> getSessionId(
-		@AuthenticationPrincipal PrincipalDetails userDetails,
+		@AuthenticationPrincipal PrincipalDetails pd,
 		@RequestBody CertificationRequestDTO.groupRequest dto
 	) {
 
-		Member member = userDetails.getMember();
-
-		CertificationResponseDTO.getSessionIdResponse result = certificationService.getSessionId(dto, member);
+		CertificationResponseDTO.getSessionIdResponse result = certificationService.getSessionId(dto, pd.getMember());
 
 		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.GROUP_SESSION_CREATE, result));
 	}
@@ -53,9 +51,7 @@ public class CertificationController {
 		CertificationRequestDTO.groupSessionRequest dto  , PrincipalDetails pd
 
 	) {
-		Member member = pd.getMember();
-
-		certificationService.handleCertification(dto, member);
+		certificationService.handleCertification(dto, pd.getMember());
 
 		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.GROUP_CERTIFICATION_SUCCESS, null));
 	}
@@ -64,12 +60,10 @@ public class CertificationController {
 	@Operation(summary = "개인 인증 api", description = "사실 크게 필요없는데, 제휴 내역 통계를 위해 데이터를 post하는 api 입니다. "
 		+ "가게 별 제휴를 조회하고 people값이 null 인 제휴를 선택한 경우 그룹 인증 대신 요청하는 api 입니다.")
 	public ResponseEntity<BaseResponse<Void>> personalCertification(
-		@AuthenticationPrincipal PrincipalDetails userDetails,
+		@AuthenticationPrincipal PrincipalDetails pd,
 		@RequestBody CertificationRequestDTO.personalRequest dto
 	) {
-
-		Member member = userDetails.getMember();
-		certificationService.certificatePersonal(dto, member);
+		certificationService.certificatePersonal(dto, pd.getMember());
 
 		return ResponseEntity.ok(BaseResponse.onSuccessWithoutData(SuccessStatus.PERSONAL_CERTIFICATION_SUCCESS));
 	}
