@@ -175,18 +175,18 @@ public class PartnershipConverter {
 		else if (content.getCriterionType() == CriterionType.PRICE &&
 			content.getOptionType() == OptionType.SERVICE &&
 			isGoodsMultiple) {
-			result = content.getCost() + " 이상 주문 시 " + content.getCategory() + " 제공";
+			result = content.getCost() + "원 이상 주문 시 " + content.getCategory() + " 제공";
 		}
 		// 5. PRICE + SERVICE + 단일 goods
 		else if (content.getCriterionType() == CriterionType.PRICE &&
 			content.getOptionType() == OptionType.SERVICE &&
 			isGoodsSingle) {
-			result = content.getCost() + " 이상 주문 시 " + goodsList.get(0) + " 제공";
+			result = content.getCost() + "원 이상 주문 시 " + goodsList.get(0) + " 제공";
 		}
 		// 6. PRICE + DISCOUNT
 		else if (content.getCriterionType() == CriterionType.PRICE &&
 			content.getOptionType() == OptionType.DISCOUNT) {
-			result = content.getCost() + " 이상 주문 시 " + content.getDiscount() + "% 할인";
+			result = content.getCost() + "원 이상 주문 시 " + content.getDiscount() + "% 할인";
 		}
 
 		return result;

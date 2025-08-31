@@ -32,8 +32,7 @@ public class InquiryController {
             @AuthenticationPrincipal PrincipalDetails pd,
             @RequestBody @Valid InquiryCreateRequestDTO req
     ) {
-        Long memberId = pd.getMember().getId();
-        Long id = inquiryService.create(req, memberId);
+        Long id = inquiryService.create(req, pd.getId());
         return BaseResponse.onSuccess(SuccessStatus._OK, id);
     }
 
@@ -48,8 +47,7 @@ public class InquiryController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        Long memberId = pd.getMember().getId();
-        Map<String, Object> response = inquiryService.getInquiries(status, page, size, memberId);
+        Map<String, Object> response = inquiryService.getInquiries(status, page, size, pd.getId());
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
@@ -63,8 +61,7 @@ public class InquiryController {
             @AuthenticationPrincipal PrincipalDetails pd,
             @PathVariable("inquiryId") Long inquiryId
     ) {
-        Long memberId = pd.getMember().getId();
-        InquiryResponseDTO response = inquiryService.get(inquiryId, memberId);
+        InquiryResponseDTO response = inquiryService.get(inquiryId, pd.getMemberId());
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 

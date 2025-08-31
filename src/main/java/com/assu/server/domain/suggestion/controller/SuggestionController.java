@@ -29,8 +29,7 @@ public class SuggestionController {
             @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO suggestionRequestDTO,
             @AuthenticationPrincipal PrincipalDetails pd
     ){
-        Long userId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.writeSuggestion(suggestionRequestDTO, userId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.writeSuggestion(suggestionRequestDTO, pd.getId()));
     }
 
     @Operation(
@@ -41,7 +40,6 @@ public class SuggestionController {
     public BaseResponse<List<SuggestionResponseDTO.GetSuggestionResponseDTO>> getSuggestions(
             @AuthenticationPrincipal PrincipalDetails pd
     ) {
-        Long adminId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.getSuggestions(adminId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, suggestionService.getSuggestions(pd.getId()));
     }
 }

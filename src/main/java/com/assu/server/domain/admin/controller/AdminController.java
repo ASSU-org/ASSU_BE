@@ -27,7 +27,6 @@ public class AdminController {
     public BaseResponse<AdminResponseDTO.RandomPartnerResponseDTO> randomPartnerRecommend(
             @AuthenticationPrincipal PrincipalDetails pd
             ) {
-        Long adminId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, adminService.suggestRandomPartner(adminId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, adminService.suggestRandomPartner(pd.getId()));
     }
 }

@@ -40,8 +40,7 @@ public class StoreController {
     @GetMapping("/ranking")
     public ResponseEntity<BaseResponse<StoreResponseDTO.WeeklyRankResponseDTO>> getWeeklyRank(
             @AuthenticationPrincipal PrincipalDetails pd) {
-        Long memberId = pd.getMember().getId();
-        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, storeService.getWeeklyRank(memberId)));
+        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, storeService.getWeeklyRank(pd.getId())));
     }
 
     @Operation(
@@ -52,8 +51,7 @@ public class StoreController {
     public BaseResponse<List<StoreResponseDTO.WeeklyRankResponseDTO>> getWeeklyRankByPartnerId(
             @AuthenticationPrincipal PrincipalDetails pd
     ){
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, storeService.getListWeeklyRank(memberId).getItems());
+        return BaseResponse.onSuccess(SuccessStatus._OK, storeService.getListWeeklyRank(pd.getId()).getItems());
     }
 
 

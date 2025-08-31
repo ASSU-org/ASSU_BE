@@ -35,8 +35,7 @@ public class ReviewController {
             @RequestPart("request") ReviewRequestDTO.WriteReviewRequestDTO request,
             @RequestPart(value = "reviewImages", required = false) List<MultipartFile> reviewImages
     ) {
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.writeReview(request, memberId, reviewImages));
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.writeReview(request, pd.getId(), reviewImages));
     }
 
     @Operation(
@@ -47,8 +46,7 @@ public class ReviewController {
     public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent(
             @AuthenticationPrincipal PrincipalDetails pd
     ) {
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(memberId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(pd.getId()));
     }
 
     @Operation(
@@ -72,7 +70,6 @@ public class ReviewController {
     public BaseResponse<List<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(
             @AuthenticationPrincipal PrincipalDetails pd
     ){
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(memberId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(pd.getId()));
     }
 }

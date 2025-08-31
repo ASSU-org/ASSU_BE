@@ -25,8 +25,7 @@ public class StudentAdminController {
     public BaseResponse<StudentAdminResponseDTO.CountAdminAuthResponseDTO> getCountAdmin(
             @AuthenticationPrincipal PrincipalDetails pd
             ) {
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountAdminAuth(memberId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountAdminAuth(pd.getId()));
     }
     @Operation(
             summary = "신규 한 달 가입자 수 조회 API",
@@ -36,8 +35,7 @@ public class StudentAdminController {
     public BaseResponse<StudentAdminResponseDTO.NewCountAdminResponseDTO> getNewStudentCountAdmin(
             @AuthenticationPrincipal PrincipalDetails pd
     ){
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getNewStudentCountAdmin(memberId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getNewStudentCountAdmin(pd.getId()));
     }
 
     @Operation(
@@ -48,8 +46,7 @@ public class StudentAdminController {
     public BaseResponse<StudentAdminResponseDTO.CountUsagePersonResponseDTO> getCountUser(
             @AuthenticationPrincipal PrincipalDetails pd
     ){
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsagePerson(memberId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsagePerson(pd.getId()));
     }
     @Operation(
             summary = "제휴업체 누적별 1위 업체 조회 API",
@@ -59,8 +56,7 @@ public class StudentAdminController {
         public BaseResponse<StudentAdminResponseDTO.CountUsageResponseDTO> getTopUsage(
                 @AuthenticationPrincipal PrincipalDetails pd
     ) {
-        Long memberId = pd.getMember().getId();
-            return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsage(memberId));
+            return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsage(pd.getId()));
         }
 
         /**
@@ -74,8 +70,7 @@ public class StudentAdminController {
         public BaseResponse<StudentAdminResponseDTO.CountUsageListResponseDTO> getUsageList(
                 @AuthenticationPrincipal PrincipalDetails pd
         ) {
-            Long memberId = pd.getMember().getId();
-            return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsageList(memberId));
+            return BaseResponse.onSuccess(SuccessStatus._OK, studentAdminService.getCountUsageList(pd.getId()));
         }
 
 }
