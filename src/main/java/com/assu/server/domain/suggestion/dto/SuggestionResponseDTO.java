@@ -19,7 +19,6 @@
         public static class WriteSuggestionResponseDTO {
             private Long suggestionId; // 제안 번호
             private Long memberId; // 제안인 아이디
-            private Long studentNumber; // 제안인 학번
             private Long suggestionSubjectId; // 건의 대상 아이디
             private String suggestionStore; // 희망 가게 이름
             private String suggestionBenefit; // 희망 혜택
@@ -34,7 +33,6 @@
             private LocalDateTime createdAt;
             private String content;
             private Major studentMajor;
-            private Long studentNumber;
             private EnrollmentStatus enrollmentStatus;
         }
     }

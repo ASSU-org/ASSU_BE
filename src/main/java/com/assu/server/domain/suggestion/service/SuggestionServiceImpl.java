@@ -2,6 +2,10 @@ package com.assu.server.domain.suggestion.service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
+import com.assu.server.domain.auth.entity.SSUAuth;
+import com.assu.server.domain.auth.repository.SSUAuthRepository;
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.partnership.converter.PartnershipConverter;
 import com.assu.server.domain.partnership.dto.PartnershipResponseDTO;
 import com.assu.server.domain.partnership.entity.Goods;
