@@ -38,8 +38,7 @@ public class NotificationController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        Long memberId = pd.getMember().getId();
-        Map<String, Object> body = query.getNotifications(status, page, size, memberId);
+        Map<String, Object> body = query.getNotifications(status, page, size, pd.getMemberId());
         return BaseResponse.onSuccess(SuccessStatus._OK, body);
     }
 
@@ -50,8 +49,7 @@ public class NotificationController {
     @PostMapping("/{notificationId}/read")
     public BaseResponse<String> markRead(@AuthenticationPrincipal PrincipalDetails pd,
                                          @PathVariable Long notificationId) throws AccessDeniedException {
-        Long memberId = pd.getMember().getId();
-        command.markRead(notificationId, memberId);
+        command.markRead(notificationId, pd.getMemberId());
         return BaseResponse.onSuccess(SuccessStatus._OK,
                 "The notification has been marked as read successfully. id=" + notificationId);
     }
@@ -71,8 +69,7 @@ public class NotificationController {
     @PutMapping("/{type}/toggle")
     public BaseResponse<String> toggle(@AuthenticationPrincipal PrincipalDetails pd,
                                        @PathVariable NotificationType type) {
-        Long memberId = pd.getMember().getId();
-        boolean newValue = command.toggle(memberId, type);
+        boolean newValue = command.toggle(pd.getMemberId(), type);
         return BaseResponse.onSuccess(SuccessStatus._OK,
                 "Notification setting toggled: now enabled=" + newValue);
     }

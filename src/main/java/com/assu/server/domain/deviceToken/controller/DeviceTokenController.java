@@ -25,11 +25,10 @@ public class DeviceTokenController {
     @PostMapping("/register")
     public BaseResponse<String> register(@AuthenticationPrincipal PrincipalDetails pd,
                                          @Valid @RequestBody DeviceTokenRequest req) {
-        Long memberId = pd.getMember().getId();
-        service.register(req.getToken(), memberId);
+        service.register(req.getToken(), pd.getMemberId());
         return BaseResponse.onSuccess(
                 SuccessStatus._OK,
-                "Device token registered successfully. memberId=" + memberId
+                "Device token registered successfully. memberId=" + pd.getMemberId()
         );
     }
 
@@ -40,8 +39,7 @@ public class DeviceTokenController {
     @DeleteMapping("/unregister/{tokenId}")
     public BaseResponse<String> unregister(@AuthenticationPrincipal PrincipalDetails pd,
                                            @PathVariable Long tokenId) {
-        Long memberId = pd.getMember().getId();
-        service.unregister(tokenId, memberId); // 소유자 검증을 서비스에서 수행하도록 memberId 전달
+        service.unregister(tokenId, pd.getMemberId()); // 소유자 검증을 서비스에서 수행하도록 memberId 전달
         return BaseResponse.onSuccess(
                 SuccessStatus._OK,
                 "Device token unregistered successfully. tokenId=" + tokenId
