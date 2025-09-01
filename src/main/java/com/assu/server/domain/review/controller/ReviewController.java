@@ -12,6 +12,9 @@ import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -43,10 +46,10 @@ public class ReviewController {
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/student")
-    public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent(
-            @AuthenticationPrincipal PrincipalDetails pd
+    public BaseResponse<Page<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent(
+            @AuthenticationPrincipal PrincipalDetails pd, Pageable pageable
     ) {
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(pd.getId()));
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(pd.getId(), pageable));
     }
 
     @Operation(
@@ -67,9 +70,9 @@ public class ReviewController {
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/partner")
-    public BaseResponse<List<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(
-            @AuthenticationPrincipal PrincipalDetails pd
+    public BaseResponse<Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(
+            @AuthenticationPrincipal PrincipalDetails pd, Pageable pageable
     ){
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(pd.getId()));
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(pd.getId(), pageable));
     }
 }

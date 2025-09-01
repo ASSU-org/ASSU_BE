@@ -19,6 +19,9 @@ import com.assu.server.global.util.PrincipalDetails;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -93,8 +96,8 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId) {
-        List<Review> reviews = reviewRepository.findByMemberId(memberId);
+    public Page<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId, Pageable pageable) {
+        Page<Review> reviews = reviewRepository.findByMemberId(memberId, pageable);
 
         for (Review review : reviews) {
             updateReviewImageUrls(review);
@@ -105,13 +108,13 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @Transactional
-    public List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId) {
+    public Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId, Pageable pageable) {
         Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
         Store store = storeRepository.findByPartner(partner)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
-        List<Review> reviews = reviewRepository.findByStoreIdOrderByCreatedAtDesc(store.getId());
+        Page<Review> reviews = reviewRepository.findByStoreIdOrderByCreatedAtDesc(store.getId(), pageable);
 
         for (Review review : reviews) {
             updateReviewImageUrls(review);

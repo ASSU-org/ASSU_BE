@@ -11,6 +11,8 @@ import com.assu.server.domain.user.entity.Student;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+
 public class ReviewConverter {
     public static ReviewResponseDTO.WriteReviewResponseDTO writeReviewResultDTO(Review review){
         //enti -> dto
@@ -49,11 +51,16 @@ public class ReviewConverter {
                         .collect(Collectors.toList()))
                 .build();
     }
-    public static List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReviewResultDTO(List<Review> reviews){
-        return reviews.stream()
-                .map(ReviewConverter::checkStudentReviewResultDTO)
-                .collect(Collectors.toList());
+    // public static List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReviewResultDTO(List<Review> reviews){
+    //     return reviews.stream()
+    //             .map(ReviewConverter::checkStudentReviewResultDTO)
+    //             .collect(Collectors.toList());
+    // }
+
+    public static Page<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReviewResultDTO(Page<Review> reviews){
+        return reviews.map(ReviewConverter::checkStudentReviewResultDTO);
     }
+
     public static ReviewResponseDTO.CheckPartnerReviewResponseDTO checkPartnerReviewResultDTO(Review review){
         return ReviewResponseDTO.CheckPartnerReviewResponseDTO.builder()
                 .reviewId(review.getId())
@@ -68,10 +75,14 @@ public class ReviewConverter {
                 .build();
 
     }
-    public static List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(List<Review> reviews){
-        return reviews.stream()
-                .map(ReviewConverter::checkPartnerReviewResultDTO)
-                .collect(Collectors.toList());
+    // public static List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(List<Review> reviews){
+    //     return reviews.stream()
+    //             .map(ReviewConverter::checkPartnerReviewResultDTO)
+    //             .collect(Collectors.toList());
+    // }
+
+    public static Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(Page<Review> reviews){
+        return reviews.map(ReviewConverter::checkPartnerReviewResultDTO);
     }
     public static ReviewResponseDTO.DeleteReviewResponseDTO deleteReviewResultDTO(Long reviewId){
         return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
