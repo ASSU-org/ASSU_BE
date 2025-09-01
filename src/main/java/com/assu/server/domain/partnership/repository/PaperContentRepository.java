@@ -29,4 +29,6 @@ public interface PaperContentRepository extends JpaRepository<PaperContent, Long
            where pc.paper.id in :paperIds
            """)
     List<PaperContent> findAllByOnePaperIdInFetchGoods(@Param("paperIds") Long paperIds);
+
+    Optional<PaperContent> findById(Long id);
 }

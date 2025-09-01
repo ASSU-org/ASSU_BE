@@ -32,7 +32,10 @@ public class StudentResponseDTO {
 	@AllArgsConstructor
 	@Builder
 	public static class UsageDetailDTO {
+		private Long partnershipUsageId;
 		private String storeName;
+		private Long partnerId;
+		private Long storeId;
 		private LocalDate usedAt;
 		private String benefitDescription;
 		private boolean isReviewed;

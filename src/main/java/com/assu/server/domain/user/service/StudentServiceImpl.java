@@ -2,7 +2,9 @@ package com.assu.server.domain.user.service;
 
 import java.util.List;
 
+import com.assu.server.domain.partnership.entity.PaperContent;
 import com.assu.server.domain.partnership.repository.PaperContentRepository;
+import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.user.converter.StudentConverter;
 import com.assu.server.domain.user.dto.StudentResponseDTO;
 import com.assu.server.domain.user.entity.PartnershipUsage;
@@ -36,16 +38,42 @@ public class StudentServiceImpl implements StudentService {
 	public StudentResponseDTO.myPartnership getMyPartnership(Long studentId, int year, int month) {
 		List<PartnershipUsage> usages = partnershipUsageRepository.findByYearAndMonth(studentId, year, month);
 
+		// return StudentResponseDTO.myPartnership.builder()
+		// 	.serviceCount(usages.size())
+		// 	.details(usages.stream()
+		// 		.map(u ->
+		// 			StudentResponseDTO.UsageDetailDTO.builder()
+		// 			.partnershipUsageId(u.getId())
+		// 			.storeName(u.getPlace())
+		// 			.usedAt(u.getDate())
+		// 			.benefitDescription(u.getPartnershipContent())
+		// 			.isReviewed(u.getIsReviewed())
+		// 			.build()
+		// 		).toList()
+		// 	)
+		// 	.build();
 		return StudentResponseDTO.myPartnership.builder()
 			.serviceCount(usages.size())
 			.details(usages.stream()
-				.map(u -> StudentResponseDTO.UsageDetailDTO.builder()
-					.storeName(u.getPlace())
-					.usedAt(u.getDate())
-					.benefitDescription(u.getPartnershipContent())
-					.isReviewed(u.getIsReviewed())
-					.build()
-				).toList()
+				.map(u -> {
+					// 1. partnershipUsage의 paperContentId로 paperContent를 조회합니다.
+					// findById는 Optional을 반환하므로, orElse(null)로 처리합니다.
+					PaperContent paperContent = paperContentRepository.findById(u.getContentId())
+						.orElse(null);
+
+					// 2. PaperContent에서 storeId를 가져옵니다.
+					Store store = (paperContent != null) ? paperContent.getPaper().getStore() : null;
+
+					return StudentResponseDTO.UsageDetailDTO.builder()
+						.partnershipUsageId(u.getId())
+						.storeName(u.getPlace())
+						.usedAt(u.getDate())
+						.benefitDescription(u.getPartnershipContent())
+						.isReviewed(u.getIsReviewed())
+						.storeId(store.getId()) // 3. storeId를 DTO에 매핑합니다.
+						.partnerId(store.getPartner().getId())
+						.build();
+				}).toList()
 			)
 			.build();
 	}
