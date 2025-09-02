@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
@@ -35,6 +36,11 @@ class ServerApplicationTests {
         @SuppressWarnings("unchecked")
 		RedisTemplate<String, Object> redisTemplate() {
 			return Mockito.mock(RedisTemplate.class);
+		}
+
+		@Bean
+		StringRedisTemplate stringRedisTemplate() {
+			return Mockito.mock(StringRedisTemplate.class);
 		}
 
 		@Bean
