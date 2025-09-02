@@ -8,6 +8,7 @@ import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,8 +21,9 @@ import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Tag(name = "Notification", description = "알림 API")
 @RestController
-@RequestMapping("notifications")
+@RequestMapping("/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
     private final NotificationQueryService query;
@@ -46,9 +48,9 @@ public class NotificationController {
             summary = "알림 읽음 처리 API",
             description = "알림 아이디를 보내주세요"
     )
-    @PostMapping("/{notificationId}/read")
+    @PostMapping("/{notification-id}/read")
     public BaseResponse<String> markRead(@AuthenticationPrincipal PrincipalDetails pd,
-                                         @PathVariable Long notificationId) throws AccessDeniedException {
+                                         @PathVariable("notification-id") Long notificationId) throws AccessDeniedException {
         command.markRead(notificationId, pd.getMemberId());
         return BaseResponse.onSuccess(SuccessStatus._OK,
                 "The notification has been marked as read successfully. id=" + notificationId);
@@ -66,7 +68,7 @@ public class NotificationController {
     }
 
     @Operation(summary = "알림 유형별 ON/OFF 토글 API")
-    @PutMapping("/{type}/toggle")
+    @PutMapping("/{type}")
     public BaseResponse<String> toggle(@AuthenticationPrincipal PrincipalDetails pd,
                                        @PathVariable NotificationType type) {
         boolean newValue = command.toggle(pd.getMemberId(), type);

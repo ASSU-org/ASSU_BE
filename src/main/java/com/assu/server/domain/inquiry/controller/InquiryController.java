@@ -9,6 +9,7 @@ import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Tag(name = "Inquiry", description = "문의 API")
 @RestController
 @RequestMapping("/member/inquiries")
 @RequiredArgsConstructor
@@ -70,9 +72,9 @@ public class InquiryController {
             summary = "운영자 답변 API",
             description = "문의에 답변을 저장하고 상태를 ANSWERED로 변경합니다."
     )
-    @PatchMapping("/{inquiryId}/answer")
+    @PatchMapping("/{inquiry-id}/answer")
     public BaseResponse<Void> answer(
-            @PathVariable Long inquiryId,
+            @PathVariable("inquiry-id") Long inquiryId,
             @RequestBody @Valid InquiryAnswerRequestDTO req
     ) {
         inquiryService.answer(inquiryId, req.getAnswer());
