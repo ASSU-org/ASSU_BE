@@ -1,5 +1,6 @@
 package com.assu.server;
 
+import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.google.firebase.messaging.FirebaseMessaging;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -34,6 +35,11 @@ class ServerApplicationTests {
         @SuppressWarnings("unchecked")
 		RedisTemplate<String, Object> redisTemplate() {
 			return Mockito.mock(RedisTemplate.class);
+		}
+
+		@Bean
+		JwtUtil jwtUtil() {
+			return Mockito.mock(JwtUtil.class);
 		}
 	}
 

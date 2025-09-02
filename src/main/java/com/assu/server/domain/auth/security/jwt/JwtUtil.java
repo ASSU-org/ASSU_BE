@@ -16,6 +16,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @RequiredArgsConstructor
+@Profile("!test")
 public class JwtUtil {
 
     @Value("${jwt.secret}")
