@@ -31,7 +31,10 @@ public class NotificationController {
 
     @Operation(
             summary = "알림 목록 조회 API",
-            description = "page는 1 이상이어야 합니다."
+            description = "[v1.0 (2025-09-02)](https://www.notion.so/2491197c19ed8091b349ef0ef4bb0f60?source=copy_link) 본인의 알림 목록을 상태별로 조회합니다.\n"+
+                    "- status: Request Param, String, all/unread\n" +
+                    "- page: Request Param, Integer, 1 이상\n" +
+                    "- size: Request Param, Integer, default = 20"
     )
     @GetMapping
     public BaseResponse<Map<String, Object>> list(
@@ -46,7 +49,8 @@ public class NotificationController {
 
     @Operation(
             summary = "알림 읽음 처리 API",
-            description = "알림 아이디를 보내주세요"
+            description = "[v1.0 (2025-09-02)](https://www.notion.so/2491197c19ed80a89ff0c03bc150460f?source=copy_link) 알림 아이디에 해당하는 알림을 읽음 처리합니다.\n"+
+                    "- notification-id: Path Variable, Long\n"
     )
     @PostMapping("/{notification-id}/read")
     public BaseResponse<String> markRead(@AuthenticationPrincipal PrincipalDetails pd,
@@ -58,8 +62,7 @@ public class NotificationController {
 
     @Operation(
             summary = "알림 전송 테스트 API",
-            description = "API 명세서의 [notification > 알림 보내기 테스트] 페이지의 예시 request를 참고해서 테스트 해주세요!"+
-                    "deviceToken을 등록하신 이후에 확인 가능합니다."
+            description = "[v1.0 (2025-09-02)](https://www.notion.so/2511197c19ed8051bc93d95f0b216543?source=copy_link) deviceToken을 등록한 이후에 사용 가능합니다."
     )
     @PostMapping("/queue")
     public BaseResponse<String> queue(@Valid @RequestBody QueueNotificationRequest req) {
@@ -67,10 +70,12 @@ public class NotificationController {
         return BaseResponse.onSuccess(SuccessStatus._OK, "Notification delivery succeeded.");
     }
 
-    @Operation(summary = "알림 유형별 ON/OFF 토글 API")
+    @Operation(summary = "알림 유형별 ON/OFF 토글 API",
+            description = "[v1.0 (2025-09-02)](https://www.notion.so/on-off-2511197c19ed80aeb4eed3c502691361?source=copy_link) 토글 형식으로 유형별 알림을 ON/OFF 합니다.\n"+
+                    "- type: Path Variable, NotificationType [CHAT / PARTNER_SUGGESTION / PARTNER_PROPOSAL / ORDER]\n")
     @PutMapping("/{type}")
     public BaseResponse<String> toggle(@AuthenticationPrincipal PrincipalDetails pd,
-                                       @PathVariable NotificationType type) {
+                                       @PathVariable("type") NotificationType type) {
         boolean newValue = command.toggle(pd.getMemberId(), type);
         return BaseResponse.onSuccess(SuccessStatus._OK,
                 "Notification setting toggled: now enabled=" + newValue);
