@@ -34,4 +34,4 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build and Test
-        run: ./gradlew clean build test
+        run: ./gradlew clean build test --no-build-cache
