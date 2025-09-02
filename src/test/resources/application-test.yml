@@ -8,14 +8,14 @@ spring:
 jwt:
   header: Authorization
   prefix: Bearer
-  secret: dummy-secret
+  secret: dummy-secret-key-for-testing
   access-valid-seconds: 3600
   refresh-valid-seconds: 1209600
 
 assu:
   security:
     school-crypto:
-      base64-key: "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI="
+      base64-key: "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=" #"dummy-base64-key"를 Base64로 인코딩한 값
 
 cloud:
   aws:
@@ -30,9 +30,7 @@ cloud:
       secretKey: dummy-secret
 
 firebase:
-  project-id: dummy-firebase
-  credentials:
-    path: classpath:firebase/service-account.json
+  enabled: false
 
 kakao:
   base-url: https://dapi.kakao.com
