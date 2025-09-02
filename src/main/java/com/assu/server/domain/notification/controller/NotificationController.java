@@ -32,7 +32,7 @@ public class NotificationController {
     @Operation(
             summary = "알림 목록 조회 API",
             description = "[v1.0 (2025-09-02)](https://www.notion.so/2491197c19ed8091b349ef0ef4bb0f60?source=copy_link) 본인의 알림 목록을 상태별로 조회합니다.\n"+
-                    "- status: Request Param, String, all/unread\n" +
+                    "- status: Request Param, String, [all/unread]\n" +
                     "- page: Request Param, Integer, 1 이상\n" +
                     "- size: Request Param, Integer, default = 20"
     )
