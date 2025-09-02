@@ -49,7 +49,9 @@ public class JwtUtil {
 
     @PostConstruct
     public void clearRedisOnStartup() {
-        redisTemplate.getConnectionFactory().getConnection().flushAll();
+        if (redisTemplate != null && redisTemplate.getConnectionFactory() != null) {
+            redisTemplate.getConnectionFactory().getConnection().flushAll();
+        }
     }
 
     // ───────── 토큰 생성 공통 유틸 ─────────
