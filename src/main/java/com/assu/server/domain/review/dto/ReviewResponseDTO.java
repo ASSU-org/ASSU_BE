@@ -28,6 +28,7 @@ public class ReviewResponseDTO {
     public static class CheckStudentReviewResponseDTO { //내가 작성한 리뷰
         private Long reviewId;
         private Long storeId;
+        private String storeName;
         private String content;
         private Integer rate;
         private LocalDateTime createdAt;
@@ -44,7 +45,6 @@ public class ReviewResponseDTO {
         private String content;
         private Integer rate;
         private LocalDateTime createdAt;
-        private String sortBy; // 정렬기준 -> 최신, 별점, 오래된 순
         private List<String> reviewImageUrls;
     }
 

@@ -10,17 +10,21 @@ import com.assu.server.domain.review.entity.Review;
 import com.assu.server.domain.review.entity.ReviewPhoto;
 import com.assu.server.domain.review.repository.ReviewRepository;
 import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.user.entity.PartnershipUsage;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.store.repository.StoreRepository;
+import com.assu.server.domain.user.repository.PartnershipUsageRepository;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
+import com.assu.server.global.exception.GeneralException;
 import com.assu.server.global.util.PrincipalDetails;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
@@ -41,12 +45,18 @@ public class ReviewServiceImpl implements ReviewService {
     private final PartnerRepository partnerRepository;
     private final StudentRepository studentRepository;
     private final AmazonS3Manager amazonS3Manager;
+    private final PartnershipUsageRepository partnershipUsageRepository;
 
 
     @Override
     public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId, List<MultipartFile> reviewImages) {
         // createReview 메서드 호출로 통합
         Review review = createReview(memberId, request.getStoreId(), request, reviewImages);
+        PartnershipUsage pu = partnershipUsageRepository.findById(request.getPartnershipUsageId()).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_USAGE)
+        );
+        pu.setIsReviewed(true);
+        partnershipUsageRepository.save(pu);
         return ReviewConverter.writeReviewResultDTO(review);
     }
 
@@ -97,6 +107,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public Page<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId, Pageable pageable) {
+        pageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         Page<Review> reviews = reviewRepository.findByMemberId(memberId, pageable);
 
         for (Review review : reviews) {
@@ -109,6 +120,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId, Pageable pageable) {
+        pageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
         Store store = storeRepository.findByPartner(partner)

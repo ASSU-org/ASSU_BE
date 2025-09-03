@@ -45,6 +45,7 @@ public class ReviewConverter {
                 .rate(review.getRate())
                 .content(review.getContent())
                 .createdAt(review.getCreatedAt())
+                .storeName(review.getStore().getName())
                 .storeId(review.getStore().getId())
                 .reviewImageUrls(review.getImageList().stream()
                         .map(ReviewPhoto::getPhotoUrl)
@@ -75,11 +76,6 @@ public class ReviewConverter {
                 .build();
 
     }
-    // public static List<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(List<Review> reviews){
-    //     return reviews.stream()
-    //             .map(ReviewConverter::checkPartnerReviewResultDTO)
-    //             .collect(Collectors.toList());
-    // }
 
     public static Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(Page<Review> reviews){
         return reviews.map(ReviewConverter::checkPartnerReviewResultDTO);

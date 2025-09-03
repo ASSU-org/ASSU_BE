@@ -28,5 +28,7 @@ public class    ReviewRequestDTO {
 
         @Schema(description = "파트너 ID", example = "2")
         private Long partnerId;
+
+        private Long partnershipUsageId;
     }
 }
