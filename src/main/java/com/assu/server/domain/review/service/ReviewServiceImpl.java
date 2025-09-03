@@ -51,6 +51,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId, List<MultipartFile> reviewImages) {
         // createReview 메서드 호출로 통합
+        String affiliation = adminNameToAffliation(request.getAdminName());
         Review review = createReview(memberId, request.getStoreId(), request, reviewImages);
         PartnershipUsage pu = partnershipUsageRepository.findById(request.getPartnershipUsageId()).orElseThrow(
             () -> new GeneralException(ErrorStatus.NO_SUCH_USAGE)
@@ -58,6 +59,13 @@ public class ReviewServiceImpl implements ReviewService {
         pu.setIsReviewed(true);
         partnershipUsageRepository.save(pu);
         return ReviewConverter.writeReviewResultDTO(review);
+    }
+
+    private String adminNameToAffliation(String adminName) {
+        if(adminName.equals("총학생회")|| adminName.equals("숭실대학교 총학생회"))
+            return "숭실대학교 재학생";
+        else
+            return adminName.replace(" 학생회"," 재학생");
     }
 
     private Review createReview(Long memberId, Long storeId, ReviewRequestDTO.WriteReviewRequestDTO request, List<MultipartFile> images) {

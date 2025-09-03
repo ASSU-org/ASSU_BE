@@ -28,6 +28,7 @@ public class PartnershipConverter {
 
 	public static PartnershipUsage toPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Student student) {
 		return PartnershipUsage.builder()
+			.adminName(dto.getAdminName())
 			.date(LocalDate.now())
 			.place(dto.getPlaceName())
 			.student(student)

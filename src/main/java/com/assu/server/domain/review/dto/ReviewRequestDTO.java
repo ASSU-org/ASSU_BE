@@ -30,5 +30,6 @@ public class    ReviewRequestDTO {
         private Long partnerId;
 
         private Long partnershipUsageId;
+        private String adminName;
     }
 }

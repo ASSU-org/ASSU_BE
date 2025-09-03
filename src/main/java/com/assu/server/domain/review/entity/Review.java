@@ -55,4 +55,6 @@ public class Review extends BaseEntity {
 
 	private Integer rate;
 	private String content;
+
+	private String adminName;
 }

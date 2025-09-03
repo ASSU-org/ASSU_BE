@@ -38,20 +38,6 @@ public class StudentServiceImpl implements StudentService {
 	public StudentResponseDTO.myPartnership getMyPartnership(Long studentId, int year, int month) {
 		List<PartnershipUsage> usages = partnershipUsageRepository.findByYearAndMonth(studentId, year, month);
 
-		// return StudentResponseDTO.myPartnership.builder()
-		// 	.serviceCount(usages.size())
-		// 	.details(usages.stream()
-		// 		.map(u ->
-		// 			StudentResponseDTO.UsageDetailDTO.builder()
-		// 			.partnershipUsageId(u.getId())
-		// 			.storeName(u.getPlace())
-		// 			.usedAt(u.getDate())
-		// 			.benefitDescription(u.getPartnershipContent())
-		// 			.isReviewed(u.getIsReviewed())
-		// 			.build()
-		// 		).toList()
-		// 	)
-		// 	.build();
 		return StudentResponseDTO.myPartnership.builder()
 			.serviceCount(usages.size())
 			.details(usages.stream()
@@ -66,6 +52,7 @@ public class StudentServiceImpl implements StudentService {
 
 					return StudentResponseDTO.UsageDetailDTO.builder()
 						.partnershipUsageId(u.getId())
+						.adminName(u.getAdminName())
 						.storeName(u.getPlace())
 						.usedAt(u.getDate())
 						.benefitDescription(u.getPartnershipContent())
