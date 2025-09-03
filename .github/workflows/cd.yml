@@ -56,7 +56,7 @@ jobs:
         shell: bash
 
       - name: Create service-account.json
-        run: echo "${{ secrets.SERVICE_ACCOUNT }}" > ./service-account.json
+        run: echo "${{ secrets.SERVICE_ACCOUNT_B64 }}" | base64 -d > ./service-account.json
         shell: bash
 
       - name: Copy application-secret.yml to EC2
