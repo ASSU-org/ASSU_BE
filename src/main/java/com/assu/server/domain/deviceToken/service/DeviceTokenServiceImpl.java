@@ -20,7 +20,7 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
 
     @Transactional
     @Override
-    public void register(String tokenId, Long memberId) {
+    public Long register(String tokenId, Long memberId) {
         Member member = memberRepository.findMemberById(memberId).orElseThrow(
             () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
         );
@@ -32,6 +32,8 @@ public class DeviceTokenServiceImpl implements DeviceTokenService {
                 .map(deviceToken -> { deviceToken.setActive(true); return deviceToken; })
                 .orElse(DeviceToken.builder().member(member).token(tokenId).active(true).build());
         deviceTokenRepository.save(dt);
+
+        return dt.getId();
     }
 
     @Transactional

@@ -4,8 +4,6 @@ spring:
       initialize-schema: never
     job:
       enabled: false
-  profiles:
-    active: local # 여기에 local, blue, green 셋중 하나로 입력
   config:
     import:
       - optional:classpath:application-secret.yml
@@ -24,7 +22,3 @@ logging:
   level:
     org.springframework.web: DEBUG
     org.springframework.web.client.DefaultRestClient: OFF
-
-kakao:
-  base-url: https://dapi.kakao.com
-  rest-api-key: ${KAKAO_REST_API_KEY}

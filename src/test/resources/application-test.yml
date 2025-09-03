@@ -1,0 +1,41 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+jwt:
+  header: Authorization
+  prefix: Bearer
+  secret: dummy-secret-key-for-testing
+  access-valid-seconds: 3600
+  refresh-valid-seconds: 1209600
+
+assu:
+  security:
+    school-crypto:
+      base64-key: "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=" #"dummy-base64-key"를 Base64로 인코딩한 값
+
+cloud:
+  aws:
+    s3:
+      bucket: test-bucket
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    credentials:
+      accessKey: dummy-access
+      secretKey: dummy-secret
+
+firebase:
+  enabled: false
+
+kakao:
+  base-url: https://dapi.kakao.com
+  rest-api-key: dummy-kakao-key
