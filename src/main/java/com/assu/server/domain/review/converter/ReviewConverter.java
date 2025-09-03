@@ -28,12 +28,13 @@ public class ReviewConverter {
                 //한 리뷰 여러개 사진 but 하나로 묶임 추가 고려해보기 --추후에 !!
                 .build(); //리스폰스 리턴
     }
-    public static Review toReviewEntity(ReviewRequestDTO.WriteReviewRequestDTO  request, Store store, Partner partner, Student student){
+    public static Review toReviewEntity(ReviewRequestDTO.WriteReviewRequestDTO  request, Store store, Partner partner, Student student, String affiliation) {
         //request
         return Review.builder()
                 .rate(request.getRate())
                 .content(request.getContent())
                 .store(store)
+            .affiliation(affiliation)
                 .partner(partner)
                 .student(student)
                 //    .imageList(request.getReviewImage())

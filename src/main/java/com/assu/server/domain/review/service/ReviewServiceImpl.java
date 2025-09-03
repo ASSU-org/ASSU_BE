@@ -52,7 +52,7 @@ public class ReviewServiceImpl implements ReviewService {
     public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId, List<MultipartFile> reviewImages) {
         // createReview 메서드 호출로 통합
         String affiliation = adminNameToAffliation(request.getAdminName());
-        Review review = createReview(memberId, request.getStoreId(), request, reviewImages);
+        Review review = createReview(memberId, request.getStoreId(), request, reviewImages, affiliation);
         PartnershipUsage pu = partnershipUsageRepository.findById(request.getPartnershipUsageId()).orElseThrow(
             () -> new GeneralException(ErrorStatus.NO_SUCH_USAGE)
         );
@@ -68,7 +68,7 @@ public class ReviewServiceImpl implements ReviewService {
             return adminName.replace(" 학생회"," 재학생");
     }
 
-    private Review createReview(Long memberId, Long storeId, ReviewRequestDTO.WriteReviewRequestDTO request, List<MultipartFile> images) {
+    private Review createReview(Long memberId, Long storeId, ReviewRequestDTO.WriteReviewRequestDTO request, List<MultipartFile> images, String affiliation) {
         // 존재여부 검증
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
@@ -78,7 +78,7 @@ public class ReviewServiceImpl implements ReviewService {
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STUDENT));
 
         // 리뷰 엔티티 생성 및 저장
-        Review review = ReviewConverter.toReviewEntity(request, store, partner, student);
+        Review review = ReviewConverter.toReviewEntity(request, store, partner, student, affiliation);
         reviewRepository.save(review); // ID 생성을 위해 먼저 저장
 
         // 이미지 처리
