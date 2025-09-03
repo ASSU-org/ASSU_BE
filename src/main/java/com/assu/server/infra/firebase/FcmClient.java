@@ -1,4 +1,4 @@
-package com.assu.server.infra;
+package com.assu.server.infra.firebase;
 
 import com.assu.server.domain.deviceToken.repository.DeviceTokenRepository;
 import com.assu.server.domain.member.entity.Member;

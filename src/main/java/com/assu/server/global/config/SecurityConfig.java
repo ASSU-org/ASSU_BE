@@ -26,16 +26,12 @@ public class SecurityConfig {
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-resources/**", "/webjars/**"
                         ).permitAll()
-                        // 로그인/회원가입/재발급만 공개
-                        .requestMatchers(
-                                "/auth/login/common",
-                                "/auth/login/student",
-                                "/auth/signup/**",
-                                "/auth/refresh",
-                                "/auth/phone-numbers/**"
-                        ).permitAll()
                         // 로그아웃은 인증 필요
                         .requestMatchers("/auth/logout").authenticated()
+                        // 그 외 Auth 전체 공개
+                        .requestMatchers(
+                                "/auth/**"
+                        ).permitAll()
                         // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
