@@ -39,3 +39,8 @@ firebase:
 kakao:
   base-url: https://dapi.kakao.com
   rest-api-key: dummy-kakao-key
+
+aligo:
+  key: dummy-aligo-key
+  user-id: dummy-user-id
+  sender: 01012345678
