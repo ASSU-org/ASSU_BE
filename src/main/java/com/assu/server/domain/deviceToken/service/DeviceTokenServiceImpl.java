@@ -1,0 +1,52 @@
+package com.assu.server.domain.deviceToken.service;
+
+import com.assu.server.domain.deviceToken.entity.DeviceToken;
+import com.assu.server.domain.deviceToken.repository.DeviceTokenRepository;
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.member.repository.MemberRepository;
+import com.assu.server.global.apiPayload.code.status.ErrorStatus;
+import com.assu.server.global.exception.DatabaseException;
+import com.assu.server.global.exception.GeneralException;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class DeviceTokenServiceImpl implements DeviceTokenService {
+    private final DeviceTokenRepository deviceTokenRepository;
+    private final MemberRepository memberRepository;
+
+    @Transactional
+    @Override
+    public Long register(String tokenId, Long memberId) {
+        Member member = memberRepository.findMemberById(memberId).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
+        );
+        if (member == null) {
+            throw new DatabaseException(ErrorStatus.NO_SUCH_MEMBER);
+        }
+
+        DeviceToken dt = deviceTokenRepository.findByToken(tokenId)
+                .map(deviceToken -> { deviceToken.setActive(true); return deviceToken; })
+                .orElse(DeviceToken.builder().member(member).token(tokenId).active(true).build());
+        deviceTokenRepository.save(dt);
+
+        return dt.getId();
+    }
+
+    @Transactional
+    @Override
+    public void unregister(Long tokenId, Long memberId) {
+        deviceTokenRepository.findById(tokenId)
+                .ifPresentOrElse(deviceToken -> {
+                    if (!deviceToken.getMember().getId().equals(memberId)) {
+                        throw new DatabaseException(ErrorStatus.DEVICE_TOKEN_NOT_OWNED);
+                    }
+                    deviceToken.setActive(false);
+                }, () -> {
+                    throw new DatabaseException(ErrorStatus.DEVICE_TOKEN_NOT_FOUND);
+                });
+    }
+}

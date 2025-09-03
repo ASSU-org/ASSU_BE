@@ -1,10 +1,13 @@
 package com.assu.server.domain.certification.entity;
+import com.assu.server.domain.certification.entity.enums.SessionStatus;
 import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.user.entity.Student;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +32,10 @@ public class AssociateCertification extends BaseEntity {
 
 	private Integer tableNumber;
 	private Boolean isCertified;
+	private Integer peopleNumber;
+
+	@Enumerated(EnumType.STRING)
+	private SessionStatus status;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id")
@@ -41,4 +48,13 @@ public class AssociateCertification extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "student_id")
 	private Student student;
+
+	public void setStatus(SessionStatus status) {
+		this.status = status;
+	}
+	public void setIsCertified(Boolean isCertified) {
+		this.isCertified = isCertified;
+	}
+
+
 }

@@ -1,4 +1,14 @@
 package com.assu.server.domain.user.repository;
 
-public class StudentRepository {
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.assu.server.domain.user.entity.Student;
+
+public interface StudentRepository extends JpaRepository<Student, Long> {
+
+	Optional<Student> findStudentById(Long id);
+
 }
