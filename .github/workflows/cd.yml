@@ -52,15 +52,11 @@ jobs:
             .
 
       - name: Create application-secret.yml
-        run: |
-          mkdir -p ./temp_secret
-          echo "${{ secrets.APPLICATION_SECRET }}" > ./temp_secret/application-secret.yml
+        run: echo "${{ secrets.APPLICATION_SECRET }}" > ./application-secret.yml
         shell: bash
 
       - name: Create service-account.json
-        run: |
-          mkdir -p ./temp_secret
-          echo "${{ secrets.SERVICE_ACCOUNT }}" > ./temp_secret/service-account.json
+        run: echo "${{ secrets.SERVICE_ACCOUNT }}" > ./service-account.json
         shell: bash
 
       - name: Copy application-secret.yml to EC2
@@ -69,7 +65,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: ./temp_secret/application-secret.yml
+          source: ./application-secret.yml
           target: /home/ubuntu/secret/
 
       - name: Copy service-account.json to EC2
@@ -78,7 +74,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: ./temp_secret/service-account.json
+          source: ./service-account.json
           target: /home/ubuntu/secret/
 
       - name: Copy docker-compose.yml
