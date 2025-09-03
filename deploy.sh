@@ -2,10 +2,7 @@
 
 cd /home/ubuntu/cicd
 
-# 환경변수 설정
 APP_NAME="assu"
-TARGET=""
-OLD=""
 
 # NGINX 설정 관련
 NGINX_CONF_PATH="/etc/nginx"
@@ -13,62 +10,59 @@ BLUE_CONF="blue.conf"
 GREEN_CONF="green.conf"
 DEFAULT_CONF="nginx.conf"
 MAX_RETRIES=3
-RETRY_SLEEP_SEC=5
-HEALTH_CHECK_PORT=""
 
 # 활성화된 서비스 확인 및 스위칭 대상 결정
 determine_target() {
   if docker compose -f docker-compose.yml ps | grep -q "app-blue.*Up"; then
     TARGET="green"
     OLD="blue"
-    HEALTH_CHECK_PORT="8081"
   elif docker compose -f docker-compose.yml ps | grep -q "app-green.*Up"; then
     TARGET="blue"
     OLD="green"
-    HEALTH_CHECK_PORT="8080"
   else
     TARGET="blue"  # 첫 실행 시 기본값
     OLD="none"
-    HEALTH_CHECK_PORT="8080"
   fi
 
   echo "TARGET: $TARGET"
   echo "OLD: $OLD"
 }
-
-# docker ps 기반 헬스체크: 컨테이너 상태가 Up이면 성공으로 판단
+# 헬스체크 실패 시 롤백 처리
 health_check() {
+  local URL=$1
   local RETRIES=0
-    local CONTAINER_NAME="app-$TARGET"
+  local ORIGINAL_TARGET=$TARGET  # 원래 TARGET 값을 저장
 
-    echo "Starting docker-ps based health check for '$CONTAINER_NAME'..."
+  while [ $RETRIES -lt $MAX_RETRIES ]; do
+    echo "Checking service at $URL... (attempt: $((RETRIES + 1)))"
+    sleep 3
 
-    # 초기 대기 (컨테이너 기동 시간 확보)
-    sleep 10
+    # 현재 실행 중인 컨테이너 확인
+    CONTAINER_RUNNING=$(docker ps --filter "name=app-$TARGET" --format '{{.Names}}')
 
-    while [ $RETRIES -lt $MAX_RETRIES ]; do
-      echo "Attempt $((RETRIES + 1)) of $MAX_RETRIES: checking docker ps status..."
+    if [ "$CONTAINER_RUNNING" = "app-$TARGET" ]; then
+      echo "$TARGET container is running."
+      return 0  # 컨테이너가 실행 중이라면 헬스체크 성공
+    else
+      echo "$TARGET container is not running."
+    fi
 
-      # docker ps에서 해당 컨테이너의 상태 문자열을 가져옴 (예: "Up 10 seconds")
-      local STATUS
-      STATUS=$(docker ps --filter "name=^${CONTAINER_NAME}$" --format '{{.Status}}' || true)
+    RETRIES=$((RETRIES + 1))
+  done
 
-      if [ -n "$STATUS" ] && [[ "$STATUS" == Up* ]]; then
-        echo "Health check succeeded! '$CONTAINER_NAME' is Up. (status: $STATUS)"
-        return 0
-      else
-        # 상태 디버깅용 출력
-        docker compose -f docker-compose.yml ps || true
-        docker logs --tail=50 "$CONTAINER_NAME" 2>/dev/null || true
-        echo "Current status: '${STATUS:-N/A}'. Retrying in ${RETRY_SLEEP_SEC}s..."
-        sleep "$RETRY_SLEEP_SEC"
-      fi
+  # 헬스체크 실패 시 롤백 처리
+  echo "Health check failed after $MAX_RETRIES attempts."
+  echo "Rolling back to the original target: $ORIGINAL_TARGET"
 
-      RETRIES=$((RETRIES + 1))
-    done
+  # TARGET을 원래 값으로 롤백
+  TARGET=$ORIGINAL_TARGET
+  echo "Rolled back TARGET: $TARGET"
 
-    echo "Health check failed after $MAX_RETRIES attempts."
-    return 1
+  # 로그 파일에 실패 기록
+  echo "Failed health check for $TARGET container" > /home/ubuntu/cicd/health_check_failure.log
+
+  # docker-compose down 대신 실패 기록 후 종료
+  exit 1
 }
 
 # NGINX 설정 스위칭 함수
@@ -80,46 +74,32 @@ switch_nginx_conf() {
   fi
 
   echo "Reloading NGINX configuration..."
-  sudo nginx -s reload
+  nginx -s reload
 }
 
 # 이전 컨테이너 종료 함수
 down_old_container() {
   if [ "$OLD" != "none" ]; then
     echo "Stopping old container: $OLD"
-    docker compose -f docker-compose.yml stop "app-$OLD" || true
-    docker compose -f docker-compose.yml rm -f "app-$OLD" || true
+    sudo docker stop "app-$OLD"
+
   fi
 }
 
 # 메인 실행 로직
 main() {
-  # 대상 컨테이너 결정
   determine_target
 
-  local TARGET_SERVICE="app-$TARGET"
 
-  # 컨테이너 충돌 방지: compose/비compose 둘 다 제거 시도
-  echo "Removing any existing container with the name '$TARGET_SERVICE'..."
-  docker compose -f docker-compose.yml rm -f "$TARGET_SERVICE" 2>/dev/null || true
-  docker rm -f "$TARGET_SERVICE" 2>/dev/null || true
+  # 대상 컨테이너 실행
+  echo "Starting $TARGET container..."
+  docker compose -f docker-compose.yml up -d "app-$TARGET"
 
-  # 새 컨테이너 실행
-  echo "Starting new container: $TARGET_SERVICE..."
-  docker compose -f docker-compose.yml up -d "$TARGET_SERVICE"
-
-  # docker-ps 기반 헬스 체크 및 롤백
-  if ! health_check; then
-    echo "Health check failed. Initiating rollback..."
-
-    # 실패한 컨테이너를 중지하고 제거
-    echo "Removing failed container: '$TARGET_SERVICE'..."
-    docker compose -f docker-compose.yml stop "$TARGET_SERVICE" || true
-    docker compose -f docker-compose.yml rm -f "$TARGET_SERVICE" || true
-    docker rm -f "$TARGET_SERVICE" 2>/dev/null || true
-
-    echo "Rollback complete. The previous version remains active."
-    exit 1
+  # 헬스체크
+  if [ "$TARGET" = "blue" ]; then
+    health_check "http://127.0.0.1:8080/actuator/health"
+  else
+    health_check "http://127.0.0.1:8081/actuator/health"
   fi
 
   # NGINX 설정 스위칭
