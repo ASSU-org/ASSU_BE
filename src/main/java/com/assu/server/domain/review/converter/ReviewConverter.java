@@ -80,9 +80,9 @@ public class ReviewConverter {
     public static Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(Page<Review> reviews){
         return reviews.map(ReviewConverter::checkPartnerReviewResultDTO);
     }
-    public static ReviewResponseDTO.DeleteReviewResponseDTO deleteReviewResultDTO(Long reviewId){
-        return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
-                .reviewId(reviewId)
-                .build();
-    }
+    // public static ReviewResponseDTO.DeleteReviewResponseDTO deleteReviewResultDTO(Long reviewId){
+    //     return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
+    //             .reviewId(reviewId)
+    //             .build();
+    // }
 }

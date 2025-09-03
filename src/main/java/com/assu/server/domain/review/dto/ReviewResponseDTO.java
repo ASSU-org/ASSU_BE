@@ -49,12 +49,12 @@ public class ReviewResponseDTO {
     }
 
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class DeleteReviewResponseDTO {
-        private Long reviewId;
-    }
+    // @Getter
+    // @NoArgsConstructor
+    // @AllArgsConstructor
+    // @Builder
+    // public static class DeleteReviewResponseDTO {
+    //     private Long reviewId;
+    // }
 
 }

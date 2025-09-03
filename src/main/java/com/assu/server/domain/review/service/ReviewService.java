@@ -15,5 +15,5 @@ public interface ReviewService {
     ReviewResponseDTO.WriteReviewResponseDTO writeReview(@RequestBody ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId, List<MultipartFile> reviewImages);
     Page<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId, Pageable pageable);
     Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId, Pageable pageable);
-    ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(@PathVariable Long reviewId);
+    void deleteReview(@PathVariable Long reviewId);
 }

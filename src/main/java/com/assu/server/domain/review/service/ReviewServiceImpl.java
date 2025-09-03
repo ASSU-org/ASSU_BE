@@ -126,7 +126,7 @@ public class ReviewServiceImpl implements ReviewService {
         Store store = storeRepository.findByPartner(partner)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
-        Page<Review> reviews = reviewRepository.findByStoreIdOrderByCreatedAtDesc(store.getId(), pageable);
+        Page<Review> reviews = reviewRepository.findByStoreId(store.getId(), pageable);
 
         for (Review review : reviews) {
             updateReviewImageUrls(review);
@@ -136,9 +136,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
     @Override
     @Transactional
-    public ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(Long reviewId) {
+    public void deleteReview(Long reviewId) {
         reviewRepository.deleteById(reviewId);
-        return ReviewConverter.deleteReviewResultDTO(reviewId);
+
     }
     private void updateReviewImageUrls(Review review) {
         for (ReviewPhoto reviewPhoto : review.getImageList()) {

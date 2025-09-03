@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -57,12 +58,11 @@ public class ReviewController {
             description = "삭제할 리뷰 ID를 입력해주세요."
     )
     @DeleteMapping("/{reviewId}")
-    public BaseResponse<ReviewResponseDTO.DeleteReviewResponseDTO> deleteReview(
-            @AuthenticationPrincipal PrincipalDetails pd,
+    public ResponseEntity<BaseResponse<Void>> deleteReview(
             @PathVariable Long reviewId) {
-        Long memberId = pd.getMember().getId();
+        reviewService.deleteReview(reviewId);
 
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.deleteReview(reviewId));
+        return ResponseEntity.ok(BaseResponse.onSuccessWithoutData(SuccessStatus._OK));
     }
 
     @Operation(

@@ -18,7 +18,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     ORDER BY r.createdAt DESC
 """)
     Page<Review> findByMemberId(@Param("memberId") Long memberId, Pageable pageable);
-    List<Review> findByStoreId(Long storeId);
+    // List<Review> findByStoreId(Long storeId);
 
     Page<Review> findByStoreIdOrderByCreatedAtDesc(Long id, Pageable pageable);//최신순 정렬
+    Page<Review> findByStoreId(Long id, Pageable pageable);
 }
