@@ -3,7 +3,7 @@ package com.assu.server.domain.notification.service;
 import com.assu.server.domain.notification.entity.Notification;
 import com.assu.server.domain.notification.entity.NotificationOutbox;
 import com.assu.server.domain.notification.repository.NotificationOutboxRepository;
-import com.assu.server.infra.FcmClient;
+import com.assu.server.infra.firebase.FcmClient;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -42,7 +42,7 @@ public class AuthController {
 
     @Operation(
             summary = "휴대폰 인증번호 발송 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed801bbcd9f61c3e5f5457?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed801bbcd9f61c3e5f5457?source=copy_link)\n" +
                     "- 입력한 휴대폰 번호로 1회용 인증번호(OTP)를 발송합니다.\n" +
                     "- 유효시간/재요청 제한 정책은 서버 설정에 따릅니다.\n" +
                     "\n**Request Body:**\n" +
@@ -60,7 +60,7 @@ public class AuthController {
 
     @Operation(
             summary = "휴대폰 인증번호 검증 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed81bb8c05d9061c0306c0?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed81bb8c05d9061c0306c0?source=copy_link)\n" +
                     "- 발송된 인증번호(OTP)를 검증합니다.\n" +
                     "- 성공 시 서버에 휴대폰 인증 상태가 기록됩니다.\n" +
                     "\n**Request Body:**\n" +
@@ -82,7 +82,7 @@ public class AuthController {
 
     @Operation(
             summary = "학생 회원가입 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed81129c85cf5bbe1f7971?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed81129c85cf5bbe1f7971?source=copy_link)\n" +
                     "- `application/json` 요청 바디를 사용합니다.\n" +
                     "- 처리: users + ssu_auth 등 가입 레코드 생성, 휴대폰 인증 여부 확인.\n" +
                     "- 성공 시 201(Created)과 생성된 memberId 반환.\n" +
@@ -107,7 +107,7 @@ public class AuthController {
 
     @Operation(
             summary = "제휴업체 회원가입 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80d7a8f2c3a6fcd8b537?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80d7a8f2c3a6fcd8b537?source=copy_link)\n" +
                     "- `multipart/form-data`로 호출합니다.\n" +
                     "- 파트: `payload`(JSON, PartnerSignUpRequest) + `licenseImage`(파일, 사업자등록증).\n" +
                     "- 처리: users + common_auth 생성, 이메일 중복/비밀번호 규칙 검증.\n" +
@@ -150,7 +150,7 @@ public class AuthController {
 
     @Operation(
             summary = "관리자 회원가입 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80cdb98bc2b4d5042b48?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80cdb98bc2b4d5042b48?source=copy_link)\n" +
                     "- `multipart/form-data`로 호출합니다.\n" +
                     "- 파트: `payload`(JSON, AdminSignUpRequest) + `signImage`(파일, 신분증).\n" +
                     "- 처리: users + common_auth 생성, 이메일 중복/비밀번호 규칙 검증.\n" +
@@ -192,7 +192,7 @@ public class AuthController {
     // 로그인 (파트너/관리자 공통)
     @Operation(
             summary = "공통 로그인 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed811c961be6a474de0e50?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed811c961be6a474de0e50?source=copy_link)\n" +
                     "- `application/json`로 호출합니다.\n" +
                     "- 바디: `LoginRequest(email, password)`.\n" +
                     "- 처리: 자격 증명 검증 후 Access/Refresh 토큰 발급 및 저장.\n" +
@@ -222,7 +222,7 @@ public class AuthController {
     // 학생 로그인
     @Operation(
             summary = "학생 로그인 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80f6b495fa37f8c084a8?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80f6b495fa37f8c084a8?source=copy_link)\n" +
                     "- `application/json`로 호출합니다.\n" +
                     "- 바디: `바디: `StudentLoginRequest(studentNumber, studentPassword, school)`.\n" +
                     "- 처리: 자격 증명 검증 후 Access/Refresh 토큰 발급 및 저장.\n" +
@@ -253,7 +253,7 @@ public class AuthController {
     // 액세스 토큰 갱신
     @Operation(
             summary = "Access Token 갱신 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed806ea8cff29f9cd8695a?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed806ea8cff29f9cd8695a?source=copy_link)\n" +
                     "- 헤더로 호출합니다.\n" +
                     "- 헤더: `Authorization: Bearer <accessToken>`(만료 허용), `RefreshToken: <refreshToken>`.\n" +
                     "- 처리: Refresh 검증/회전 후 신규 Access/Refresh 발급 및 저장.\n" +
@@ -285,7 +285,7 @@ public class AuthController {
     // 로그아웃
     @Operation(
             summary = "로그아웃 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/23a1197c19ed809e9a09fcd741f554c8?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/23a1197c19ed809e9a09fcd741f554c8?source=copy_link)\n" +
                     "- 헤더로 호출합니다.\n" +
                     "- 헤더: `Authorization: Bearer <accessToken>`.\n" +
                     "- 처리: Refresh 무효화(선택), Access 블랙리스트 등록.\n" +
@@ -305,7 +305,7 @@ public class AuthController {
     // 숭실대 인증 및 개인정보 조회
     @Operation(
             summary = "숭실대 유세인트 인증 API",
-            description = "#[v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/23a1197c19ed808d9266e641e5c4ea14?source=copy_link)\n" +
+            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/23a1197c19ed808d9266e641e5c4ea14?source=copy_link)\n" +
                     "- `application/json`으로 호출합니다.\n" +
                     "- 요청 바디: `USaintAuthRequest(sToken, sIdno)`.\n" +
                     "- 처리 순서:\n" +

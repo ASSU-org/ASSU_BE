@@ -14,7 +14,7 @@ import com.assu.server.domain.notification.repository.NotificationSettingReposit
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import com.assu.server.global.exception.GeneralException;
-import com.assu.server.infra.NotificationFactory;
+import com.assu.server.infra.firebase.NotificationFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
