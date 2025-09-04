@@ -25,9 +25,10 @@ public class ReviewResponseDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class CheckStudentReviewResponseDTO { //내가 작성한 리뷰
+    public static class CheckReviewResponseDTO { //내가 작성한 리뷰
         private Long reviewId;
         private Long storeId;
+        private String affiliation; // store 기준 조회시 필요...
         private String storeName;
         private String content;
         private Integer rate;
@@ -49,12 +50,20 @@ public class ReviewResponseDTO {
     }
 
 
-    // @Getter
-    // @NoArgsConstructor
-    // @AllArgsConstructor
-    // @Builder
-    // public static class DeleteReviewResponseDTO {
-    //     private Long reviewId;
-    // }
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class DeleteReviewResponseDTO {
+        private Long reviewId;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class StandardScoreResponseDTO {
+        private Float score;
+    }
 
 }

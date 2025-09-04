@@ -7,10 +7,6 @@ import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
@@ -47,10 +43,32 @@ public class ReviewController {
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/student")
-    public BaseResponse<Page<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent(
+    public BaseResponse<Page<ReviewResponseDTO.CheckReviewResponseDTO>> checkStudent(
             @AuthenticationPrincipal PrincipalDetails pd, Pageable pageable
     ) {
         return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(pd.getId(), pageable));
+    }
+
+    @Operation(
+        summary = "내 가게 리뷰 조회 API",
+        description = "Authorization 후에 사용해주세요."
+    )
+    @GetMapping("/partner")
+    public BaseResponse<Page<ReviewResponseDTO.CheckReviewResponseDTO>> checkPartnerReview(
+        @AuthenticationPrincipal PrincipalDetails pd, Pageable pageable
+    ){
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(pd.getId(), pageable));
+    }
+
+    @Operation(
+        summary = "가게 리뷰 조회 API",
+        description = "storeId 기반으로 가게 리뷰를 조회하는 API 입니다."
+    )
+    @GetMapping("/store/{storeId}")
+    public BaseResponse<Page<ReviewResponseDTO.CheckReviewResponseDTO>> checkStoreReview(
+        Pageable pageable, @PathVariable Long storeId
+    ){
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStoreReview(storeId, pageable));
     }
 
     @Operation(
@@ -58,21 +76,33 @@ public class ReviewController {
             description = "삭제할 리뷰 ID를 입력해주세요."
     )
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<BaseResponse<Void>> deleteReview(
+    public ResponseEntity<BaseResponse<ReviewResponseDTO.DeleteReviewResponseDTO>> deleteReview(
             @PathVariable Long reviewId) {
-        reviewService.deleteReview(reviewId);
 
-        return ResponseEntity.ok(BaseResponse.onSuccessWithoutData(SuccessStatus._OK));
+        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, reviewService.deleteReview(reviewId)));
     }
 
     @Operation(
-            summary = "내 가게 리뷰 조회 API",
-            description = "Authorization 후에 사용해주세요."
+        summary = "store 리뷰 평균 조회 API",
+        description = "storeId 기반으로 조회하는 API 입니다."
     )
-    @GetMapping("/partner")
-    public BaseResponse<Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(
-            @AuthenticationPrincipal PrincipalDetails pd, Pageable pageable
+    @GetMapping("/average/{storeId}")
+    public ResponseEntity<BaseResponse<ReviewResponseDTO.StandardScoreResponseDTO>> getStandardScore(
+        @PathVariable Long storeId
     ){
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(pd.getId(), pageable));
+        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, reviewService.standardScore(storeId)));
     }
+
+    @Operation(
+        summary = "store 리뷰 평균 조회 API",
+        description = "partner 로그인 시 자신의 가게 평균을 조회하는 api 입니다."
+    )
+    @GetMapping("/average")
+    public ResponseEntity<BaseResponse<ReviewResponseDTO.StandardScoreResponseDTO>> getMyStoreAverage(
+        @AuthenticationPrincipal PrincipalDetails pd
+    ){
+        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, reviewService.myStoreAverage(pd.getId())));
+    }
+
+
 }

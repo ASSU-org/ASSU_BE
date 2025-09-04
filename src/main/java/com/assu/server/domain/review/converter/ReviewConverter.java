@@ -8,7 +8,6 @@ import com.assu.server.domain.review.entity.ReviewPhoto;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.user.entity.Student;
 
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -40,47 +39,48 @@ public class ReviewConverter {
                 //    .imageList(request.getReviewImage())
                 .build();
     }
-    public static ReviewResponseDTO.CheckStudentReviewResponseDTO checkStudentReviewResultDTO(Review review){
-        return ReviewResponseDTO.CheckStudentReviewResponseDTO.builder()
+    public static ReviewResponseDTO.CheckReviewResponseDTO checkReviewResultDTO(Review review){
+        return ReviewResponseDTO.CheckReviewResponseDTO.builder()
                 .reviewId(review.getId())
                 .rate(review.getRate())
                 .content(review.getContent())
                 .createdAt(review.getCreatedAt())
                 .storeName(review.getStore().getName())
+                .affiliation(review.getAffiliation())
                 .storeId(review.getStore().getId())
                 .reviewImageUrls(review.getImageList().stream()
                         .map(ReviewPhoto::getPhotoUrl)
                         .collect(Collectors.toList()))
                 .build();
     }
-    // public static List<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReviewResultDTO(List<Review> reviews){
+    // public static List<ReviewResponseDTO.CheckReviewResponseDTO> checkStudentReviewResultDTO(List<Review> reviews){
     //     return reviews.stream()
     //             .map(ReviewConverter::checkStudentReviewResultDTO)
     //             .collect(Collectors.toList());
     // }
 
-    public static Page<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReviewResultDTO(Page<Review> reviews){
-        return reviews.map(ReviewConverter::checkStudentReviewResultDTO);
+    public static Page<ReviewResponseDTO.CheckReviewResponseDTO> checkReviewResultDTO(Page<Review> reviews){
+        return reviews.map(ReviewConverter::checkReviewResultDTO);
     }
-
-    public static ReviewResponseDTO.CheckPartnerReviewResponseDTO checkPartnerReviewResultDTO(Review review){
-        return ReviewResponseDTO.CheckPartnerReviewResponseDTO.builder()
-                .reviewId(review.getId())
-                .storeId(review.getStore().getId())
-                .reviewerId(review.getStudent().getId())
-                .content(review.getContent())
-                .rate(review.getRate())
-                .createdAt(review.getCreatedAt())
-                .reviewImageUrls(review.getImageList().stream()
-                        .map(ReviewPhoto::getPhotoUrl)
-                        .collect(Collectors.toList()))
-                .build();
-
-    }
-
-    public static Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(Page<Review> reviews){
-        return reviews.map(ReviewConverter::checkPartnerReviewResultDTO);
-    }
+    //
+    // public static ReviewResponseDTO.CheckPartnerReviewResponseDTO checkPartnerReviewResultDTO(Review review){
+    //     return ReviewResponseDTO.CheckPartnerReviewResponseDTO.builder()
+    //             .reviewId(review.getId())
+    //             .storeId(review.getStore().getId())
+    //             .reviewerId(review.getStudent().getId())
+    //             .content(review.getContent())
+    //             .rate(review.getRate())
+    //             .createdAt(review.getCreatedAt())
+    //             .reviewImageUrls(review.getImageList().stream()
+    //                     .map(ReviewPhoto::getPhotoUrl)
+    //                     .collect(Collectors.toList()))
+    //             .build();
+    //
+    // }
+    //
+    // public static Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReviewResultDTO(Page<Review> reviews){
+    //     return reviews.map(ReviewConverter::checkPartnerReviewResultDTO);
+    // }
     // public static ReviewResponseDTO.DeleteReviewResponseDTO deleteReviewResultDTO(Long reviewId){
     //     return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
     //             .reviewId(reviewId)

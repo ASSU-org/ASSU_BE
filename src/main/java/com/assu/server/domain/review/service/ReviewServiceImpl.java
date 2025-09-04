@@ -1,6 +1,5 @@
 package com.assu.server.domain.review.service;
 
-import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.review.converter.ReviewConverter;
@@ -18,7 +17,6 @@ import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import com.assu.server.global.exception.GeneralException;
-import com.assu.server.global.util.PrincipalDetails;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,16 +24,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.SQLOutput;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -114,7 +108,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Page<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId, Pageable pageable) {
+    public Page<ReviewResponseDTO.CheckReviewResponseDTO> checkStudentReview(Long memberId, Pageable pageable) {
         pageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         Page<Review> reviews = reviewRepository.findByMemberId(memberId, pageable);
 
@@ -122,12 +116,12 @@ public class ReviewServiceImpl implements ReviewService {
             updateReviewImageUrls(review);
         }
 
-        return ReviewConverter.checkStudentReviewResultDTO(reviews);
+        return ReviewConverter.checkReviewResultDTO(reviews);
     }
 
     @Override
     @Transactional
-    public Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId, Pageable pageable) {
+    public Page<ReviewResponseDTO.CheckReviewResponseDTO> checkPartnerReview(Long memberId, Pageable pageable) {
         pageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
@@ -140,12 +134,16 @@ public class ReviewServiceImpl implements ReviewService {
             updateReviewImageUrls(review);
         }
 
-        return ReviewConverter.checkPartnerReviewResultDTO(reviews);
+        return ReviewConverter.checkReviewResultDTO(reviews);
     }
+
     @Override
     @Transactional
-    public void deleteReview(Long reviewId) {
+    public ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(Long reviewId) {
         reviewRepository.deleteById(reviewId);
+        return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
+            .reviewId(reviewId)
+            .build();
 
     }
     private void updateReviewImageUrls(Review review) {
@@ -156,5 +154,49 @@ public class ReviewServiceImpl implements ReviewService {
                 reviewPhoto.updatePhotoUrl(freshUrl);
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public Page<ReviewResponseDTO.CheckReviewResponseDTO> checkStoreReview(Long storeId, Pageable pageable) {
+        pageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
+        Store store = storeRepository.findById(storeId).orElseThrow(
+            () -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
+        Page<Review> reviews = reviewRepository.findByStoreId(store.getId(), pageable);
+
+        for (Review review : reviews) {
+            updateReviewImageUrls(review);
+        }
+
+        return ReviewConverter.checkReviewResultDTO(reviews);
+    }
+
+    @Override
+    @Transactional
+    public ReviewResponseDTO.StandardScoreResponseDTO standardScore(Long storeId) {
+        Float score = reviewRepository.standardScore(storeId);
+        if(score == null){
+            score = 0f;
+        }
+        return ReviewResponseDTO.StandardScoreResponseDTO.builder()
+            .score(score)
+            .build();
+    }
+
+    @Override
+    @Transactional
+    public ReviewResponseDTO.StandardScoreResponseDTO myStoreAverage(Long memberId) {
+        Partner partner = partnerRepository.findById(memberId)
+            .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+        Store store = storeRepository.findByPartner(partner)
+            .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
+
+        Float score = reviewRepository.standardScore(store.getId());
+        System.out.println(store.getId());
+        return ReviewResponseDTO.StandardScoreResponseDTO
+            .builder()
+            .score(score)
+            .build();
+
     }
 }

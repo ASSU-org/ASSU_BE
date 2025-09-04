@@ -13,7 +13,12 @@ import java.util.List;
 
 public interface ReviewService {
     ReviewResponseDTO.WriteReviewResponseDTO writeReview(@RequestBody ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId, List<MultipartFile> reviewImages);
-    Page<ReviewResponseDTO.CheckStudentReviewResponseDTO> checkStudentReview(Long memberId, Pageable pageable);
-    Page<ReviewResponseDTO.CheckPartnerReviewResponseDTO> checkPartnerReview(Long memberId, Pageable pageable);
-    void deleteReview(@PathVariable Long reviewId);
+    Page<ReviewResponseDTO.CheckReviewResponseDTO> checkStudentReview(Long memberId, Pageable pageable);
+    Page<ReviewResponseDTO.CheckReviewResponseDTO> checkPartnerReview(Long memberId, Pageable pageable);
+    Page<ReviewResponseDTO.CheckReviewResponseDTO> checkStoreReview(Long storeId, Pageable pageable);
+
+    ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(@PathVariable Long reviewId);
+
+    ReviewResponseDTO.StandardScoreResponseDTO standardScore(@PathVariable Long storeId);
+    ReviewResponseDTO.StandardScoreResponseDTO myStoreAverage(@PathVariable Long memberId);
 }
