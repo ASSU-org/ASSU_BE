@@ -37,7 +37,7 @@ public class StudentResponseDTO {
 		private String storeName;
 		private Long partnerId;
 		private Long storeId;
-		private LocalDate usedAt;
+		private String usedAt;
 		private String benefitDescription;
 		private boolean isReviewed;
 	}

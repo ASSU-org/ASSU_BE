@@ -1,5 +1,7 @@
 package com.assu.server.domain.user.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import com.assu.server.domain.partnership.entity.PaperContent;
@@ -49,12 +51,14 @@ public class StudentServiceImpl implements StudentService {
 
 					// 2. PaperContent에서 storeId를 가져옵니다.
 					Store store = (paperContent != null) ? paperContent.getPaper().getStore() : null;
+					LocalDateTime ld= u.getCreatedAt();
+					String formatDate =ld.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 
 					return StudentResponseDTO.UsageDetailDTO.builder()
 						.partnershipUsageId(u.getId())
 						.adminName(u.getAdminName())
 						.storeName(u.getPlace())
-						.usedAt(u.getDate())
+						.usedAt(formatDate)
 						.benefitDescription(u.getPartnershipContent())
 						.isReviewed(u.getIsReviewed())
 						.storeId(store.getId()) // 3. storeId를 DTO에 매핑합니다.
