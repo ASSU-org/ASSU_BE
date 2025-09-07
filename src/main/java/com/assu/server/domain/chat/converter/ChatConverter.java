@@ -44,7 +44,12 @@ public class ChatConverter {
     }
 
     public static ChatResponseDTO.CreateChatRoomResponseDTO toCreateChatRoomIdDTO(ChattingRoom room) {
-        return new ChatResponseDTO.CreateChatRoomResponseDTO(room.getId());
+        return ChatResponseDTO.CreateChatRoomResponseDTO.builder()
+                .roomId(room.getId())
+                .adminViewName(room.getPartner().getName())
+                .partnerViewName(room.getAdmin().getName())
+                .build();
+
     }
 
     public static Message toMessageEntity(ChatRequestDTO.ChatMessageRequestDTO request, ChattingRoom room, Member sender, Member receiver) {

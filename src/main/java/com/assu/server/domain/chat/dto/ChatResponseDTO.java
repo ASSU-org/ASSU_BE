@@ -16,6 +16,8 @@ public class ChatResponseDTO {
     @Builder
     public static class CreateChatRoomResponseDTO {
         private Long roomId;
+        private String adminViewName;
+        private String partnerViewName;
     }
 
     // 메시지 전송

@@ -29,7 +29,7 @@ public class ChatController {
                     "- storeId: Request Body, Long\n" +
                     "- partnerId: Request Body, Long\n"
     )
-    @PostMapping("/create/rooms")
+    @PostMapping("/rooms")
     public BaseResponse<ChatResponseDTO.CreateChatRoomResponseDTO> createChatRoom(
             @AuthenticationPrincipal PrincipalDetails pd,
             @RequestBody ChatRequestDTO.CreateChatRoomRequestDTO request) {
