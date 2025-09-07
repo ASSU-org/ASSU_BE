@@ -55,3 +55,9 @@ aligo:
   key: dummy-aligo-key
   user-id: dummy-user-id
   sender: 01012345678
+
+rabbitmq:
+  host: dummy-host
+  port: 1234
+  username: rabbit-username
+  password: rabbit-password
