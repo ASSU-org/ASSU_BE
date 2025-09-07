@@ -13,4 +13,9 @@ public interface NotificationCommandService {
     void queue(QueueNotificationRequest req);
     boolean toggle(Long memberId, NotificationType type);
     boolean isEnabled(Long memberId, NotificationType type);
+
+    void sendChat(Long receiverId, Long roomId, String senderName, String message);
+    void sendPartnerSuggestion(Long receiverId, Long suggestionId);
+    void sendOrder(Long receiverId, Long orderId, String tableNum, String paperContent);
+    void sendPartnerProposal(Long receiverId, Long proposalId, String partnerName);
 }
