@@ -72,80 +72,59 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
     @Transactional
     @Override
     public void queue(QueueNotificationRequest req) {
-        NotificationType type;
+        if (req.getType() == null) {
+            throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
+        }
+        if (req.getReceiverId() == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+
+        final NotificationType type;
         try {
             type = NotificationType.valueOf(req.getType().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
         }
 
-        Map<String, Object> ctx = new HashMap<>();
-        if (req.getContent()  != null) ctx.put("content",  req.getContent());
-        if (req.getTitle()    != null) ctx.put("title",    req.getTitle());
-        if (req.getDeeplink() != null) ctx.put("deeplink", req.getDeeplink());
-
-        Long refId = req.getRefId();
+        final Long receiverId = req.getReceiverId();
 
         switch (type) {
             case CHAT -> {
-                if (refId == null && req.getRoomId() == null) {
+                // refId 우선순위: refId > roomId
+                Long roomId = (req.getRefId() != null) ? req.getRefId() : req.getRoomId();
+                if (roomId == null || req.getSenderName() == null || req.getMessage() == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getRoomId();
-                if (req.getSenderName() == null || req.getMessage() == null) {
-                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-                }
-                ctx.put("senderName", req.getSenderName());
-                ctx.put("message", req.getMessage());
+                // 퍼사드 호출: 내부에서 ON/OFF 자동 반영
+                sendChat(receiverId, roomId, req.getSenderName(), req.getMessage());
             }
+
             case PARTNER_SUGGESTION -> {
-                if (refId == null && req.getSuggestionId() == null) {
+                Long suggestionId = (req.getRefId() != null) ? req.getRefId() : req.getSuggestionId();
+                if (suggestionId == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getSuggestionId();
+                sendPartnerSuggestion(receiverId, suggestionId);
             }
+
             case ORDER -> {
-                if (refId == null && req.getOrderId() == null) {
+                Long orderId = (req.getRefId() != null) ? req.getRefId() : req.getOrderId();
+                if (orderId == null || req.getTable_num() == null || req.getPaper_content() == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getOrderId();
-                if (req.getTable_num() == null || req.getPaper_content() == null) {
-                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-                }
-                ctx.put("table_num", req.getTable_num());
-                ctx.put("paper_content", req.getPaper_content());
+                sendOrder(receiverId, orderId, req.getTable_num(), req.getPaper_content());
             }
+
             case PARTNER_PROPOSAL -> {
-                if (refId == null && req.getProposalId() == null) {
+                Long proposalId = (req.getRefId() != null) ? req.getRefId() : req.getProposalId();
+                if (proposalId == null || req.getPartner_name() == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getProposalId();
-                if (req.getPartner_name() == null) {
-                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-                }
-                ctx.put("partner_name", req.getPartner_name());
+                sendPartnerProposal(receiverId, proposalId, req.getPartner_name());
             }
+
             default -> throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
         }
-
-        if (req.getReceiverId() == null) {
-            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-        }
-
-        // OFF면 Outbox 적재 없이 Notification만 저장하고 종료
-        boolean enabled = isEnabled(req.getReceiverId(), type);
-
-        if (!enabled) {
-            // 기록만 남기고 발송은 스킵
-            var member = memberRepository.findMemberById(req.getReceiverId()).orElseThrow(
-                () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
-            );
-            var notification = notificationFactory.create(member, type, refId, ctx);
-            notificationRepository.save(notification);
-            return;
-        }
-
-        createAndQueue(req.getReceiverId(), type, refId, ctx);
     }
 
     @Transactional
@@ -175,5 +154,82 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
         return notificationSettingRepository.findByMemberIdAndType(memberId, type)
                 .map(ns -> Boolean.TRUE.equals(ns.getEnabled())) // null → false 처리
                 .orElse(true); // 설정 없으면 기본 허용
+    }
+
+
+    @Transactional
+    protected void sendIfEnabled(Long receiverId, NotificationType type, Long refId, Map<String, Object> ctx) {
+        // OFF면 기록만 남기고 종료, ON이면 Outbox 적재
+        if (!isEnabled(receiverId, type)) {
+            Member member = memberRepository.findMemberById(receiverId)
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER));
+            notificationRepository.save(notificationFactory.create(member, type, refId, ctx));
+            return;
+        }
+        createAndQueue(receiverId, type, refId, ctx);
+    }
+
+    @Transactional
+    @Override
+    public void sendChat(Long receiverId, Long roomId, String senderName, String message) {
+        if (receiverId == null || roomId == null || senderName == null || message == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.CHAT,
+                roomId, // Factory가 /chat/rooms/{refId}로 딥링크 생성
+                Map.of(
+                        "senderName", senderName,     // Factory가 title/preview 생성에 사용
+                        "message", message            // Factory가 미리보기 생성에 사용
+                )
+        );
+    }
+
+    @Transactional
+    @Override
+    public void sendPartnerSuggestion(Long receiverId, Long suggestionId) {
+        if (receiverId == null || suggestionId == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.PARTNER_SUGGESTION,
+                suggestionId,                    // /partner/suggestions/{refId}
+                Map.of()                         // 추가 ctx 없음
+        );
+    }
+
+    @Transactional
+    @Override
+    public void sendOrder(Long receiverId, Long orderId, String tableNum, String paperContent) {
+        if (receiverId == null || orderId == null || tableNum == null || paperContent == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.ORDER,
+                orderId,                         // /orders/{refId}
+                Map.of(
+                        "table_num", tableNum,       // Factory preview: "{table_num}번 테이블..."
+                        "paper_content", paperContent
+                )
+        );
+    }
+
+    @Transactional
+    @Override
+    public void sendPartnerProposal(Long receiverId, Long proposalId, String partnerName) {
+        if (receiverId == null || proposalId == null || partnerName == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.PARTNER_PROPOSAL,
+                proposalId,                      // /partner/proposals/{refId}
+                Map.of(
+                        "partner_name", partnerName  // Factory preview: "{partner_name}에서..."
+                )
+        );
     }
 }
