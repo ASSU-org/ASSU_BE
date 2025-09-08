@@ -234,9 +234,8 @@ public class JwtUtil {
             username = member.getCommonAuth().getEmail();
             password = member.getCommonAuth().getPassword();
         } else if (realm == AuthRealm.SSU){
-            // 예: 학생 Realm
             username = member.getSsuAuth().getStudentNumber();
-            password = member.getSsuAuth().getPasswordCipher();
+            password = ""; // 더미 처리
         }
 
         // DB에서 조회한 member를 직접 넣어줌
