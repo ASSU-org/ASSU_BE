@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "유저 관련 api", description = "유저와 관련된 로직을 처리하는 api")
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/student")
 public class StudentController {
 
 	private final StudentService studentService;
