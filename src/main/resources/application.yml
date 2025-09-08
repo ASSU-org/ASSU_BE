@@ -10,7 +10,7 @@ spring:
       - optional:file:/app/config/application-secret.yml
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         jdbc:
