@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "유저 관련 api", description = "유저와 관련된 로직을 처리하는 api")
 @RequiredArgsConstructor
-@RequestMapping("/student")
+@RequestMapping("/students")
 public class StudentController {
 
 	private final StudentService studentService;
@@ -42,7 +42,7 @@ public class StudentController {
             summary = "스탬프 조회 API",
             description = "Authorization 후에 사용해주세요."
     )
-    @GetMapping("/stamp")
+    @GetMapping("/stamps")
     public BaseResponse<StudentResponseDTO.CheckStampResponseDTO> getStamp(
             @AuthenticationPrincipal PrincipalDetails pd
     ) {
