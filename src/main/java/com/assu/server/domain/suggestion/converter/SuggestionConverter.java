@@ -1,7 +1,6 @@
 package com.assu.server.domain.suggestion.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
-import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.suggestion.dto.SuggestionRequestDTO;
 import com.assu.server.domain.suggestion.dto.SuggestionResponseDTO;
 import com.assu.server.domain.suggestion.entity.Suggestion;
@@ -15,10 +14,9 @@ public class SuggestionConverter {
     public static SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestionResultDTO(Suggestion suggestion){
         return SuggestionResponseDTO.WriteSuggestionResponseDTO.builder()
                 .suggestionId(suggestion.getId())
-                .memberId(suggestion.getStudent().getId())
-                .studentNumber(suggestion.getStudent().getStudentNumber())
-                .suggestionSubjectId(suggestion.getAdmin().getId())
-                .suggestionStore(suggestion.getStoreName())
+                .userId(suggestion.getStudent().getId())
+                .adminId(suggestion.getAdmin().getId())
+                .storeName(suggestion.getStoreName())
                 .suggestionBenefit(suggestion.getContent())
                 .build();
     }
@@ -38,8 +36,8 @@ public class SuggestionConverter {
         return SuggestionResponseDTO.GetSuggestionResponseDTO.builder()
                 .suggestionId(s.getId())
                 .createdAt(s.getCreatedAt())
+                .storeName(s.getStoreName())
                 .content(s.getContent())
-                .studentNumber(student.getStudentNumber())
                 .enrollmentStatus(student.getEnrollmentStatus())
                 .studentMajor(student.getMajor())
                 .build();
@@ -49,5 +47,11 @@ public class SuggestionConverter {
         return list.stream()
                 .map(SuggestionConverter::GetSuggestionResultDTO)
                 .collect(Collectors.toList());
+    }
+
+    public static SuggestionResponseDTO.GetSuggestionAdminsDTO GetSuggestionAdminsResultDTO(Student student) {
+        return SuggestionResponseDTO.GetSuggestionAdminsDTO.builder()
+                .adminId()
+                .build()
     }
 }

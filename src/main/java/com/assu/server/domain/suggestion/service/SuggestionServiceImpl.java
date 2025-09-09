@@ -2,14 +2,6 @@ package com.assu.server.domain.suggestion.service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
-import com.assu.server.domain.partnership.converter.PartnershipConverter;
-import com.assu.server.domain.partnership.dto.PartnershipResponseDTO;
-import com.assu.server.domain.partnership.entity.Goods;
-import com.assu.server.domain.partnership.entity.Paper;
-import com.assu.server.domain.partnership.entity.PaperContent;
-import com.assu.server.domain.partnership.repository.PaperContentRepository;
-import com.assu.server.domain.partnership.repository.PaperRepository;
-import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.suggestion.converter.SuggestionConverter;
 import com.assu.server.domain.suggestion.dto.SuggestionRequestDTO;
 import com.assu.server.domain.suggestion.dto.SuggestionResponseDTO;
@@ -22,7 +14,6 @@ import com.assu.server.global.exception.DatabaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -54,5 +45,24 @@ public class SuggestionServiceImpl implements SuggestionService {
                 .findAllSuggestions(adminId);
 
         return SuggestionConverter.toGetSuggestionDTOList(list);
+    }
+
+    @Override
+    public SuggestionResponseDTO.GetSuggestionAdminsDTO getSuggestionAdmins(Long userId) {
+
+        Student student = studentRepository.findById(userId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STUDENT));
+
+        List<Admin> adminList = adminRepository.findMatchingAdmins(
+                student.getUniversity().toString(),
+                student.getDepartment().toString(),
+                student.getMajor()
+        );
+
+        Admin universityAdmin = null;
+        Admin departmentAdmin = null;
+        Admin majorAdmin = null;
+
+        return null;
     }
 }
