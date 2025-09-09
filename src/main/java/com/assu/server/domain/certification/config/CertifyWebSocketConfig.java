@@ -17,7 +17,7 @@ public class CertifyWebSocketConfig implements WebSocketMessageBrokerConfigurer 
 	private final StompAuthChannelInterceptor stompAuthChannelInterceptor;
 	@Override
 	public void configureMessageBroker(MessageBrokerRegistry config) {
-		config.enableSimpleBroker("/certification/progress"); // 인증현황을 받아보기 위한 구독 주소
+		config.enableSimpleBroker("/certification"); // 인증현황을 받아보기 위한 구독 주소
 		config.setApplicationDestinationPrefixes("/certification"); // 클라이언트가 인증 요청을 보내는 주소
 	}
 

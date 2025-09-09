@@ -1,6 +1,7 @@
 package com.assu.server.domain.user.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -31,4 +32,6 @@ public interface PartnershipUsageRepository extends JpaRepository<PartnershipUsa
 		@Param("year") int year,
 		@Param("month") int month
 	);
+
+	Optional<PartnershipUsage> findById(Long id);
 }

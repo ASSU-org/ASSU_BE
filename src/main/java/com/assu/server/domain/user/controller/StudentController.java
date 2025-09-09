@@ -38,6 +38,8 @@ public class StudentController {
 	}
 
 
+
+
     @Operation(
             summary = "스탬프 조회 API",
             description = "Authorization 후에 사용해주세요."

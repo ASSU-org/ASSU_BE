@@ -1,8 +1,10 @@
 package com.assu.server.domain.admin.entity;
 
 
+import com.assu.server.domain.user.entity.enums.Department;
 import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.user.entity.enums.University;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -49,6 +51,12 @@ public class Admin {
 
     @Enumerated(EnumType.STRING)
     private Major major;
+
+    @Enumerated(EnumType.STRING)
+    private Department department;
+
+    @Enumerated(EnumType.STRING)
+    private University university;
 
     @JdbcTypeCode(SqlTypes.GEOMETRY)
     private Point point;
