@@ -34,7 +34,22 @@ public class CertificationController {
 	private final MemberRepository memberRepository; // 지금은 그냥 임시 데이터 하드 코딩이라 여기에 둔거여
 
 	@PostMapping("/certification/session")
-	@Operation(summary = "세션 정보를 요청하는 api", description = "인원 수 기준이 요구되는 제휴일 때 세션을 만들고, 대표자 QR에 담을 정보를 요청하는 api 입니다.")
+	@Operation(
+		summary = "세션 정보 요청 API",
+		description = "# [v1.0 (2025-09-09)](https://www.notion.so/22b1197c19ed80bb8484d99cc6ce715b?source=copy_link)\n" +
+			"- `multipart/form-data`로 호출합니다.\n" +
+			"- 파트: `payload`(JSON, CertificationRequest.groupRequest)\n" +
+			"- 처리: 정보 바탕으로 sessionManager에 session생성\n" +
+			"- 성공 시 201(Created)과 생성된 memberId 반환.\n" +
+			"\n**Request Parts:**\n" +
+			"  - `request` (JSON, required): `CertificationRequest.groupRequest` 객체\n" +
+			"  - `people` (Integer, required): 인증이 필요한 인원\n" +
+			"  - `storeId` (Long, required): 스토어 id\n"+
+			"  - `adminId` (Long, required): 관리자 id\n"+
+			"  - `tableNumber` (Integer, required): 테이블 넘버\n"+
+			"\n**Response:**\n" +
+			"  - 성공 시 201(Created)와 sessionId, adminId 반환"
+	)
 	public ResponseEntity<BaseResponse<CertificationResponseDTO.getSessionIdResponse>> getSessionId(
 		@AuthenticationPrincipal PrincipalDetails pd,
 		@RequestBody CertificationRequestDTO.groupRequest dto

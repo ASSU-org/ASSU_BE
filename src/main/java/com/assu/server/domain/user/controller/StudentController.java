@@ -22,13 +22,26 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "유저 관련 api", description = "유저와 관련된 로직을 처리하는 api")
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/students")
 public class StudentController {
 
 	private final StudentService studentService;
 
-	@GetMapping("/partnership/{year}/{month}")
-	@Operation(summary = "유저의 제휴 내역을 조회", description = "건수 및 금액으로 조회")
+	@GetMapping("/partnerships/{year}/{month}")
+	@Operation(
+		summary = "월별 제휴 사용내역 조회 API",
+		description = "# [v1.0 (2025-09-09)](https://www.notion.so/_-2241197c19ed8134bd49d8841e841634?source=copy_link)\n" +
+			"- `multipart/form-data`로 호출합니다.\n" +
+			"- 처리: 정보 바탕으로 sessionManager에 session생성\n" +
+			"- 성공 시 201(Created)과 생성된 memberId 반환.\n" +
+			"\n**Request Parts:**\n" +
+			"  - `storeId` (Long, required): 스토어 id\n" +
+			"  - `year` (Integer, required): 년도\n" +
+			"  - `month` (Long, required): 월\n"+
+			"\n**Response:**\n" +
+			"  - 성공 시 partnership Usage 내역 반환 \n"+
+			"  - 해당 월에 사용한 제휴 수 반환"
+	)
 	public ResponseEntity<BaseResponse<StudentResponseDTO.myPartnership>> getMyPartnership(
 		@PathVariable int year, @PathVariable int month, @AuthenticationPrincipal PrincipalDetails pd
 	){
@@ -38,10 +51,16 @@ public class StudentController {
 	}
 
 
-    @Operation(
-            summary = "스탬프 조회 API",
-            description = "Authorization 후에 사용해주세요."
-    )
+
+
+	@Operation(
+		summary = "사용자 stamp 개수 조회 API",
+		description = "# [v1.0 (2025-09-09)](https://www.notion.so/_-2241197c19ed8134bd49d8841e841634?source=copy_link)\n" +
+			"- `multipart/form-data`로 호출합니다.\n" +
+			"- 처리: 정보 바탕으로 sessionManager에 session생성\n" +
+			"\n**Response:**\n" +
+			"  - stamp 개수 반환 \n"
+	)
     @GetMapping("/stamp")
     public BaseResponse<StudentResponseDTO.CheckStampResponseDTO> getStamp(
             @AuthenticationPrincipal PrincipalDetails pd
