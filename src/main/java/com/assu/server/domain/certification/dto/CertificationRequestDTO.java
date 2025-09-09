@@ -8,15 +8,15 @@ public class CertificationRequestDTO {
 	@Getter
 	public static class groupRequest{
 		Integer people;
-		String storeName;
-		String adminName;
+		Long storeId;
+		Long adminId;
 		Integer tableNumber;
 	}
 
 	@Getter
 	public static class personalRequest{
-		String storeName;
-		String adminName;
+		Long storeId;
+		Long adminId;
 		Integer tableNumber;
 	}
 

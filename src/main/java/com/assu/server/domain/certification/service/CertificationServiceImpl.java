@@ -57,12 +57,12 @@ public class CertificationServiceImpl implements CertificationService {
 		Long userId = member.getId();
 
 		// admin id 추출
-		Admin admin = adminRepository.findByName(dto.getAdminName()).orElseThrow(
+		Admin admin = adminRepository.findById(dto.getAdminId()).orElseThrow(
 			() -> new GeneralException(ErrorStatus.NO_SUCH_ADMIN)
 		);
 
 		// store id 추출
-		Store store = storeRepository.findByName(dto.getStoreName()).orElseThrow(
+		Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
 			() -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
 		);
 
@@ -79,7 +79,7 @@ public class CertificationServiceImpl implements CertificationService {
 		// 세션 여는 대표자는 제일 먼저 인증
 		sessionManager.addUserToSession(sessionId, userId);
 
-		return CertificationConverter.toSessionIdResponse(sessionId, admin.getId());
+		return CertificationConverter.toSessionIdResponse(sessionId);
 
 	}
 
@@ -154,7 +154,7 @@ public class CertificationServiceImpl implements CertificationService {
 	@Override
 	public void certificatePersonal(CertificationRequestDTO.personalRequest dto, Member member){
 		// store id 추출
-		Store store = storeRepository.findByName(dto.getStoreName()).orElseThrow(
+		Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
 			() -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
 		);
 
