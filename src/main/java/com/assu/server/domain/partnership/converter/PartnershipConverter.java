@@ -78,11 +78,7 @@ public class PartnershipConverter {
 
 
 
-	public static List<PaperContentResponseDTO.storePaperContentResponse> toContentResponseList(List<PaperContent> contents) {
-		return contents.stream()
-			.map(PartnershipConverter::toContentResponse)
-			.toList();
-	}
+
     public static List<List<Goods>> toGoodsBatches(
             PartnershipRequestDTO.WritePartnershipRequestDTO partnershipRequestDTO
     ) {
@@ -105,6 +101,15 @@ public class PartnershipConverter {
         return batches;
     }
 
+
+
+	public static List<PaperContentResponseDTO.storePaperContentResponse> toContentResponseList(List<PaperContent> contents) {
+		return contents.stream()
+			.map(PartnershipConverter::toContentResponse)
+			.toList();
+	}
+
+
 	public static PaperContentResponseDTO.storePaperContentResponse toContentResponse(PaperContent content) {
 		List<String> goodsList = extractGoods(content);
 		Integer peopleValue = extractPeople(content);
@@ -112,26 +117,14 @@ public class PartnershipConverter {
 
 		return PaperContentResponseDTO.storePaperContentResponse.builder()
 			.adminName(content.getPaper().getAdmin().getName())
+			.cost(content.getCost())
 			.paperContent(paperContentText)
 			.contentId(content.getId())
 			.goods(goodsList)
 			.people(peopleValue)
 			.build();
 	}
-    public static Paper toPaperForManual(
-            Admin admin, Store store,
-            LocalDate start, LocalDate end,
-            ActivationStatus status
-    ) {
-        return Paper.builder()
-                .admin(admin)
-                .store(store)
-                .partner(null)
-                .isActivated(status)
-                .partnershipPeriodStart(start)
-                .partnershipPeriodEnd(end)
-                .build();
-    }
+
 
 	private static List<String> extractGoods(PaperContent content) {
 		if (content.getOptionType() == OptionType.SERVICE && content.getCategory() != null) {
@@ -192,6 +185,24 @@ public class PartnershipConverter {
 
 		return result;
 	}
+
+
+	public static Paper toPaperForManual(
+		Admin admin, Store store,
+		LocalDate start, LocalDate end,
+		ActivationStatus status
+	) {
+		return Paper.builder()
+			.admin(admin)
+			.store(store)
+			.partner(null)
+			.isActivated(status)
+			.partnershipPeriodStart(start)
+			.partnershipPeriodEnd(end)
+			.build();
+	}
+
+
     public static List<PaperContent> toPaperContentsForManual(
             List<PartnershipRequestDTO.PartnershipOptionRequestDTO> options,
             Paper paper
