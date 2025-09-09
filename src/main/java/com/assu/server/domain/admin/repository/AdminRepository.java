@@ -81,4 +81,6 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
     );
 
     Long member(Member member);
+
+	Optional<Admin> findById(Long id);
 }
