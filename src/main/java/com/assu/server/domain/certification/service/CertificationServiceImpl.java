@@ -57,12 +57,12 @@ public class CertificationServiceImpl implements CertificationService {
 		Long userId = member.getId();
 
 		// admin id 추출
-		Admin admin = adminRepository.findByName(dto.getAdminName()).orElseThrow(
+		Admin admin = adminRepository.findById(dto.getAdminId()).orElseThrow(
 			() -> new GeneralException(ErrorStatus.NO_SUCH_ADMIN)
 		);
 
 		// store id 추출
-		Store store = storeRepository.findByName(dto.getStoreName()).orElseThrow(
+		Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
 			() -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
 		);
 
@@ -79,7 +79,7 @@ public class CertificationServiceImpl implements CertificationService {
 		// 세션 여는 대표자는 제일 먼저 인증
 		sessionManager.addUserToSession(sessionId, userId);
 
-		return CertificationConverter.toSessionIdResponse(sessionId, admin.getId());
+		return CertificationConverter.toSessionIdResponse(sessionId);
 
 	}
 
@@ -90,13 +90,13 @@ public class CertificationServiceImpl implements CertificationService {
 		// 제휴 대상인지 확인하기
 		Long adminId = dto.getAdminId();
 		Student student = member.getStudentProfile();
-		List<Admin> admins = adminService.findMatchingAdmins(student.getUniversity().toString(), student.getDepartment().toString(), student.getMajor());
+		List<Admin> admins = adminService.findMatchingAdmins(student.getUniversity(), student.getDepartment(), student.getMajor());
 
 		boolean matched = admins.stream()
 			.anyMatch(admin -> admin.getId().equals(adminId));
 
 		if (!matched) {
-			throw new IllegalArgumentException("관리자 정보가 일치하지 않습니다.");
+			throw new IllegalArgumentException("학생과 매치되지 않는 정보입니다.");
 		}
 
 
@@ -117,19 +117,36 @@ public class CertificationServiceImpl implements CertificationService {
 		sessionManager.addUserToSession(sessionId, userId);
 		int currentCertifiedNumber = sessionManager.getCurrentUserCount(sessionId);
 
-		messagingTemplate.convertAndSend("/certification/progress"+sessionId,
-			new CurrentProgress.CertificationNumber(currentCertifiedNumber));
-
+		// messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
+		// 	new CurrentProgress.CertificationNumber(currentCertifiedNumber));
+		//
+		// if(currentCertifiedNumber >= session.getPeopleNumber()){
+		// 	session.setIsCertified(true);
+		// 	session.setStatus(SessionStatus.COMPLETED);
+		// 	associateCertificationRepository.save(session);
+		//
+		//
+		// 	messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
+		// 		new CurrentProgress.CompletedNotification("인증이 완료되었습니다.", sessionManager.snapshotUserIds(sessionId))
+		// 	);
+		// }
 		if(currentCertifiedNumber >= session.getPeopleNumber()){
 			session.setIsCertified(true);
 			session.setStatus(SessionStatus.COMPLETED);
 			associateCertificationRepository.save(session);
 
-
-			messagingTemplate.convertAndSend("/certification/progress"+sessionId,
-				new CurrentProgress.CompletedNotification("인증이 완료되었습니다.", sessionManager.snapshotUserIds(sessionId))
+			// 완료 알림에 현재 인원수도 포함
+			messagingTemplate.convertAndSend("/certification/progress/" + sessionId,
+				new CurrentProgress.CompletedNotification(
+					"인증이 완료되었습니다.",
+					sessionManager.snapshotUserIds(sessionId)
+				)
 			);
+		} else {
+			messagingTemplate.convertAndSend("/certification/progress/" + sessionId,
+				new CurrentProgress.CertificationNumber(currentCertifiedNumber));
 		}
+
 
 
 	}
@@ -137,7 +154,7 @@ public class CertificationServiceImpl implements CertificationService {
 	@Override
 	public void certificatePersonal(CertificationRequestDTO.personalRequest dto, Member member){
 		// store id 추출
-		Store store = storeRepository.findByName(dto.getStoreName()).orElseThrow(
+		Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
 			() -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
 		);
 

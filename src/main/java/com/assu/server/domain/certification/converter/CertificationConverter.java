@@ -19,9 +19,9 @@ public class CertificationConverter {
 			.build();
 	}
 
-	public static CertificationResponseDTO.getSessionIdResponse toSessionIdResponse(Long sessionId, Long adminId){
+	public static CertificationResponseDTO.getSessionIdResponse toSessionIdResponse(Long sessionId){
 		return CertificationResponseDTO.getSessionIdResponse.builder()
-			.sessionId(sessionId).adminId(adminId)
+			.sessionId(sessionId)
 			.build();
 	}
 
