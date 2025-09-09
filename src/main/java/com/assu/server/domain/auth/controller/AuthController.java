@@ -3,16 +3,16 @@ package com.assu.server.domain.auth.controller;
 import com.assu.server.domain.auth.dto.login.CommonLoginRequest;
 import com.assu.server.domain.auth.dto.login.LoginResponse;
 import com.assu.server.domain.auth.dto.login.RefreshResponse;
-import com.assu.server.domain.auth.dto.login.StudentLoginRequest;
 import com.assu.server.domain.auth.dto.phone.PhoneAuthRequestDTO;
 import com.assu.server.domain.auth.dto.signup.AdminSignUpRequest;
 import com.assu.server.domain.auth.dto.signup.PartnerSignUpRequest;
 import com.assu.server.domain.auth.dto.signup.SignUpResponse;
-import com.assu.server.domain.auth.dto.signup.StudentSignUpRequest;
+import com.assu.server.domain.auth.dto.signup.StudentTokenSignUpRequest;
+import com.assu.server.domain.auth.dto.signup.student.StudentTokenAuthPayload;
 import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
 import com.assu.server.domain.auth.dto.ssu.USaintAuthResponse;
 import com.assu.server.domain.auth.service.*;
-import com.assu.server.domain.common.enums.UserRole;
+import com.assu.server.domain.user.entity.enums.University;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -82,27 +83,39 @@ public class AuthController {
 
     @Operation(
             summary = "학생 회원가입 API",
-            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed81129c85cf5bbe1f7971?source=copy_link)\n" +
+            description = "# [v1.1 (2025-09-07)](https://clumsy-seeder-416.notion.site/2241197c19ed81129c85cf5bbe1f7971)\n" +
                     "- `application/json` 요청 바디를 사용합니다.\n" +
-                    "- 처리: users + ssu_auth 등 가입 레코드 생성, 휴대폰 인증 여부 확인.\n" +
-                    "- 성공 시 201(Created)과 생성된 memberId 반환.\n" +
+                    "- 처리: 유세인트 인증 → 학생 정보 추출 → 회원가입 완료\n" +
+                    "- 성공 시 201(Created)과 생성된 memberId 및 JWT 토큰 반환.\n" +
                     "\n**Request Body:**\n" +
-                    "  - `StudentSignUpRequest` 객체 (JSON, required): 학생 가입 정보\n" +
-                    "  - `email` (String, required): 이메일 주소\n" +
-                    "  - `password` (String, required): 비밀번호\n" +
+                    "  - `StudentTokenSignUpRequest` 객체 (JSON, required): 숭실대 학생 토큰 가입 정보\n" +
                     "  - `phoneNumber` (String, required): 휴대폰 번호\n" +
-                    "  - `studentNumber` (String, required): 학번\n" +
-                    "  - `name` (String, required): 학생 이름\n" +
-                    "  - `major` (Major enum, required): 전공\n" +
-                    "  - `grade` (Integer, required): 학년\n" +
-                    "  - `semester` (Integer, required): 학기\n" +
+                    "  - `marketingAgree` (Boolean, required): 마케팅 수신 동의\n" +
+                    "  - `locationAgree` (Boolean, required): 위치 정보 수집 동의\n" +
+                    "  - `StudentTokenAuthPayload` (Object, required): 유세인트 토큰 정보\n" +
+                    "    - `sToken` (String, required): 유세인트 sToken\n" +
+                    "    - `sIdno` (Integer, required): 유세인트 sIdno\n" +
+                    "    - `university` (University enum, required): 대학 이름 (SSU)\n" +
                     "\n**Response:**\n" +
-                    "  - 성공 시 201(Created)과 `SignUpResponse` 객체 반환"
+                    "  - 성공 시 201(Created)과 `SignUpResponse` 객체 반환\n" +
+                    "  - `memberId` (Long): 회원 ID\n" +
+                    "  - `tokens` (Object): JWT 토큰 정보"
+    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true,
+            content = @Content(schema = @Schema(implementation = StudentTokenSignUpRequest.class))
     )
     @PostMapping(value = "/students/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<SignUpResponse> signupStudent(
-            @Valid @RequestBody StudentSignUpRequest request) {
-        return BaseResponse.onSuccess(SuccessStatus._OK, signUpService.signupStudent(request));
+            @Valid @RequestBody StudentTokenSignUpRequest request
+    ) {
+        SignUpResponse response;
+        if(request.getStudentTokenAuth().getUniversity().equals(University.SSU)){
+            response = signUpService.signupSsuStudent(request);
+        } else {
+            response = null;
+        }
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
     @Operation(
@@ -188,8 +201,6 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, signUpService.signupAdmin(request, signImage));
     }
 
-
-    // 로그인 (파트너/관리자 공통)
     @Operation(
             summary = "공통 로그인 API",
             description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed811c961be6a474de0e50?source=copy_link)\n" +
@@ -218,39 +229,37 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, loginService.loginCommon(request));
     }
 
-
-    // 학생 로그인
-    @Operation(
-            summary = "학생 로그인 API",
-            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80f6b495fa37f8c084a8?source=copy_link)\n" +
+    @Operation(summary = "학생 로그인 API",
+            description = "# [v1.1 (2025-09-07)](https://clumsy-seeder-416.notion.site/2501197c19ed80f6b495fa37f8c084a8?source=copy_link)\n" +
                     "- `application/json`로 호출합니다.\n" +
-                    "- 바디: `바디: `StudentLoginRequest(studentNumber, studentPassword, school)`.\n" +
-                    "- 처리: 자격 증명 검증 후 Access/Refresh 토큰 발급 및 저장.\n" +
+                    "- 바디: `StudentTokenLoginRequest(sToken, sIdno, university)`.\n" +
+                    "- 처리: 유세인트 인증 → 기존 회원 확인 → JWT 토큰 발급.\n" +
                     "- 성공 시 200(OK)과 토큰/만료시각 반환.\n" +
                     "\n**Request Body:**\n" +
-                    "  - `StudentLoginRequest` 객체 (JSON, required): 학생 로그인 정보\n" +
-                    "  - `studentNumber` (String, required): 학번\n" +
-                    "  - `studentPassword` (String, required): 학생 포털 비밀번호\n" +
-                    "  - `school` (String, required): 학교명\n" +
-                    "\n**Response:**\n" +
+                    "  - `StudentTokenAuthPayload` 객체 (JSON, required): 숭실대 학생 토큰 로그인 정보\n" +
+                    "  - `sToken` (String, required): 유세인트 sToken\n" +
+                    "  - `sIdno` (Integer, required): 유세인트 sIdno\n" +
+                    "  - `university` (University enum, required): 대학 이름 (SSU)\n" +
+                   "\n**Response:**\n" +
                     "  - 성공 시 200(OK)과 `LoginResponse` 객체 반환\n" +
                     "  - `accessToken` (String): 액세스 토큰\n" +
                     "  - `refreshToken` (String): 리프레시 토큰\n" +
                     "  - `expiresAt` (LocalDateTime): 토큰 만료 시각"
     )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true,
-            content = @Content(schema = @Schema(implementation = StudentLoginRequest.class))
-    )
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = StudentTokenAuthPayload.class)))
     @PostMapping(value = "/students/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<LoginResponse> loginStudent(
-            @RequestBody @Valid StudentLoginRequest request
+            @RequestBody @Valid StudentTokenAuthPayload request
     ) {
-        return BaseResponse.onSuccess(SuccessStatus._OK, loginService.loginStudent(request));
+        LoginResponse response;
+        if(request.getUniversity().equals(University.SSU)){
+            response = loginService.loginSsuStudent(request);
+        } else {
+            response = null;
+        }
+        return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
-
-    // 액세스 토큰 갱신
     @Operation(
             summary = "Access Token 갱신 API",
             description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed806ea8cff29f9cd8695a?source=copy_link)\n" +
@@ -281,8 +290,6 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, loginService.refresh(refreshToken));
     }
 
-
-    // 로그아웃
     @Operation(
             summary = "로그아웃 API",
             description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/23a1197c19ed809e9a09fcd741f554c8?source=copy_link)\n" +
