@@ -1,6 +1,5 @@
 package com.assu.server.domain.user.entity;
 
-
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.user.entity.enums.Department;
 import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
@@ -27,13 +26,14 @@ public class Student {
     @MapsId
     private Member member;
 
+    private String name;
+
     @Enumerated(EnumType.STRING)
     private Department department;
 
     @Enumerated(EnumType.STRING)
     private EnrollmentStatus enrollmentStatus;
 
-    @Pattern(regexp = "^[0-9]{1}-[1-2]$", message = "yearSemester는 Y-N 형식이어야 합니다. 예: 3-1")
     private String yearSemester;
 
     @Enumerated(EnumType.STRING)
@@ -49,9 +49,24 @@ public class Student {
     }
 
     public void setStamp() {
-        if(this.stamp ==10)
-            this.stamp=1;
+        if (this.stamp == 10)
+            this.stamp = 1;
         else
             this.stamp++;
+    }
+
+    /**
+     * 유세인트에서 크롤링한 최신 정보로 학생 정보를 업데이트합니다.
+     * 
+     * @param name             학생 이름
+     * @param major            전공
+     * @param enrollmentStatus 학적 상태
+     * @param yearSemester     학년/학기
+     */
+    public void updateStudentInfo(String name, Major major, EnrollmentStatus enrollmentStatus, String yearSemester) {
+        this.name = name;
+        this.major = major;
+        this.enrollmentStatus = enrollmentStatus;
+        this.yearSemester = yearSemester;
     }
 }

@@ -4,9 +4,11 @@ import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
 import com.assu.server.domain.auth.dto.signup.*;
 import com.assu.server.domain.auth.dto.signup.common.CommonInfoPayload;
-import com.assu.server.domain.auth.dto.signup.student.StudentInfoPayload;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthResponse;
 import com.assu.server.domain.auth.entity.AuthRealm;
 import com.assu.server.domain.auth.exception.CustomAuthException;
+import com.assu.server.domain.auth.repository.SSUAuthRepository;
 import com.assu.server.domain.auth.security.adapter.RealmAuthAdapter;
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.assu.server.domain.common.enums.ActivationStatus;
@@ -18,10 +20,10 @@ import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
-import com.assu.server.domain.user.entity.enums.Major;
+import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
+import com.assu.server.domain.user.entity.enums.University;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
-import com.assu.server.global.config.KakaoLocalClient;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +35,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @Service
 @RequiredArgsConstructor
@@ -50,9 +51,10 @@ public class SignUpServiceImpl implements SignUpService {
     private final AmazonS3Manager amazonS3Manager;
     private final JwtUtil jwtUtil;
 
-    private final KakaoLocalClient kakaoLocalClient;
     private final GeometryFactory geometryFactory;
     private final StoreRepository storeRepository;
+    private final SSUAuthService ssuAuthService;
+    private final SSUAuthRepository ssuAuthRepository;
 
     private RealmAuthAdapter pickAdapter(AuthRealm realm) {
         return realmAuthAdapters.stream()
@@ -61,16 +63,29 @@ public class SignUpServiceImpl implements SignUpService {
                 .orElseThrow(() -> new CustomAuthException(ErrorStatus.AUTHORIZATION_EXCEPTION));
     }
 
-    /* 학생: JSON */
+    /* 숭실대 학생: sToken, sIdno 기반 회원가입 */
     @Override
     @Transactional
-    public SignUpResponse signupStudent(StudentSignUpRequest req) {
+    public SignUpResponse signupSsuStudent(StudentTokenSignUpRequest req) {
         // 중복 체크
         if (memberRepository.existsByPhoneNum(req.getPhoneNumber())) {
             throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
         }
 
-        // 1) member 생성
+        // 1) 유세인트 인증 및 학생 정보 추출
+        USaintAuthRequest authRequest = USaintAuthRequest.builder()
+                .sToken(req.getStudentTokenAuth().getSToken())
+                .sIdno(req.getStudentTokenAuth().getSIdno())
+                .build();
+
+        USaintAuthResponse authResponse = ssuAuthService.uSaintAuth(authRequest);
+
+        // 학번 중복 체크
+        if (ssuAuthRepository.existsByStudentNumber(authResponse.getStudentNumber().toString())) {
+                throw new CustomAuthException(ErrorStatus.EXISTED_STUDENT);
+        }
+
+        // 2) member 생성
         Member member = memberRepository.save(
                 Member.builder()
                         .phoneNum(req.getPhoneNumber())
@@ -80,42 +95,29 @@ public class SignUpServiceImpl implements SignUpService {
                         .build()
         );
 
-        // 2) RealmAuthAdapter 로 자격 저장 (학교별 암호화 전략 반영됨)
-        RealmAuthAdapter adapter = pickAdapter(AuthRealm.valueOf(req.getStudentInfo().getUniversity().toString()));
-        adapter.registerCredentials(member, req.getStudentAuth().getStudentNumber(), req.getStudentAuth().getStudentPassword());
+        // 3) SSUAuth 생성 (학번만 저장)
+        RealmAuthAdapter adapter = pickAdapter(AuthRealm.SSU);
+        adapter.registerCredentials(member, authResponse.getStudentNumber().toString(), ""); // 더미 패스워드
 
-        // 3) Student 프로필 생성
-        StudentInfoPayload info = req.getStudentInfo();
-        Major major;
-        switch (info.getMajor()) {
-            case "컴퓨터학부" -> major = Major.COM;
-            case "소프트웨어학부" -> major = Major.SW;
-            case "글로벌미디어학부" -> major = Major.GM;
-            case "미디어경영학과" -> major = Major.MB;
-            case "AI융합학부" -> major = Major.AI;
-            case "전자정보공학부" -> major = Major.EE;
-            case "정보보호학과" -> major = Major.IP;
-            default -> major = null;
-        }
+        // 4) Student 프로필 생성 (크롤링된 정보 사용)
+        Student student = Student.builder()
+                .member(member)
+                .name(authResponse.getName())
+                .major(authResponse.getMajor())
+                .enrollmentStatus(parseEnrollmentStatus(authResponse.getEnrollmentStatus()))
+                .yearSemester(authResponse.getYearSemester())
+                .university(University.SSU) // 고정값
+                .stamp(0)
+                .build();
 
-        studentRepository.save(
-                Student.builder()
-                        .member(member)
-                        .department(info.getDepartment())
-                        .enrollmentStatus(info.getEnrollmentStatus())
-                        .yearSemester(info.getYearSemester())
-                        .university(info.getUniversity())
-                        .stamp(0)
-                        .major(major)
-                        .build()
-        );
+        studentRepository.save(student);
 
-        // 4) 토큰 발급
+        // 5) JWT 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
                 member.getId(),
-                req.getStudentAuth().getStudentNumber(),
+                authResponse.getStudentNumber().toString(), // studentNumber
                 UserRole.STUDENT,
-                adapter.authRealmValue()
+                "SSU"
         );
 
         return SignUpResponse.builder()
@@ -279,6 +281,23 @@ public class SignUpServiceImpl implements SignUpService {
                 .status(member.getIsActivated())
                 .tokens(tokens)
                 .build();
+    }
+
+    private EnrollmentStatus parseEnrollmentStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return EnrollmentStatus.ENROLLED;
+        }
+
+        if (status.contains("재학")) {
+            return EnrollmentStatus.ENROLLED;
+        } else if (status.contains("휴학")) {
+            return EnrollmentStatus.LEAVE;
+        } else if (status.contains("졸업")) {
+            return EnrollmentStatus.GRADUATED;
+        } else {
+            // 기본값은 재학으로 설정
+            return EnrollmentStatus.ENROLLED;
+        }
     }
 
     public Point toPoint(Double lat, Double lng) {
