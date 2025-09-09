@@ -3,7 +3,9 @@ package com.assu.server.domain.auth.service;
 import com.assu.server.domain.auth.dto.login.CommonLoginRequest;
 import com.assu.server.domain.auth.dto.login.LoginResponse;
 import com.assu.server.domain.auth.dto.login.RefreshResponse;
-import com.assu.server.domain.auth.dto.login.StudentLoginRequest;
+import com.assu.server.domain.auth.dto.signup.student.StudentTokenAuthPayload;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
+import com.assu.server.domain.auth.dto.ssu.USaintAuthResponse;
 import com.assu.server.domain.auth.dto.signup.Tokens;
 import com.assu.server.domain.auth.entity.AuthRealm;
 import com.assu.server.domain.auth.security.adapter.RealmAuthAdapter;
@@ -11,11 +13,15 @@ import com.assu.server.domain.auth.security.token.LoginUsernamePasswordAuthentic
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
+import com.assu.server.domain.user.entity.Student;
+import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
+import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +31,8 @@ public class LoginServiceImpl implements LoginService {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final SSUAuthService ssuAuthService;
+    private final StudentRepository studentRepository;
 
     // 공통/학생/기타 학교까지 모두 여기로 주입
     private final List<RealmAuthAdapter> realmAuthAdapters;
@@ -74,34 +82,52 @@ public class LoginServiceImpl implements LoginService {
     }
 
     /**
-     * 학생 로그인: 학번/학교 비밀번호 기반.
-     * 1) 인증 성공 시 SSUAuth 조회
-     * 2) JWT 발급: username=studentNumber, authRealm=SSU
+     * 숭실대 학생 로그인: sToken, sIdno 기반.
+     * 1) 유세인트 인증으로 학생 정보 확인
+     * 2) 기존 회원 확인
+     * 3) Student 정보 업데이트 (유세인트에서 크롤링한 최신 정보로)
+     * 4) JWT 발급: username=studentNumber, authRealm=SSU
      */
     @Override
-    public LoginResponse loginStudent(StudentLoginRequest request) {
+    @Transactional
+    public LoginResponse loginSsuStudent(StudentTokenAuthPayload request) {
+        // 1) 유세인트 인증
+        USaintAuthRequest authRequest = USaintAuthRequest.builder()
+                        .sToken(request.getSToken())
+                        .sIdno(request.getSIdno())
+                        .build();
 
-        String realmStr = request.getUniversity().toString();  // University → AuthRealm 매핑
+        USaintAuthResponse authResponse = ssuAuthService.uSaintAuth(authRequest);
+
+        // 2) 기존 회원 확인
+        String realmStr = request.getUniversity().toString();
         AuthRealm authRealm = AuthRealm.valueOf(realmStr);
         RealmAuthAdapter adapter = pickAdapter(authRealm);
 
-        Authentication authentication = authenticationManager.authenticate(
-                new LoginUsernamePasswordAuthenticationToken(
-                        authRealm,
-                        request.getStudentNumber(),
-                        request.getStudentPassword()
-                )
+        Member member = adapter.loadMember(authResponse.getStudentNumber().toString());
+
+        // 3) Student 정보 업데이트 (유세인트에서 크롤링한 최신 정보로)
+        Student student = member.getStudentProfile();
+        if (student == null) {
+                throw new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER);
+        }
+
+        // 유세인트에서 크롤링한 최신 정보로 업데이트
+        student.updateStudentInfo(
+                authResponse.getName(),
+                authResponse.getMajor(),
+                parseEnrollmentStatus(authResponse.getEnrollmentStatus()),
+                authResponse.getYearSemester()
         );
 
-        // identifier = studentNumber
-        Member member = adapter.loadMember(authentication.getName());
+        studentRepository.save(student);
 
-        // 토큰 발급 (Access 미저장, Refresh는 Redis 저장)
+        // 4) 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
-                member.getId(),
-                authentication.getName(), // studentNumber
-                member.getRole(),
-                adapter.authRealmValue()    // 예: "SSU"
+                        member.getId(),
+                        authResponse.getStudentNumber().toString(), // studentNumber
+                        member.getRole(),
+                        adapter.authRealmValue() // 예: "SSU"
         );
 
         return LoginResponse.builder()
@@ -130,5 +156,21 @@ public class LoginServiceImpl implements LoginService {
                 rotated.getAccessToken(),
                 rotated.getRefreshToken()
         );
+    }
+
+    private EnrollmentStatus parseEnrollmentStatus(String status) {
+        if (status == null || status.isBlank()) {
+            return EnrollmentStatus.ENROLLED;
+        }
+        if (status.contains("재학")) {
+            return EnrollmentStatus.ENROLLED;
+        } else if (status.contains("휴학")) {
+            return EnrollmentStatus.LEAVE;
+        } else if (status.contains("졸업")) {
+            return EnrollmentStatus.GRADUATED;
+        } else {
+            // 기본값은 재학으로 설정
+            return EnrollmentStatus.ENROLLED;
+        }
     }
 }

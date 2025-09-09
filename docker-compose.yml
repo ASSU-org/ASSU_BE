@@ -11,7 +11,8 @@ services:
       - SPRING_PROFILES_ACTIVE=blue
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/
     volumes:
-      - /home/ubuntu/app/config/application-secret.yml:/app/config/application-secret.yml:ro
+      - /home/ubuntu/secret/application-secret.yml:/app/config/application-secret.yml:ro
+      - /home/ubuntu/secret/service-account.json:/app/config/service-account.json:ro
     networks:
       - assu-network
 
@@ -27,10 +28,11 @@ services:
       - SPRING_PROFILES_ACTIVE=green
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/app/config/
     volumes:
-      - /home/ubuntu/app/config/application-secret.yml:/app/config/application-secret.yml:ro
+      - /home/ubuntu/secret/application-secret.yml:/app/config/application-secret.yml:ro
+      - /home/ubuntu/secret/service-account.json:/app/config/service-account.json:ro
     networks:
       - assu-network
 
 networks:
   assu-network:
-    driver: bridge
+    external: true

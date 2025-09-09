@@ -30,6 +30,9 @@ public enum ErrorStatus implements BaseErrorCode {
     SSU_SAINT_PARSE_FAILED(HttpStatus.UNAUTHORIZED, "SSU4002", "숭실대학교 유세인트 포털 크롤링 파싱에 실패했습니다."),
     SSU_SAINT_UNSUPPORTED_MAJOR(HttpStatus.UNAUTHORIZED, "SSU4003", "지원하는 학과가 아닙니다."),
 
+    // 알리고 SMS 전송 관련 에러
+    FAILED_TO_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "ALIGO500", "알리고 SMS 전송에 실패했습니다."),
+
     // 인증 에러
     NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"AUTH_4007","전화번호 인증에 실패했습니다."),
 

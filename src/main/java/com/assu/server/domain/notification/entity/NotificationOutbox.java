@@ -27,8 +27,11 @@ public class NotificationOutbox {
 
     @Column(nullable=false) private int retryCount;
 
-    public enum Status { PENDING, SENT, FAILED }
-    public void markSent(){ this.status = Status.SENT; }
-    public void markFailed(){ this.status = Status.FAILED; }
-    public void incRetry(){ this.retryCount++; }
+    public enum Status { PENDING, SENDING, DISPATCHED, SENT, FAILED }
+
+    public void markSending()    { this.status = Status.SENDING; }
+    public void markDispatched() { this.status = Status.DISPATCHED; }
+    public void markSent()       { this.status = Status.SENT; }
+    public void markFailed()     { this.status = Status.FAILED; }
+    public void incRetry()       { this.retryCount++; }
 }
