@@ -1,10 +1,14 @@
 package com.assu.server.domain.suggestion.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.auth.entity.SSUAuth;
+import com.assu.server.domain.auth.exception.CustomAuthException;
+import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.suggestion.dto.SuggestionRequestDTO;
 import com.assu.server.domain.suggestion.dto.SuggestionResponseDTO;
 import com.assu.server.domain.suggestion.entity.Suggestion;
 import com.assu.server.domain.user.entity.Student;
+import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,9 +53,9 @@ public class SuggestionConverter {
                 .collect(Collectors.toList());
     }
 
-    public static SuggestionResponseDTO.GetSuggestionAdminsDTO GetSuggestionAdminsResultDTO(Student student) {
-        return SuggestionResponseDTO.GetSuggestionAdminsDTO.builder()
-                .adminId()
-                .build()
-    }
+//    public static SuggestionResponseDTO.GetSuggestionAdminsDTO GetSuggestionAdminsResultDTO(Student student) {
+//        return SuggestionResponseDTO.GetSuggestionAdminsDTO.builder()
+//                .adminId()
+//                .build()
+//    }
 }

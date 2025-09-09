@@ -33,7 +33,6 @@
             private String storeName;
             private String content;
             private Major studentMajor;
-            private Long studentNumber;
             private EnrollmentStatus enrollmentStatus;
         }
 

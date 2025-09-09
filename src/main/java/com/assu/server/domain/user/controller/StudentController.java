@@ -30,10 +30,9 @@ public class StudentController {
 	@GetMapping("/partnership/{year}/{month}")
 	@Operation(summary = "유저의 제휴 내역을 조회", description = "건수 및 금액으로 조회")
 	public ResponseEntity<BaseResponse<StudentResponseDTO.myPartnership>> getMyPartnership(
-		@PathVariable int year, @PathVariable int month, @AuthenticationPrincipal PrincipalDetails userDetails
+		@PathVariable int year, @PathVariable int month, @AuthenticationPrincipal PrincipalDetails pd
 	){
-		Member member = userDetails.getMember();
-		StudentResponseDTO.myPartnership result = studentService.getMyPartnership(member.getId(), year, month);
+		StudentResponseDTO.myPartnership result = studentService.getMyPartnership(pd.getId(), year, month);
 
 		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.PARTNERSHIP_HISTORY_SUCCESS, result));
 	}
@@ -47,7 +46,6 @@ public class StudentController {
     public BaseResponse<StudentResponseDTO.CheckStampResponseDTO> getStamp(
             @AuthenticationPrincipal PrincipalDetails pd
     ) {
-        Long memberId = pd.getMember().getId();
-        return BaseResponse.onSuccess(SuccessStatus._OK, studentService.getStamp(memberId));
+        return BaseResponse.onSuccess(SuccessStatus._OK, studentService.getStamp(pd.getId()));
     }
 }

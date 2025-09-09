@@ -1,6 +1,5 @@
 package com.assu.server.domain.auth.security.adapter;
 
-import com.assu.server.domain.auth.crypto.StudentPasswordEncoder;
 import com.assu.server.domain.auth.entity.AuthRealm;
 import com.assu.server.domain.auth.entity.SSUAuth;
 import com.assu.server.domain.auth.exception.CustomAuthException;
@@ -13,11 +12,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class SSUAuthAdapter implements RealmAuthAdapter {
     private final SSUAuthRepository ssuAuthRepository;
-    private final StudentPasswordEncoder studentPasswordEncoder; // AES-GCM 비교
 
     @Override public boolean supports(AuthRealm realm) { return realm == AuthRealm.SSU; }
 
@@ -29,16 +29,18 @@ public class SSUAuthAdapter implements RealmAuthAdapter {
         boolean enabled = m.getIsActivated() == ActivationStatus.ACTIVE;
         String authority = "ROLE_" + m.getRole().name();
 
+        // sToken/sIdno 기반 인증이므로 더미 패스워드 사용
         return org.springframework.security.core.userdetails.User
                 .withUsername(sa.getStudentNumber())
-                .password(sa.getPasswordCipher()) // 암호문, 비교는 Encoder가 담당
+                .password("") // 더미 패스워드 (실제 인증은 sToken/sIdno로 수행)
                 .authorities(authority)
                 .accountExpired(false).accountLocked(false).credentialsExpired(false)
                 .disabled(!enabled)
                 .build();
     }
 
-    @Override public Member loadMember(String studentNumber) {
+    @Override
+    public Member loadMember(String studentNumber) {
         return ssuAuthRepository.findByStudentNumber(studentNumber)
                 .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER))
                 .getMember();
@@ -49,17 +51,34 @@ public class SSUAuthAdapter implements RealmAuthAdapter {
         if (ssuAuthRepository.existsByStudentNumber(studentNumber)) {
             throw new CustomAuthException(ErrorStatus.EXISTED_STUDENT);
         }
-        String cipher = studentPasswordEncoder.encode(rawPassword);
         ssuAuthRepository.save(
                 SSUAuth.builder()
                         .member(member)
                         .studentNumber(studentNumber)
-                        .passwordCipher(cipher)
                         .isAuthenticated(true)
+                        .authenticatedAt(LocalDateTime.now())
                         .build()
         );
     }
 
-    @Override public PasswordEncoder passwordEncoder() { return studentPasswordEncoder; }
-    @Override public String authRealmValue() { return "SSU"; }
+    @Override
+    public PasswordEncoder passwordEncoder() {
+        // 더미 패스워드 인코더 (실제 인증은 sToken/sIdno로 수행)
+        return new PasswordEncoder() {
+            @Override
+            public String encode(CharSequence rawPassword) {
+                return "";
+            }
+
+            @Override
+            public boolean matches(CharSequence rawPassword, String encodedPassword) {
+                return true; // 항상 true 반환 (실제 인증은 sToken/sIdno로 수행)
+            }
+        };
+    }
+
+    @Override
+    public String authRealmValue() {
+        return "SSU";
+    }
 }

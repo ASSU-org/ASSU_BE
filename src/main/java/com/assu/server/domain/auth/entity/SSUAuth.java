@@ -32,11 +32,6 @@ public class SSUAuth extends BaseEntity {
     @Column(name = "student_number", length = 20, nullable = false)
     private String studentNumber;
 
-    // TEXT 컬럼
-    @Lob
-    @Column(name = "password_cipher", columnDefinition = "TEXT", nullable = false)
-    private String passwordCipher;
-
     @Column(name = "is_authenticated", nullable = false)
     private Boolean isAuthenticated = Boolean.FALSE;
 
