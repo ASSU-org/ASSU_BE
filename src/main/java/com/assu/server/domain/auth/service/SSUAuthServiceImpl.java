@@ -33,7 +33,7 @@ public class SSUAuthServiceImpl implements SSUAuthService {
     public USaintAuthResponse uSaintAuth(USaintAuthRequest uSaintAuthRequest) {
 
         String sToken = uSaintAuthRequest.getSToken();
-        Integer sIdno = uSaintAuthRequest.getSIdno();
+        String sIdno = uSaintAuthRequest.getSIdno();
 
         // 1) SSO 로그인 요청
         ResponseEntity<String> uSaintSSOResponseEntity;
@@ -124,7 +124,7 @@ public class SSUAuthServiceImpl implements SSUAuthService {
             switch (dt.text()) {
                 case "학번" -> {
                     try {
-                        usaintAuthResponse.setId(Integer.valueOf(strong.text()));
+                        usaintAuthResponse.setStudentNumber(strong.text());
                     } catch (NumberFormatException e) {
                         log.error("Invalid studentId format: {}", strong.text());
                         throw new CustomAuthException(ErrorStatus.SSU_SAINT_PARSE_FAILED);
@@ -157,7 +157,7 @@ public class SSUAuthServiceImpl implements SSUAuthService {
         return usaintAuthResponse;
     }
 
-    private ResponseEntity<String> requestUSaintSSO(String sToken, Integer sIdno) {
+    private ResponseEntity<String> requestUSaintSSO(String sToken, String sIdno) {
         String url = USaintSSOUrl + "?sToken=" + sToken + "&sIdno=" + sIdno;
 
         return webClient.get()

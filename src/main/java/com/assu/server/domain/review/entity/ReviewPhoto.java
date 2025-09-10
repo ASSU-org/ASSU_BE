@@ -1,6 +1,7 @@
 package com.assu.server.domain.review.entity;
 import com.assu.server.domain.common.entity.BaseEntity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +31,7 @@ public class ReviewPhoto extends BaseEntity {
 	@JoinColumn(name = "review_id")
 	private Review review;
 
+	@Column(length =2000)
 	private String photoUrl;
 
 	@JoinColumn(name = "key_name") // S3 키 이름 저장 (조회 시 새 URL 생성용)

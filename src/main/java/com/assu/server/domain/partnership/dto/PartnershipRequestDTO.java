@@ -14,6 +14,7 @@ import java.time.LocalDate;
 public class PartnershipRequestDTO {
     @Getter
     public static class finalRequest{
+        String adminName;
         String placeName;
         String partnershipContent;
         Long contentId;

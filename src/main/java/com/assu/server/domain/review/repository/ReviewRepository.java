@@ -1,6 +1,10 @@
 package com.assu.server.domain.review.repository;
 
 import com.assu.server.domain.review.entity.Review;
+import com.assu.server.domain.store.entity.Store;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,8 +18,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     WHERE r.student.id = :memberId
     ORDER BY r.createdAt DESC
 """)
-    List<Review> findByMemberId(@Param("memberId") Long memberId);
-    List<Review> findByStoreId(Long storeId);
+    Page<Review> findByMemberId(@Param("memberId") Long memberId, Pageable pageable);
+    // List<Review> findByStoreId(Long storeId);
 
-    List<Review> findByStoreIdOrderByCreatedAtDesc(Long id);//최신순 정렬
+    Page<Review> findByStoreIdOrderByCreatedAtDesc(Long id, Pageable pageable);//최신순 정렬
+    Page<Review> findByStoreId(Long id, Pageable pageable);
+
+    @Query("SELECT AVG(r.rate) FROM Review r WHERE r.store.id = :storeId")
+    Float standardScore(Long storeId);
+
+    Long store(Store store);
 }

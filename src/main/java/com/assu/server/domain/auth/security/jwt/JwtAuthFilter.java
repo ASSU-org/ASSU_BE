@@ -48,7 +48,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String[] WHITELIST = {
             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
             "/swagger-resources/**", "/webjars/**",
-            "/auth/login/**", "/auth/signup/**", "/auth/phone-numbers/**"
+            // Auth (로그아웃 제외)
+            "/auth/phone-verification/send",
+            "/auth/phone-verification/verify",
+            "/auth/students/signup",
+            "/auth/partners/signup",
+            "/auth/admins/signup",
+            "/auth/commons/login",
+            "/auth/students/login",
+            "/auth/students/ssu-verify"
     };
 
     /**
@@ -60,7 +68,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         if ("OPTIONS".equalsIgnoreCase(request.getMethod()))
             return true; // CORS preflight 우회
-        if (PATH.match("/auth/refresh", uri))
+        if (PATH.match("/auth/tokens/refresh", uri))
             return false; // 토큰 재발급은 필터 적용
         for (String p : WHITELIST)
             if (PATH.match(p, uri))
@@ -98,7 +106,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
 
         // ───────── 재발급 경로 처리 (/auth/token/reissue) ─────────
-        if (PATH.match("/auth/refresh", requestUri)) {
+        if (PATH.match("/auth/tokens/refresh", requestUri)) {
             String refreshToken = request.getHeader("refreshToken");
             try {
                 // Bearer 헤더 검증
