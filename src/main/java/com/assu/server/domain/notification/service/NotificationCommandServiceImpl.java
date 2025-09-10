@@ -1,6 +1,7 @@
 package com.assu.server.domain.notification.service;
 
 
+import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.notification.dto.QueueNotificationRequest;
@@ -17,9 +18,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -129,23 +129,59 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
 
     @Transactional
     @Override
-    public boolean toggle(Long memberId, NotificationType type) {
+    public Map<String, Boolean> toggle(Long memberId, NotificationType type) {
+        Member member = memberRepository.findMemberById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER));
 
-        Member member = memberRepository.findMemberById(memberId).orElseThrow(
-            () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
-        );
+        // 그룹 타입 처리 (기존 그대로)
+        if (type == NotificationType.PARTNER_ALL) {
+            toggleSingle(member, NotificationType.CHAT);
+            toggleSingle(member, NotificationType.ORDER);
+        } else if (type == NotificationType.ADMIN_ALL) {
+            toggleSingle(member, NotificationType.CHAT);
+            toggleSingle(member, NotificationType.PARTNER_SUGGESTION);
+            toggleSingle(member, NotificationType.PARTNER_PROPOSAL);
+        } else {
+            toggleSingle(member, type);
+        }
+
+        boolean isAdmin = member.getRole() == UserRole.ADMIN; // Role enum을 쓰는 경우
+
+        // ADMIN: CHAT, PARTNER_SUGGESTION, PARTNER_PROPOSAL
+        // PARTNER: CHAT, ORDER
+        EnumSet<NotificationType> visibleTypes = isAdmin
+                ? EnumSet.of(NotificationType.CHAT, NotificationType.PARTNER_SUGGESTION, NotificationType.PARTNER_PROPOSAL)
+                : EnumSet.of(NotificationType.CHAT, NotificationType.ORDER);
+
+        // 기본값 true로 모두 채운 후, DB 값으로 덮어쓰기
+        Map<String, Boolean> result = new LinkedHashMap<>();
+        for (NotificationType t : visibleTypes) {
+            result.put(t.name(), true); // DB에 없으면 true
+        }
+
+        List<NotificationSetting> rows = notificationSettingRepository.findAllByMemberId(memberId);
+        for (NotificationSetting s : rows) {
+            if (visibleTypes.contains(s.getType())) {
+                result.put(s.getType().name(), Boolean.TRUE.equals(s.getEnabled()));
+            }
+        }
+
+        return result;
+    }
+
+    private boolean toggleSingle(Member member, NotificationType type) {
         NotificationSetting setting = notificationSettingRepository
-                .findByMemberIdAndType(memberId, type)
+                .findByMemberIdAndType(member.getId(), type)
                 .orElse(NotificationSetting.builder()
                         .member(member)
                         .type(type)
                         .enabled(true) // 기본값
                         .build());
 
-        setting.setEnabled(!setting.getEnabled()); // 토글
+        setting.setEnabled(!setting.getEnabled());
         notificationSettingRepository.save(setting);
 
-        return setting.getEnabled(); // 변경된 값 반환
+        return setting.getEnabled();
     }
 
     @Transactional
