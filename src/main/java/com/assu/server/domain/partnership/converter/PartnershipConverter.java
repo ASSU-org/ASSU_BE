@@ -116,6 +116,7 @@ public class PartnershipConverter {
 		String paperContentText = buildPaperContentText(content, goodsList, peopleValue);
 
 		return PaperContentResponseDTO.storePaperContentResponse.builder()
+			.adminId(content.getPaper().getAdmin().getId())
 			.adminName(content.getPaper().getAdmin().getName())
 			.cost(content.getCost())
 			.paperContent(paperContentText)

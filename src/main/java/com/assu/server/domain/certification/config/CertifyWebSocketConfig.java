@@ -24,7 +24,7 @@ public class CertifyWebSocketConfig implements WebSocketMessageBrokerConfigurer 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/ws")           // 클라이언트 WebSocket 연결 주소
-			.setAllowedOriginPatterns("*").withSockJS(); // CORS 허용
+			.setAllowedOriginPatterns("http://10.0.2.2:8080", "ws://10.0.2.2:8080");// CORS 허용
 	}
 
 	@Override
