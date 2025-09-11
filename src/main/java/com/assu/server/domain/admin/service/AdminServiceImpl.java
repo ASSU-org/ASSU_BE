@@ -6,13 +6,11 @@ import org.springframework.stereotype.Service;
 import com.assu.server.domain.admin.dto.AdminResponseDTO;
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
-import com.assu.server.domain.user.entity.enums.Department;
 import com.assu.server.domain.user.entity.enums.Major;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
-import com.assu.server.domain.user.entity.enums.University;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,7 +24,7 @@ public class AdminServiceImpl implements AdminService {
     private final PartnerRepository partnerRepository;
 	@Override
 	@Transactional
-	public List<Admin> findMatchingAdmins(University university, Department department, Major major){
+	public List<Admin> findMatchingAdmins(String university, String department, Major major){
 
 
 		List<Admin> adminList = adminRepository.findMatchingAdmins(university, department,major);

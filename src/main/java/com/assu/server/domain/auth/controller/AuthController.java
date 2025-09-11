@@ -159,9 +159,6 @@ public class AuthController {
                     "  - `request` (JSON, required): `AdminSignUpRequest` 객체\n" +
                     "  - `email` (String, required): 이메일 주소\n" +
                     "  - `password` (String, required): 비밀번호\n" +
-                    "  - `university` (String, required): 대학교 Enum\n" +
-                    "  - `department` (String, required): 단과대 Enum\n" +
-                    "  - `major` (String, required): 전공 Enum\n" +
                     "  - `phoneNumber` (String, required): 휴대폰 번호\n" +
                     "  - `name` (String, required): 관리자 이름\n" +
                     "  - `department` (String, required): 소속 부서\n" +
