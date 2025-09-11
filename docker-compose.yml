@@ -35,4 +35,4 @@ services:
 
 networks:
   assu-network:
-    external: true
+    driver: bridge
