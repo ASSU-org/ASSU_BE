@@ -243,7 +243,7 @@ public class AuthController {
                     "  - `sToken` (String, required): 유세인트 sToken\n" +
                     "  - `sIdno` (Integer, required): 유세인트 sIdno\n" +
                     "  - `university` (University enum, required): 대학 이름 (SSU)\n" +
-                   "\n**Response:**\n" +
+                    "\n**Response:**\n" +
                     "  - 성공 시 200(OK)과 `LoginResponse` 객체 반환\n" +
                     "  - `accessToken` (String): 액세스 토큰\n" +
                     "  - `refreshToken` (String): 리프레시 토큰\n" +
@@ -305,7 +305,7 @@ public class AuthController {
     public BaseResponse<Void> logout(
             @RequestHeader("Authorization")
             @Parameter(name = "Authorization", description = "Access Token. 형식: `Bearer <token>`", required = true,
-                            in = ParameterIn.HEADER, schema = @Schema(type = "string"))
+                    in = ParameterIn.HEADER, schema = @Schema(type = "string"))
             String authorization
     ) {
         logoutService.logout(authorization);

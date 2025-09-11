@@ -93,9 +93,9 @@ public class LoginServiceImpl implements LoginService {
     public LoginResponse loginSsuStudent(StudentTokenAuthPayload request) {
         // 1) 유세인트 인증
         USaintAuthRequest authRequest = USaintAuthRequest.builder()
-                        .sToken(request.getSToken())
-                        .sIdno(request.getSIdno())
-                        .build();
+                .sToken(request.getSToken())
+                .sIdno(request.getSIdno())
+                .build();
 
         USaintAuthResponse authResponse = ssuAuthService.uSaintAuth(authRequest);
 
@@ -109,7 +109,7 @@ public class LoginServiceImpl implements LoginService {
         // 3) Student 정보 업데이트 (유세인트에서 크롤링한 최신 정보로)
         Student student = member.getStudentProfile();
         if (student == null) {
-                throw new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER);
+            throw new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER);
         }
 
         // 유세인트에서 크롤링한 최신 정보로 업데이트
@@ -124,10 +124,10 @@ public class LoginServiceImpl implements LoginService {
 
         // 4) 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
-                        member.getId(),
-                        authResponse.getStudentNumber().toString(), // studentNumber
-                        member.getRole(),
-                        adapter.authRealmValue() // 예: "SSU"
+                member.getId(),
+                authResponse.getStudentNumber().toString(), // studentNumber
+                member.getRole(),
+                adapter.authRealmValue() // 예: "SSU"
         );
 
         return LoginResponse.builder()

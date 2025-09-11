@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class USaintAuthResponse {
-    private String studentNumber;
+    private Integer id;
     private String name;
     private String enrollmentStatus;
     private String yearSemester;
