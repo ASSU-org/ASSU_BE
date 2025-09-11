@@ -7,12 +7,12 @@ import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,10 +43,32 @@ public class ReviewController {
             description = "Authorization 후에 사용해주세요."
     )
     @GetMapping("/student")
-    public BaseResponse<List<ReviewResponseDTO.CheckStudentReviewResponseDTO>> checkStudent(
-            @AuthenticationPrincipal PrincipalDetails pd
+    public BaseResponse<Page<ReviewResponseDTO.CheckReviewResponseDTO>> checkStudent(
+            @AuthenticationPrincipal PrincipalDetails pd, Pageable pageable
     ) {
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(pd.getId()));
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStudentReview(pd.getId(), pageable));
+    }
+
+    @Operation(
+        summary = "내 가게 리뷰 조회 API",
+        description = "Authorization 후에 사용해주세요."
+    )
+    @GetMapping("/partner")
+    public BaseResponse<Page<ReviewResponseDTO.CheckReviewResponseDTO>> checkPartnerReview(
+        @AuthenticationPrincipal PrincipalDetails pd, Pageable pageable
+    ){
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(pd.getId(), pageable));
+    }
+
+    @Operation(
+        summary = "가게 리뷰 조회 API",
+        description = "storeId 기반으로 가게 리뷰를 조회하는 API 입니다."
+    )
+    @GetMapping("/store/{storeId}")
+    public BaseResponse<Page<ReviewResponseDTO.CheckReviewResponseDTO>> checkStoreReview(
+        Pageable pageable, @PathVariable Long storeId
+    ){
+        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkStoreReview(storeId, pageable));
     }
 
     @Operation(
@@ -54,22 +76,33 @@ public class ReviewController {
             description = "삭제할 리뷰 ID를 입력해주세요."
     )
     @DeleteMapping("/{reviewId}")
-    public BaseResponse<ReviewResponseDTO.DeleteReviewResponseDTO> deleteReview(
-            @AuthenticationPrincipal PrincipalDetails pd,
+    public ResponseEntity<BaseResponse<ReviewResponseDTO.DeleteReviewResponseDTO>> deleteReview(
             @PathVariable Long reviewId) {
-        Long memberId = pd.getMember().getId();
 
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.deleteReview(reviewId));
+        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, reviewService.deleteReview(reviewId)));
     }
 
     @Operation(
-            summary = "내 가게 리뷰 조회 API",
-            description = "Authorization 후에 사용해주세요."
+        summary = "store 리뷰 평균 조회 API",
+        description = "storeId 기반으로 조회하는 API 입니다."
     )
-    @GetMapping("/partner")
-    public BaseResponse<List<ReviewResponseDTO.CheckPartnerReviewResponseDTO>> checkPartnerReview(
-            @AuthenticationPrincipal PrincipalDetails pd
+    @GetMapping("/average/{storeId}")
+    public ResponseEntity<BaseResponse<ReviewResponseDTO.StandardScoreResponseDTO>> getStandardScore(
+        @PathVariable Long storeId
     ){
-        return BaseResponse.onSuccess(SuccessStatus._OK, reviewService.checkPartnerReview(pd.getId()));
+        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, reviewService.standardScore(storeId)));
     }
+
+    @Operation(
+        summary = "store 리뷰 평균 조회 API",
+        description = "partner 로그인 시 자신의 가게 평균을 조회하는 api 입니다."
+    )
+    @GetMapping("/average")
+    public ResponseEntity<BaseResponse<ReviewResponseDTO.StandardScoreResponseDTO>> getMyStoreAverage(
+        @AuthenticationPrincipal PrincipalDetails pd
+    ){
+        return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus._OK, reviewService.myStoreAverage(pd.getId())));
+    }
+
+
 }

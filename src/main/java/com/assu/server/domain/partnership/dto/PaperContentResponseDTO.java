@@ -18,5 +18,6 @@ public class PaperContentResponseDTO {
 		Long contentId;
 		List<String> goods;
 		Integer people;
+		Long cost;
 	}
 }

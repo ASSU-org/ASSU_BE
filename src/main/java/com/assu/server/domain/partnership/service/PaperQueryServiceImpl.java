@@ -47,8 +47,8 @@ public class PaperQueryServiceImpl implements PaperQueryService {
 
 		// 유저의 학교, 단과대, 학부 정보를 조회하여 일치하는 admin을 찾습니다.
 		List<Admin> adminList = adminService.findMatchingAdmins(
-			student.getUniversity().toString(),
-			student.getDepartment().toString(),
+			student.getUniversity(),
+			student.getDepartment(),
 			student.getMajor());
 
 		// // 한번 더 거르기 위해서
