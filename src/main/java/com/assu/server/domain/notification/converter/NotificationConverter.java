@@ -1,10 +1,17 @@
 package com.assu.server.domain.notification.converter;
 
 import com.assu.server.domain.notification.dto.NotificationResponseDTO;
+import com.assu.server.domain.notification.dto.NotificationSettingsResponse;
 import com.assu.server.domain.notification.entity.Notification;
+import com.assu.server.domain.notification.entity.NotificationSetting;
+import com.assu.server.domain.notification.entity.NotificationType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class NotificationConverter {
     public static NotificationResponseDTO toDto(Notification n) {
@@ -41,4 +48,12 @@ public class NotificationConverter {
         long days = hours / 24;
         return days + "일 전";
     }
+
+    // 저장 대상: 개별 타입만 (그룹 제외)
+    private static final EnumSet<NotificationType> BASE_TYPES = EnumSet.of(
+            NotificationType.CHAT,
+            NotificationType.ORDER,
+            NotificationType.PARTNER_SUGGESTION,
+            NotificationType.PARTNER_PROPOSAL
+    );
 }

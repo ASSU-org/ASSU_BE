@@ -32,8 +32,12 @@ public class StudentResponseDTO {
 	@AllArgsConstructor
 	@Builder
 	public static class UsageDetailDTO {
+		private String adminName;
+		private Long partnershipUsageId;
 		private String storeName;
-		private LocalDate usedAt;
+		private Long partnerId;
+		private Long storeId;
+		private String usedAt;
 		private String benefitDescription;
 		private boolean isReviewed;
 	}

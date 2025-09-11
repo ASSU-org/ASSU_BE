@@ -254,6 +254,9 @@ public class SignUpServiceImpl implements SignUpService {
         // 3) Partner 프로필 생성
         adminRepository.save(
                 Admin.builder()
+                    .major(req.getCommonAuth().getMajor())
+                    .department(req.getCommonAuth().getDepartment())
+                    .university(req.getCommonAuth().getUniversity())
                         .member(member)
                         .name(info.getName())
                         .officeAddress(address)

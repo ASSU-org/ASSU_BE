@@ -12,6 +12,5 @@ public class CertificationResponseDTO {
 	@AllArgsConstructor
 	public static class getSessionIdResponse {
 		Long sessionId;
-		Long adminId;
 	}
 }
