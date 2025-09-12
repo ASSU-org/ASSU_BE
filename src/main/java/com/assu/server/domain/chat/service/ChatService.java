@@ -6,10 +6,10 @@ import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import java.util.List;
 
 public interface ChatService {
-    List<ChatRoomListResultDTO> getChatRoomList();
-    ChatResponseDTO.CreateChatRoomResponseDTO createChatRoom(ChatRequestDTO.CreateChatRoomRequestDTO request);
+    List<ChatRoomListResultDTO> getChatRoomList(Long memberId);
+    ChatResponseDTO.CreateChatRoomResponseDTO createChatRoom(ChatRequestDTO.CreateChatRoomRequestDTO request, Long memberId);
     ChatResponseDTO.SendMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request);
-    ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId);
-    ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId);
-    ChatResponseDTO.LeaveChattingRoomResponseDTO leaveChattingRoom(Long roomId);
+    ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId, Long memberId);
+    ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId, Long memberId);
+    ChatResponseDTO.LeaveChattingRoomResponseDTO leaveChattingRoom(Long roomId, Long memberId);
 }

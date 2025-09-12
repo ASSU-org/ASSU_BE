@@ -1,6 +1,7 @@
 package com.assu.server;
 
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
+//import com.google.api.client.http.javanet.ConnectionFactory;
 import com.google.firebase.messaging.FirebaseMessaging;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -22,8 +23,8 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 @ActiveProfiles("test")
 class ServerApplicationTests {
 
-	@Mock
-	private FirebaseMessaging firebaseMessaging;
+    @Mock
+    private FirebaseMessaging firebaseMessaging;
 
 	@MockitoBean private ConnectionFactory connectionFactory;
 
@@ -37,40 +38,40 @@ class ServerApplicationTests {
 			return Mockito.mock(FirebaseMessaging.class);
 		}
 
-		@Bean
-		RedisConnectionFactory redisConnectionFactory() {
-			return Mockito.mock(RedisConnectionFactory.class);
-		}
+        @Bean
+        RedisConnectionFactory redisConnectionFactory() {
+            return Mockito.mock(RedisConnectionFactory.class);
+        }
 
-		@Bean
+        @Bean
         @SuppressWarnings("unchecked")
-		RedisTemplate<String, Object> redisTemplate() {
-			return Mockito.mock(RedisTemplate.class);
-		}
+        RedisTemplate<String, Object> redisTemplate() {
+            return Mockito.mock(RedisTemplate.class);
+        }
 
-		@Bean
-		StringRedisTemplate stringRedisTemplate() {
-			return Mockito.mock(StringRedisTemplate.class);
-		}
+        @Bean
+        StringRedisTemplate stringRedisTemplate() {
+            return Mockito.mock(StringRedisTemplate.class);
+        }
 
-		@Bean
-		JwtUtil jwtUtil() {
-			return Mockito.mock(JwtUtil.class);
-		}
+        @Bean
+        JwtUtil jwtUtil() {
+            return Mockito.mock(JwtUtil.class);
+        }
 
-		@Bean(name = "rabbitListenerContainerFactory")
-		RabbitListenerContainerFactory<?> rabbitListenerContainerFactory() {
-			var factory = Mockito.mock(RabbitListenerContainerFactory.class);
-			var container = Mockito.mock(org.springframework.amqp.rabbit.listener.MessageListenerContainer.class);
-			Mockito.when(factory.createListenerContainer(Mockito.any()))
-					.thenReturn(container);
-			return factory;
-		}
+        @Bean(name = "rabbitListenerContainerFactory")
+        RabbitListenerContainerFactory<?> rabbitListenerContainerFactory() {
+            var factory = Mockito.mock(RabbitListenerContainerFactory.class);
+            var container = Mockito.mock(org.springframework.amqp.rabbit.listener.MessageListenerContainer.class);
+            Mockito.when(factory.createListenerContainer(Mockito.any()))
+                    .thenReturn(container);
+            return factory;
+        }
 
-	}
+    }
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
 }
