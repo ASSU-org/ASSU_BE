@@ -11,6 +11,11 @@ public interface NotificationCommandService {
     Notification createAndQueue(Long receiverId, NotificationType type, Long refId, Map<String, Object> ctx);
     void markRead(Long notificationId, Long currentMemberId) throws AccessDeniedException;
     void queue(QueueNotificationRequest req);
-    boolean toggle(Long memberId, NotificationType type);
+    Map<String, Boolean> toggle(Long memberId, NotificationType type);
     boolean isEnabled(Long memberId, NotificationType type);
+
+    void sendChat(Long receiverId, Long roomId, String senderName, String message);
+    void sendPartnerSuggestion(Long receiverId, Long suggestionId);
+    void sendOrder(Long receiverId, Long orderId, String tableNum, String paperContent);
+    void sendPartnerProposal(Long receiverId, Long proposalId, String partnerName);
 }

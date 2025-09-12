@@ -29,13 +29,22 @@ public class SecurityConfig {
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-resources/**", "/webjars/**"
                         ).permitAll()
+
                         // 로그아웃은 인증 필요
                         .requestMatchers("/auth/logout").authenticated()
-                        // 그 외 Auth 전체 공개
-                        .requestMatchers(
-                                "/auth/**"
+
+                        .requestMatchers(// Auth (로그아웃 제외)
+                                "/auth/phone-verification/send",
+                                "/auth/phone-verification/verify",
+                                "/auth/students/signup",
+                                "/auth/partners/signup",
+                                "/auth/admins/signup",
+                                "/auth/commons/login",
+                                "/auth/students/login",
+                                "/auth/students/ssu-verify"
                         ).permitAll()
-                        // 나머지는 인증 필요
+
+                        // 나머지 요청은 JwtAuthFilter가 화이트리스트/보호자원 판별
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

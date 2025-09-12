@@ -21,10 +21,11 @@ jwt:
   access-valid-seconds: 3600
   refresh-valid-seconds: 1209600
 
-assu:
-  security:
-    school-crypto:
-      base64-key: "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=" #"dummy-base64-key"를 Base64로 인코딩한 값
+  messaging:
+    rabbit:
+      enabled: false
+    push:
+      enabled: false
 
   messaging:
     rabbit:

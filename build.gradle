@@ -21,6 +21,7 @@ configurations {
 }
 
 repositories {
+	google()
 	mavenCentral()
 }
 
@@ -99,6 +100,10 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.google.auth:google-auth-library-oauth2-http:1.18.0'
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+	// amqp
+	implementation("org.springframework.boot:spring-boot-starter-amqp")
+	implementation("com.fasterxml.jackson.core:jackson-databind")
 }
 
 tasks.named('test') {

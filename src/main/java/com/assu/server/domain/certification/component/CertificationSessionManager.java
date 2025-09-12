@@ -16,7 +16,7 @@ public class CertificationSessionManager {
 	}
 
 	public void addUserToSession(Long sessionId, Long userId) {
-		sessionUserMap.getOrDefault(sessionId, ConcurrentHashMap.newKeySet()).add(userId);
+		sessionUserMap.computeIfAbsent(sessionId, k -> ConcurrentHashMap.newKeySet()).add(userId);
 	}
 
 	public int getCurrentUserCount(Long sessionId) {

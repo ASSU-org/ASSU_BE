@@ -1,7 +1,7 @@
 package com.assu.server;
 
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
-import com.google.api.client.http.javanet.ConnectionFactory;
+//import com.google.api.client.http.javanet.ConnectionFactory;
 import com.google.firebase.messaging.FirebaseMessaging;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -16,6 +16,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -24,18 +26,17 @@ class ServerApplicationTests {
     @Mock
     private FirebaseMessaging firebaseMessaging;
 
-    @MockitoBean
-    private ConnectionFactory connectionFactory;
+	@MockitoBean private ConnectionFactory connectionFactory;
 
-    @MockitoBean private RabbitTemplate rabbitTemplate;
+	@MockitoBean private RabbitTemplate rabbitTemplate;
 
 
-    @TestConfiguration
-    static class MockConfig {
-        @Bean
-        FirebaseMessaging firebaseMessaging() {
-            return Mockito.mock(FirebaseMessaging.class);
-        }
+	@TestConfiguration
+	static class MockConfig {
+		@Bean
+		FirebaseMessaging firebaseMessaging() {
+			return Mockito.mock(FirebaseMessaging.class);
+		}
 
         @Bean
         RedisConnectionFactory redisConnectionFactory() {

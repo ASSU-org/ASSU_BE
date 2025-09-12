@@ -1,13 +1,11 @@
 package com.assu.server.domain.notification.service;
 
 
+import com.assu.server.domain.common.enums.UserRole;
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.notification.dto.QueueNotificationRequest;
-import com.assu.server.domain.notification.entity.Notification;
-import com.assu.server.domain.notification.entity.NotificationOutbox;
-import com.assu.server.domain.notification.entity.NotificationSetting;
-import com.assu.server.domain.notification.entity.NotificationType;
+import com.assu.server.domain.notification.entity.*;
 import com.assu.server.domain.notification.repository.NotificationOutboxRepository;
 import com.assu.server.domain.notification.repository.NotificationRepository;
 import com.assu.server.domain.notification.repository.NotificationSettingRepository;
@@ -15,13 +13,13 @@ import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import com.assu.server.global.exception.GeneralException;
 import com.assu.server.infra.firebase.NotificationFactory;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +29,8 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
     private final NotificationSettingRepository notificationSettingRepository;
     private final NotificationFactory notificationFactory;
     private final MemberRepository memberRepository;
+    private final ApplicationEventPublisher events;
+
 
     @Transactional
     @Override
@@ -45,11 +45,15 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
         Notification notification = notificationFactory.create(member, type, refId, ctx);
 
         notificationRepository.save(notification);
-        outboxRepository.save(NotificationOutbox.builder()
-                .notification(notification)
-                .status(NotificationOutbox.Status.PENDING)
-                .retryCount(0)
-                .build());
+        NotificationOutbox outbox = outboxRepository.save(
+                NotificationOutbox.builder()
+                        .notification(notification)
+                        .status(NotificationOutbox.Status.PENDING)
+                        .retryCount(0)
+                        .build()
+        );
+
+        events.publishEvent(new OutboxCreatedEvent(outbox.getId(), notification));
         return notification;
     }
 
@@ -68,101 +72,116 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
     @Transactional
     @Override
     public void queue(QueueNotificationRequest req) {
-        NotificationType type;
+        if (req.getType() == null) {
+            throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
+        }
+        if (req.getReceiverId() == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+
+        final NotificationType type;
         try {
             type = NotificationType.valueOf(req.getType().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
         }
 
-        Map<String, Object> ctx = new HashMap<>();
-        if (req.getContent()  != null) ctx.put("content",  req.getContent());
-        if (req.getTitle()    != null) ctx.put("title",    req.getTitle());
-        if (req.getDeeplink() != null) ctx.put("deeplink", req.getDeeplink());
-
-        Long refId = req.getRefId();
+        final Long receiverId = req.getReceiverId();
 
         switch (type) {
             case CHAT -> {
-                if (refId == null && req.getRoomId() == null) {
+                // refId 우선순위: refId > roomId
+                Long roomId = (req.getRefId() != null) ? req.getRefId() : req.getRoomId();
+                if (roomId == null || req.getSenderName() == null || req.getMessage() == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getRoomId();
-                if (req.getSenderName() == null || req.getMessage() == null) {
-                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-                }
-                ctx.put("senderName", req.getSenderName());
-                ctx.put("message", req.getMessage());
+                // 퍼사드 호출: 내부에서 ON/OFF 자동 반영
+                sendChat(receiverId, roomId, req.getSenderName(), req.getMessage());
             }
+
             case PARTNER_SUGGESTION -> {
-                if (refId == null && req.getSuggestionId() == null) {
+                Long suggestionId = (req.getRefId() != null) ? req.getRefId() : req.getSuggestionId();
+                if (suggestionId == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getSuggestionId();
+                sendPartnerSuggestion(receiverId, suggestionId);
             }
+
             case ORDER -> {
-                if (refId == null && req.getOrderId() == null) {
+                Long orderId = (req.getRefId() != null) ? req.getRefId() : req.getOrderId();
+                if (orderId == null || req.getTable_num() == null || req.getPaper_content() == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getOrderId();
-                if (req.getTable_num() == null || req.getPaper_content() == null) {
-                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-                }
-                ctx.put("table_num", req.getTable_num());
-                ctx.put("paper_content", req.getPaper_content());
+                sendOrder(receiverId, orderId, req.getTable_num(), req.getPaper_content());
             }
+
             case PARTNER_PROPOSAL -> {
-                if (refId == null && req.getProposalId() == null) {
+                Long proposalId = (req.getRefId() != null) ? req.getRefId() : req.getProposalId();
+                if (proposalId == null || req.getPartner_name() == null) {
                     throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
                 }
-                refId = (refId != null) ? refId : req.getProposalId();
-                if (req.getPartner_name() == null) {
-                    throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-                }
-                ctx.put("partner_name", req.getPartner_name());
+                sendPartnerProposal(receiverId, proposalId, req.getPartner_name());
             }
+
             default -> throw new DatabaseException(ErrorStatus.INVALID_NOTIFICATION_TYPE);
         }
-
-        if (req.getReceiverId() == null) {
-            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
-        }
-
-        // OFF면 Outbox 적재 없이 Notification만 저장하고 종료
-        boolean enabled = isEnabled(req.getReceiverId(), type);
-
-        if (!enabled) {
-            // 기록만 남기고 발송은 스킵
-            var member = memberRepository.findMemberById(req.getReceiverId()).orElseThrow(
-                () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
-            );
-            var notification = notificationFactory.create(member, type, refId, ctx);
-            notificationRepository.save(notification);
-            return;
-        }
-
-        createAndQueue(req.getReceiverId(), type, refId, ctx);
     }
 
     @Transactional
     @Override
-    public boolean toggle(Long memberId, NotificationType type) {
+    public Map<String, Boolean> toggle(Long memberId, NotificationType type) {
+        Member member = memberRepository.findMemberById(memberId)
+                .orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER));
 
-        Member member = memberRepository.findMemberById(memberId).orElseThrow(
-            () -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER)
-        );
+        // 그룹 타입 처리 (기존 그대로)
+        if (type == NotificationType.PARTNER_ALL) {
+            toggleSingle(member, NotificationType.CHAT);
+            toggleSingle(member, NotificationType.ORDER);
+        } else if (type == NotificationType.ADMIN_ALL) {
+            toggleSingle(member, NotificationType.CHAT);
+            toggleSingle(member, NotificationType.PARTNER_SUGGESTION);
+            toggleSingle(member, NotificationType.PARTNER_PROPOSAL);
+        } else {
+            toggleSingle(member, type);
+        }
+
+        boolean isAdmin = member.getRole() == UserRole.ADMIN; // Role enum을 쓰는 경우
+
+        // ADMIN: CHAT, PARTNER_SUGGESTION, PARTNER_PROPOSAL
+        // PARTNER: CHAT, ORDER
+        EnumSet<NotificationType> visibleTypes = isAdmin
+                ? EnumSet.of(NotificationType.CHAT, NotificationType.PARTNER_SUGGESTION, NotificationType.PARTNER_PROPOSAL)
+                : EnumSet.of(NotificationType.CHAT, NotificationType.ORDER);
+
+        // 기본값 true로 모두 채운 후, DB 값으로 덮어쓰기
+        Map<String, Boolean> result = new LinkedHashMap<>();
+        for (NotificationType t : visibleTypes) {
+            result.put(t.name(), true); // DB에 없으면 true
+        }
+
+        List<NotificationSetting> rows = notificationSettingRepository.findAllByMemberId(memberId);
+        for (NotificationSetting s : rows) {
+            if (visibleTypes.contains(s.getType())) {
+                result.put(s.getType().name(), Boolean.TRUE.equals(s.getEnabled()));
+            }
+        }
+
+        return result;
+    }
+
+    private boolean toggleSingle(Member member, NotificationType type) {
         NotificationSetting setting = notificationSettingRepository
-                .findByMemberIdAndType(memberId, type)
+                .findByMemberIdAndType(member.getId(), type)
                 .orElse(NotificationSetting.builder()
                         .member(member)
                         .type(type)
                         .enabled(true) // 기본값
                         .build());
 
-        setting.setEnabled(!setting.getEnabled()); // 토글
+        setting.setEnabled(!setting.getEnabled());
         notificationSettingRepository.save(setting);
 
-        return setting.getEnabled(); // 변경된 값 반환
+        return setting.getEnabled();
     }
 
     @Transactional
@@ -171,5 +190,82 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
         return notificationSettingRepository.findByMemberIdAndType(memberId, type)
                 .map(ns -> Boolean.TRUE.equals(ns.getEnabled())) // null → false 처리
                 .orElse(true); // 설정 없으면 기본 허용
+    }
+
+
+    @Transactional
+    protected void sendIfEnabled(Long receiverId, NotificationType type, Long refId, Map<String, Object> ctx) {
+        // OFF면 기록만 남기고 종료, ON이면 Outbox 적재
+        if (!isEnabled(receiverId, type)) {
+            Member member = memberRepository.findMemberById(receiverId)
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_MEMBER));
+            notificationRepository.save(notificationFactory.create(member, type, refId, ctx));
+            return;
+        }
+        createAndQueue(receiverId, type, refId, ctx);
+    }
+
+    @Transactional
+    @Override
+    public void sendChat(Long receiverId, Long roomId, String senderName, String message) {
+        if (receiverId == null || roomId == null || senderName == null || message == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.CHAT,
+                roomId, // Factory가 /chat/rooms/{refId}로 딥링크 생성
+                Map.of(
+                        "senderName", senderName,     // Factory가 title/preview 생성에 사용
+                        "message", message            // Factory가 미리보기 생성에 사용
+                )
+        );
+    }
+
+    @Transactional
+    @Override
+    public void sendPartnerSuggestion(Long receiverId, Long suggestionId) {
+        if (receiverId == null || suggestionId == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.PARTNER_SUGGESTION,
+                suggestionId,                    // /partner/suggestions/{refId}
+                Map.of()                         // 추가 ctx 없음
+        );
+    }
+
+    @Transactional
+    @Override
+    public void sendOrder(Long receiverId, Long orderId, String tableNum, String paperContent) {
+        if (receiverId == null || orderId == null || tableNum == null || paperContent == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.ORDER,
+                orderId,                         // /orders/{refId}
+                Map.of(
+                        "table_num", tableNum,       // Factory preview: "{table_num}번 테이블..."
+                        "paper_content", paperContent
+                )
+        );
+    }
+
+    @Transactional
+    @Override
+    public void sendPartnerProposal(Long receiverId, Long proposalId, String partnerName) {
+        if (receiverId == null || proposalId == null || partnerName == null) {
+            throw new DatabaseException(ErrorStatus.MISSING_NOTIFICATION_FIELD);
+        }
+        sendIfEnabled(
+                receiverId,
+                NotificationType.PARTNER_PROPOSAL,
+                proposalId,                      // /partner/proposals/{refId}
+                Map.of(
+                        "partner_name", partnerName  // Factory preview: "{partner_name}에서..."
+                )
+        );
     }
 }
