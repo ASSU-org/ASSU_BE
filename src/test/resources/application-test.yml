@@ -3,11 +3,16 @@ spring:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
 
 jwt:
   header: Authorization
@@ -20,6 +25,12 @@ assu:
   security:
     school-crypto:
       base64-key: "MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=" #"dummy-base64-key"를 Base64로 인코딩한 값
+
+  messaging:
+    rabbit:
+      enabled: false
+    push:
+      enabled: false
 
 cloud:
   aws:
@@ -44,3 +55,9 @@ aligo:
   key: dummy-aligo-key
   user-id: dummy-user-id
   sender: 01012345678
+
+rabbitmq:
+  host: dummy-host
+  port: 1234
+  username: rabbit-username
+  password: rabbit-password

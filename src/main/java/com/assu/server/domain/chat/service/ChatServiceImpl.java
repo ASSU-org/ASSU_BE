@@ -22,9 +22,15 @@ import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -76,6 +82,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public ChatResponseDTO.SendMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request) {
         // 유효성 검사
         ChattingRoom room = chatRepository.findById(request.roomId())
@@ -86,9 +93,17 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
 
         Message message = ChatConverter.toMessageEntity(request, room, sender, receiver);
-        messageRepository.save(message);
+//        messageRepository.save(message);
+        log.info("saved message start");
+        Message saved = messageRepository.saveAndFlush(message);
+        log.info("saved message middle");
+        log.info("saved message id={}, roomId={}, senderId={}, receiverId={}",
+                saved.getId(), room.getId(), sender.getId(), receiver.getId());
 
-        return ChatConverter.toSendMessageDTO(message);
+        log.info("saved message end");
+        boolean exists = messageRepository.existsById(saved.getId());
+        log.info("Saved? {}", exists); // true 아니면 트랜잭션/DB 문제
+        return ChatConverter.toSendMessageDTO(saved);
     }
 
     @Transactional
@@ -96,10 +111,15 @@ public class ChatServiceImpl implements ChatService {
     public ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId, Long memberId) {
 
         List<Message> unreadMessages = messageRepository.findUnreadMessagesByRoomAndReceiver(roomId, memberId);
+        List<Long> readMessagesIdList = new ArrayList<>();
 
+        for(Message unreadMessage : unreadMessages) {
+            readMessagesIdList.add(unreadMessage.getId());
+        }
         unreadMessages.forEach(Message::markAsRead);
 
-        return new ChatResponseDTO.ReadMessageResponseDTO(roomId, unreadMessages.size());
+
+        return new ChatResponseDTO.ReadMessageResponseDTO(roomId, memberId,readMessagesIdList, unreadMessages.size(), true);
     }
 
     @Override

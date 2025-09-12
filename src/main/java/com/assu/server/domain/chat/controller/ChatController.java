@@ -7,6 +7,7 @@ import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +17,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/chat")
@@ -59,8 +61,9 @@ public class ChatController {
     )
     @MessageMapping("/send")
     public void handleMessage(@Payload ChatRequestDTO.ChatMessageRequestDTO request) {
+        log.info("[WS] handleMessage IN: {}", request);   // ★ 호출 여부 확인
         ChatResponseDTO.SendMessageResponseDTO response = chatService.handleMessage(request);
-
+        log.info("[WS] handleMessage SAVED id={}", response.messageId()); // 저장 확인용
         simpMessagingTemplate.convertAndSend("/sub/chat/" + request.roomId(), response);
     }
 

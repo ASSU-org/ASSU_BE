@@ -1,5 +1,8 @@
 package com.assu.server.domain.chat.dto;
 
+import com.assu.server.domain.chat.entity.enums.MessageType;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.google.protobuf.Enum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,16 +26,23 @@ public class ChatResponseDTO {
     // 메시지 전송
     @Builder
     public record SendMessageResponseDTO(
+        Long messageId,
         Long roomId,
         Long senderId,
+        Long receiverId,
         String message,
+        MessageType messageType,
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime sentAt
     ) {}
 
     // 메시지 읽음 처리
     public record ReadMessageResponseDTO(
         Long roomId,
-        int readCount
+        Long readerId,
+        List<Long> readMessagesId,
+        int readCount,
+        boolean isRead
     ) {}
 
     // 채팅방 들어갔을 때 조회
