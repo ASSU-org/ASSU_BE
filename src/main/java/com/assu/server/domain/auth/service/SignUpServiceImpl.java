@@ -2,6 +2,7 @@ package com.assu.server.domain.auth.service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
+import com.assu.server.domain.auth.dto.common.UserBasicInfo;
 import com.assu.server.domain.auth.dto.signup.*;
 import com.assu.server.domain.auth.dto.signup.common.CommonInfoPayload;
 import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
@@ -82,7 +83,7 @@ public class SignUpServiceImpl implements SignUpService {
 
         // 학번 중복 체크
         if (ssuAuthRepository.existsByStudentNumber(authResponse.getStudentNumber().toString())) {
-                throw new CustomAuthException(ErrorStatus.EXISTED_STUDENT);
+            throw new CustomAuthException(ErrorStatus.EXISTED_STUDENT);
         }
 
         // 2) member 생성
@@ -92,8 +93,7 @@ public class SignUpServiceImpl implements SignUpService {
                         .isPhoneVerified(true)
                         .role(UserRole.STUDENT)
                         .isActivated(ActivationStatus.ACTIVE)
-                        .build()
-        );
+                        .build());
 
         // 3) SSUAuth 생성 (학번만 저장)
         RealmAuthAdapter adapter = pickAdapter(AuthRealm.SSU);
@@ -118,14 +118,22 @@ public class SignUpServiceImpl implements SignUpService {
                 member.getId(),
                 authResponse.getStudentNumber().toString(), // studentNumber
                 UserRole.STUDENT,
-                "SSU"
-        );
+                "SSU");
+
+        // 6) Student 정보로 직접 UserBasicInfo 생성
+        UserBasicInfo basicInfo = UserBasicInfo.builder()
+                .name(student.getName())
+                .university(student.getUniversity().getDisplayName())
+                .department(student.getDepartment().getDisplayName())
+                .major(student.getMajor().getDisplayName())
+                .build();
 
         return SignUpResponse.builder()
                 .memberId(member.getId())
                 .role(UserRole.STUDENT)
                 .status(member.getIsActivated())
                 .tokens(tokens)
+                .basicInfo(basicInfo)
                 .build();
     }
 
@@ -144,8 +152,7 @@ public class SignUpServiceImpl implements SignUpService {
                         .isPhoneVerified(true)
                         .role(UserRole.PARTNER)
                         .isActivated(ActivationStatus.ACTIVE) // Todo 초기에 SUSPEND 로직 추가해야함, 허가 후 ACTIVE
-                        .build()
-        );
+                        .build());
 
         // 2) RealmAuthAdapter 로 Common 자격 저장
         RealmAuthAdapter adapter = pickAdapter(AuthRealm.COMMON);
@@ -176,8 +183,7 @@ public class SignUpServiceImpl implements SignUpService {
                         .point(point)
                         .latitude(lat)
                         .longitude(lng)
-                        .build()
-        );
+                        .build());
 
         // store 생성/연결
         Optional<Store> storeOpt = storeRepository.findBySameAddress(address, info.getDetailAddress());
@@ -207,14 +213,19 @@ public class SignUpServiceImpl implements SignUpService {
                 member.getId(),
                 req.getCommonAuth().getEmail(),
                 UserRole.PARTNER,
-                adapter.authRealmValue()
-        );
+                adapter.authRealmValue());
+
+        // 5) Partner 정보로 직접 UserBasicInfo 생성
+        UserBasicInfo basicInfo = UserBasicInfo.builder()
+                .name(partner.getName())
+                .build();
 
         return SignUpResponse.builder()
                 .memberId(member.getId())
                 .role(UserRole.PARTNER)
                 .status(member.getIsActivated())
                 .tokens(tokens)
+                .basicInfo(basicInfo)
                 .build();
     }
 
@@ -233,8 +244,7 @@ public class SignUpServiceImpl implements SignUpService {
                         .isPhoneVerified(true)
                         .role(UserRole.ADMIN)
                         .isActivated(ActivationStatus.ACTIVE) // Todo 초기에 SUSPEND 로직 추가해야함, 허가 후 ACTIVE
-                        .build()
-        );
+                        .build());
 
         // 2) RealmAuthAdapter 로 Common 자격 저장
         RealmAuthAdapter adapter = pickAdapter(AuthRealm.COMMON);
@@ -254,12 +264,12 @@ public class SignUpServiceImpl implements SignUpService {
         Double lng = sp.getLongitude();
         Point point = toPoint(lat, lng);
 
-        // 3) Partner 프로필 생성
-        adminRepository.save(
+        // 3) Admin 프로필 생성
+        Admin admin = adminRepository.save(
                 Admin.builder()
-                    .major(req.getCommonAuth().getMajor())
-                    .department(req.getCommonAuth().getDepartment())
-                    .university(req.getCommonAuth().getUniversity())
+                        .major(req.getCommonAuth().getMajor())
+                        .department(req.getCommonAuth().getDepartment())
+                        .university(req.getCommonAuth().getUniversity())
                         .member(member)
                         .name(info.getName())
                         .officeAddress(address)
@@ -268,22 +278,31 @@ public class SignUpServiceImpl implements SignUpService {
                         .point(point)
                         .latitude(lat)
                         .longitude(lng)
-                        .build()
-        );
+                        .build());
 
         // 4) 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
                 member.getId(),
                 req.getCommonAuth().getEmail(),
                 UserRole.ADMIN,
-                adapter.authRealmValue()
-        );
+                adapter.authRealmValue());
+
+        // 5) Admin 정보로 직접 UserBasicInfo 생성 + null check
+        String department = admin.getDepartment() != null ? admin.getDepartment().getDisplayName() : null;
+        String major = admin.getMajor() != null ? admin.getMajor().getDisplayName() : null;
+        UserBasicInfo basicInfo = UserBasicInfo.builder()
+                .name(admin.getName())
+                .university(admin.getUniversity().getDisplayName())
+                .department(department)
+                .major(major)
+                .build();
 
         return SignUpResponse.builder()
                 .memberId(member.getId())
                 .role(UserRole.ADMIN)
                 .status(member.getIsActivated())
                 .tokens(tokens)
+                .basicInfo(basicInfo)
                 .build();
     }
 
@@ -305,7 +324,8 @@ public class SignUpServiceImpl implements SignUpService {
     }
 
     public Point toPoint(Double lat, Double lng) {
-        if (lat == null || lng == null) return null;
+        if (lat == null || lng == null)
+            return null;
         Point p = geometryFactory.createPoint(new Coordinate(lng, lat)); // x=lng, y=lat
         p.setSRID(4326);
         return p;
