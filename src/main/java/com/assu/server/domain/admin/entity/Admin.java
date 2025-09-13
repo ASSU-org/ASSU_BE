@@ -14,6 +14,7 @@ import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Id;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -56,6 +57,7 @@ public class Admin {
     private Department department;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private University university;
 
     @JdbcTypeCode(SqlTypes.GEOMETRY)

@@ -54,6 +54,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EXISTED_EMAIL(HttpStatus.NOT_FOUND,"MEMBER_4006","이미 존재하는 이메일입니다."),
     EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4007","이미 존재하는 학번입니다."),
     NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "MEMBER_4009", "제휴업체를 찾을 수 없습니다."),
+    MEMBER_ALREADY_WITHDRAWN(HttpStatus.BAD_REQUEST, "MEMBER_4010", "이미 탈퇴된 회원입니다."),
 
     // 제휴 에러
     NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_9001", "제휴를 찾을 수 없습니다."),
