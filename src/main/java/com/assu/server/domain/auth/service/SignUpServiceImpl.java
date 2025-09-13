@@ -103,6 +103,7 @@ public class SignUpServiceImpl implements SignUpService {
         Student student = Student.builder()
                 .member(member)
                 .name(authResponse.getName())
+                .department(authResponse.getMajor().getDepartment())
                 .major(authResponse.getMajor())
                 .enrollmentStatus(parseEnrollmentStatus(authResponse.getEnrollmentStatus()))
                 .yearSemester(authResponse.getYearSemester())
