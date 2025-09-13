@@ -40,6 +40,7 @@ public class AuthController {
     private final LoginService loginService;
     private final LogoutService logoutService;
     private final SSUAuthService ssuAuthService;
+    private final WithdrawalService withdrawalService;
 
     @Operation(
             summary = "휴대폰 인증번호 발송 API",
@@ -335,6 +336,29 @@ public class AuthController {
             @RequestBody @Valid USaintAuthRequest request
     ) {
         return BaseResponse.onSuccess(SuccessStatus._OK, ssuAuthService.uSaintAuth(request));
+    }
+
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = "# [v1.0 (2025-01-XX)](회원탈퇴)\n" +
+                    "- 현재 로그인한 사용자의 회원 탈퇴를 처리합니다.\n" +
+                    "- 소프트 삭제 방식으로, 한 달 후 완전히 삭제됩니다.\n" +
+                    "- 탈퇴 즉시 모든 토큰이 무효화됩니다.\n" +
+                    "\n**Headers:**\n" +
+                    "  - `Authorization` (String, required): Bearer 토큰 형식의 액세스 토큰\n" +
+                    "\n**Response:**\n" +
+                    "  - 성공 시 200(OK)과 성공 메시지 반환\n" +
+                    "  - 탈퇴 후 재로그인 불가능"
+    )
+    @PostMapping("/withdraw")
+    public BaseResponse<Void> withdrawMember(
+            @RequestHeader("Authorization")
+            @Parameter(name = "Authorization", description = "Access Token. 형식: `Bearer <token>`", required = true,
+                    in = ParameterIn.HEADER, schema = @Schema(type = "string"))
+            String authorization
+    ) {
+        withdrawalService.withdrawCurrentUser(authorization);
+        return BaseResponse.onSuccess(SuccessStatus._OK, null);
     }
 
 }
