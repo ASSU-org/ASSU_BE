@@ -18,7 +18,10 @@ public class CommonAuthAdapter implements RealmAuthAdapter {
     private final CommonAuthRepository commonAuthRepository;
     private final PasswordEncoder passwordEncoder; // BCrypt
 
-    @Override public boolean supports(AuthRealm realm) { return realm == AuthRealm.COMMON; }
+    @Override
+    public boolean supports(AuthRealm realm) {
+        return realm == AuthRealm.COMMON;
+    }
 
     @Override
     public UserDetails loadUserDetails(String email) {
@@ -37,10 +40,19 @@ public class CommonAuthAdapter implements RealmAuthAdapter {
                 .build();
     }
 
-    @Override public Member loadMember(String email) {
-        return commonAuthRepository.findByEmail(email)
+    @Override
+    public Member loadMember(String email) {
+        Member member = commonAuthRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER))
                 .getMember();
+
+        // 탈퇴된 회원이 다시 로그인하면 복구
+        if (member.getDeletedAt() != null) {
+            member.setDeletedAt(null);
+            commonAuthRepository.save(member.getCommonAuth());
+        }
+
+        return member;
     }
 
     @Override
@@ -55,11 +67,16 @@ public class CommonAuthAdapter implements RealmAuthAdapter {
                         .email(email)
                         .password(hash)
                         .isEmailVerified(false)
-                        .build()
-        );
+                        .build());
     }
 
-    @Override public PasswordEncoder passwordEncoder() { return passwordEncoder; }
-    @Override public String authRealmValue() { return "COMMON"; }
-}
+    @Override
+    public PasswordEncoder passwordEncoder() {
+        return passwordEncoder;
+    }
 
+    @Override
+    public String authRealmValue() {
+        return "COMMON";
+    }
+}

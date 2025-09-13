@@ -40,6 +40,7 @@ public class AuthController {
     private final LoginService loginService;
     private final LogoutService logoutService;
     private final SSUAuthService ssuAuthService;
+    private final WithdrawalService withdrawalService;
 
     @Operation(
             summary = "휴대폰 인증번호 발송 API",
@@ -83,10 +84,10 @@ public class AuthController {
 
     @Operation(
             summary = "학생 회원가입 API",
-            description = "# [v1.1 (2025-09-07)](https://clumsy-seeder-416.notion.site/2241197c19ed81129c85cf5bbe1f7971)\n" +
+            description = "# [v1.2 (2025-09-13)](https://clumsy-seeder-416.notion.site/2241197c19ed81129c85cf5bbe1f7971)\n" +
                     "- `application/json` 요청 바디를 사용합니다.\n" +
                     "- 처리: 유세인트 인증 → 학생 정보 추출 → 회원가입 완료\n" +
-                    "- 성공 시 201(Created)과 생성된 memberId 및 JWT 토큰 반환.\n" +
+                    "- 성공 시 201(Created)과 생성된 memberId, JWT 토큰, 기본 정보 반환.\n" +
                     "\n**Request Body:**\n" +
                     "  - `StudentTokenSignUpRequest` 객체 (JSON, required): 숭실대 학생 토큰 가입 정보\n" +
                     "  - `phoneNumber` (String, required): 휴대폰 번호\n" +
@@ -99,12 +100,15 @@ public class AuthController {
                     "\n**Response:**\n" +
                     "  - 성공 시 201(Created)과 `SignUpResponse` 객체 반환\n" +
                     "  - `memberId` (Long): 회원 ID\n" +
-                    "  - `tokens` (Object): JWT 토큰 정보"
-    )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true,
-            content = @Content(schema = @Schema(implementation = StudentTokenSignUpRequest.class))
-    )
+                    "  - `role` (UserRole): 회원 역할 (STUDENT)\n" +
+                    "  - `status` (ActivationStatus): 회원 상태 (ACTIVE)\n" +
+                    "  - `tokens` (Object): JWT 토큰 정보 (accessToken, refreshToken, expiresAt)\n" +
+                    "  - `basicInfo` (UserBasicInfo): 사용자 기본 정보 (프론트 캐싱용)\n" +
+                    "    - `name` (String): 학생 이름\n" +
+                    "    - `university` (String): 대학교 (한글명)\n" +
+                    "    - `department` (String): 단과대 (한글명)\n" +
+                    "    - `major` (String): 전공/학과 (한글명)")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = StudentTokenSignUpRequest.class)))
     @PostMapping(value = "/students/signup", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<SignUpResponse> signupStudent(
             @Valid @RequestBody StudentTokenSignUpRequest request
@@ -118,13 +122,12 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, response);
     }
 
-    @Operation(
-            summary = "제휴업체 회원가입 API",
-            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80d7a8f2c3a6fcd8b537?source=copy_link)\n" +
+    @Operation(summary = "제휴업체 회원가입 API",
+            description = "# [v1.2 (2025-09-13)](https://clumsy-seeder-416.notion.site/2501197c19ed80d7a8f2c3a6fcd8b537)\n" +
                     "- `multipart/form-data`로 호출합니다.\n" +
                     "- 파트: `payload`(JSON, PartnerSignUpRequest) + `licenseImage`(파일, 사업자등록증).\n" +
                     "- 처리: users + common_auth 생성, 이메일 중복/비밀번호 규칙 검증.\n" +
-                    "- 성공 시 201(Created)과 생성된 memberId 반환.\n" +
+                    "- 성공 시 201(Created)과 생성된 memberId, JWT 토큰, 기본 정보 반환.\n" +
                     "\n**Request Parts:**\n" +
                     "  - `request` (JSON, required): `PartnerSignUpRequest` 객체\n" +
                     "  - `email` (String, required): 이메일 주소\n" +
@@ -136,38 +139,30 @@ public class AuthController {
                     "  - `address` (String, required): 회사 주소\n" +
                     "  - `licenseImage` (MultipartFile, required): 사업자등록증 이미지 파일\n" +
                     "\n**Response:**\n" +
-                    "  - 성공 시 201(Created)과 `SignUpResponse` 객체 반환"
-    )
+                    "  - 성공 시 201(Created)과 `SignUpResponse` 객체 반환\n" +
+                    "  - `memberId` (Long): 회원 ID\n" +
+                    "  - `role` (UserRole): 회원 역할 (PARTNER)\n" +
+                    "  - `status` (ActivationStatus): 회원 상태 (ACTIVE)\n" +
+                    "  - `tokens` (Object): JWT 토큰 정보 (accessToken, refreshToken, expiresAt)\n" +
+                    "  - `basicInfo` (UserBasicInfo): 사용자 기본 정보 (프론트 캐싱용)\n" +
+                    "    - `name` (String): 업체명\n" +
+                    "    - `university`, `department`, `major`: null (Partner는 해당 없음)")
     @PostMapping(value = "/partners/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public BaseResponse<SignUpResponse> signupPartner(
-            @Valid @RequestPart("request")
-            @Parameter(
-                    description = "JSON 형식의 제휴업체 가입 정보",
+            @Valid @RequestPart("request") @Parameter(description = "JSON 형식의 제휴업체 가입 정보",
                     // 'request' 파트의 content type을 명시적으로 지정
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = PartnerSignUpRequest.class))
-            )
-            PartnerSignUpRequest request,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = PartnerSignUpRequest.class))) PartnerSignUpRequest request,
 
-            @RequestPart("licenseImage")
-            @Parameter(
-                    description = "사업자등록증 이미지 파일 (Multipart Part)",
-                    required = true,
-                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-                            schema = @Schema(type = "string", format = "binary"))
-            )
-            MultipartFile licenseImage
-    ) {
+            @RequestPart("licenseImage") @Parameter(description = "사업자등록증 이미지 파일 (Multipart Part)", required = true, content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE, schema = @Schema(type = "string", format = "binary"))) MultipartFile licenseImage) {
         return BaseResponse.onSuccess(SuccessStatus._OK, signUpService.signupPartner(request, licenseImage));
     }
 
-    @Operation(
-            summary = "관리자 회원가입 API",
-            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2501197c19ed80cdb98bc2b4d5042b48?source=copy_link)\n" +
+    @Operation(summary = "관리자 회원가입 API",
+            description = "# [v1.2 (2025-09-13)](https://clumsy-seeder-416.notion.site/2501197c19ed80cdb98bc2b4d5042b48)\n" +
                     "- `multipart/form-data`로 호출합니다.\n" +
                     "- 파트: `payload`(JSON, AdminSignUpRequest) + `signImage`(파일, 신분증).\n" +
                     "- 처리: users + common_auth 생성, 이메일 중복/비밀번호 규칙 검증.\n" +
-                    "- 성공 시 201(Created)과 생성된 memberId 반환.\n" +
+                    "- 성공 시 201(Created)과 생성된 memberId, JWT 토큰, 기본 정보 반환.\n" +
                     "\n**Request Parts:**\n" +
                     "  - `request` (JSON, required): `AdminSignUpRequest` 객체\n" +
                     "  - `email` (String, required): 이메일 주소\n" +
@@ -181,8 +176,16 @@ public class AuthController {
                     "  - `position` (String, required): 직책\n" +
                     "  - `signImage` (MultipartFile, required): 인감 이미지 파일\n" +
                     "\n**Response:**\n" +
-                    "  - 성공 시 201(Created)과 `SignUpResponse` 객체 반환"
-    )
+                    "  - 성공 시 201(Created)과 `SignUpResponse` 객체 반환\n" +
+                    "  - `memberId` (Long): 회원 ID\n" +
+                    "  - `role` (UserRole): 회원 역할 (ADMIN)\n" +
+                    "  - `status` (ActivationStatus): 회원 상태 (ACTIVE)\n" +
+                    "  - `tokens` (Object): JWT 토큰 정보 (accessToken, refreshToken, expiresAt)\n" +
+                    "  - `basicInfo` (UserBasicInfo): 사용자 기본 정보 (프론트 캐싱용)\n" +
+                    "    - `name` (String): 단체명/관리자 이름\n" +
+                    "    - `university` (String): 대학교 (한글명)\n" +
+                    "    - `department` (String): 단과대 (한글명)\n" +
+                    "    - `major` (String): 전공/학과 (한글명)")
     @PostMapping(value = "/admins/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public BaseResponse<SignUpResponse> signupAdmin(
             @Valid @RequestPart("request")
@@ -204,27 +207,26 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, signUpService.signupAdmin(request, signImage));
     }
 
-    @Operation(
-            summary = "공통 로그인 API",
-            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed811c961be6a474de0e50?source=copy_link)\n" +
+    @Operation(summary = "공통 로그인 API"
+            , description = "# [v1.1 (2025-09-13)](https://clumsy-seeder-416.notion.site/2241197c19ed811c961be6a474de0e50)\n" +
                     "- `application/json`로 호출합니다.\n" +
                     "- 바디: `LoginRequest(email, password)`.\n" +
                     "- 처리: 자격 증명 검증 후 Access/Refresh 토큰 발급 및 저장.\n" +
-                    "- 성공 시 200(OK)과 토큰/만료시각 반환.\n" +
+                    "- 성공 시 200(OK)과 토큰, 만료시각, 기본 정보 반환.\n" +
                     "\n**Request Body:**\n" +
                     "  - `CommonLoginRequest` 객체 (JSON, required): 로그인 정보\n" +
                     "  - `email` (String, required): 이메일 주소\n" +
                     "  - `password` (String, required): 비밀번호\n" +
                     "\n**Response:**\n" +
                     "  - 성공 시 200(OK)과 `LoginResponse` 객체 반환\n" +
-                    "  - `accessToken` (String): 액세스 토큰\n" +
-                    "  - `refreshToken` (String): 리프레시 토큰\n" +
-                    "  - `expiresAt` (LocalDateTime): 토큰 만료 시각"
-    )
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true,
-            content = @Content(schema = @Schema(implementation = CommonLoginRequest.class))
-    )
+                    "  - `memberId` (Long): 회원 ID\n" +
+                    "  - `role` (UserRole): 회원 역할 (PARTNER/ADMIN)\n" +
+                    "  - `status` (ActivationStatus): 회원 상태\n" +
+                    "  - `tokens` (Object): JWT 토큰 정보 (accessToken, refreshToken, expiresAt)\n" +
+                    "  - `basicInfo` (UserBasicInfo): 사용자 기본 정보 (프론트 캐싱용)\n" +
+                    "    - `name` (String): 업체명/단체명/관리자 이름\n" +
+                    "    - `university`, `department`, `major`: Admin의 경우 한글명, Partner의 경우 null")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = CommonLoginRequest.class)))
     @PostMapping(value = "/commons/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<LoginResponse> loginCommon(
             @RequestBody @Valid CommonLoginRequest request
@@ -232,12 +234,12 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, loginService.loginCommon(request));
     }
 
-    @Operation(summary = "학생 로그인 API",
-            description = "# [v1.1 (2025-09-07)](https://clumsy-seeder-416.notion.site/2501197c19ed80f6b495fa37f8c084a8?source=copy_link)\n" +
+    @Operation(summary = "학생 로그인 API"
+                , description = "# [v1.2 (2025-09-13)](https://clumsy-seeder-416.notion.site/2501197c19ed80f6b495fa37f8c084a8)\n" +
                     "- `application/json`로 호출합니다.\n" +
                     "- 바디: `StudentTokenLoginRequest(sToken, sIdno, university)`.\n" +
                     "- 처리: 유세인트 인증 → 기존 회원 확인 → JWT 토큰 발급.\n" +
-                    "- 성공 시 200(OK)과 토큰/만료시각 반환.\n" +
+                    "- 성공 시 200(OK)과 토큰, 만료시각, 기본 정보 반환.\n" +
                     "\n**Request Body:**\n" +
                     "  - `StudentTokenAuthPayload` 객체 (JSON, required): 숭실대 학생 토큰 로그인 정보\n" +
                     "  - `sToken` (String, required): 유세인트 sToken\n" +
@@ -245,10 +247,15 @@ public class AuthController {
                     "  - `university` (University enum, required): 대학 이름 (SSU)\n" +
                    "\n**Response:**\n" +
                     "  - 성공 시 200(OK)과 `LoginResponse` 객체 반환\n" +
-                    "  - `accessToken` (String): 액세스 토큰\n" +
-                    "  - `refreshToken` (String): 리프레시 토큰\n" +
-                    "  - `expiresAt` (LocalDateTime): 토큰 만료 시각"
-    )
+                    "  - `memberId` (Long): 회원 ID\n" +
+                    "  - `role` (UserRole): 회원 역할 (STUDENT)\n" +
+                    "  - `status` (ActivationStatus): 회원 상태\n" +
+                    "  - `tokens` (Object): JWT 토큰 정보 (accessToken, refreshToken, expiresAt)\n" +
+                    "  - `basicInfo` (UserBasicInfo): 사용자 기본 정보 (프론트 캐싱용)\n" +
+                    "    - `name` (String): 학생 이름\n" +
+                    "    - `university` (String): 대학교 (한글명)\n" +
+                    "    - `department` (String): 단과대 (한글명)\n" +
+                    "    - `major` (String): 전공/학과 (한글명)")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, content = @Content(schema = @Schema(implementation = StudentTokenAuthPayload.class)))
     @PostMapping(value = "/students/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<LoginResponse> loginStudent(
@@ -281,15 +288,12 @@ public class AuthController {
                     "  - 성공 시 200(OK)과 새 토큰/만료시각 반환."
     )
     @Parameters({
-            @Parameter(name = "Authorization", description = "Access Token (만료 허용). 형식: `Bearer <token>`", required = true,
-                    in = ParameterIn.HEADER, schema = @Schema(type = "string")),
-            @Parameter(name = "RefreshToken", description = "Refresh Token", required = true,
-                    in = ParameterIn.HEADER, schema = @Schema(type = "string"))
+            @Parameter(name = "Authorization", description = "Access Token (만료 허용). 형식: `Bearer <token>`", required = true, in = ParameterIn.HEADER, schema = @Schema(type = "string")),
+            @Parameter(name = "RefreshToken", description = "Refresh Token", required = true, in = ParameterIn.HEADER, schema = @Schema(type = "string"))
     })
     @PostMapping("/tokens/refresh")
     public BaseResponse<RefreshResponse> refreshToken(
-            @RequestHeader("RefreshToken") String refreshToken
-    ) {
+            @RequestHeader("RefreshToken") String refreshToken) {
         return BaseResponse.onSuccess(SuccessStatus._OK, loginService.refresh(refreshToken));
     }
 
@@ -335,6 +339,29 @@ public class AuthController {
             @RequestBody @Valid USaintAuthRequest request
     ) {
         return BaseResponse.onSuccess(SuccessStatus._OK, ssuAuthService.uSaintAuth(request));
+    }
+
+    @Operation(
+            summary = "회원 탈퇴 API",
+            description = "# [v1.0 (2025-09-13)](https://clumsy-seeder-416.notion.site/2501197c19ed800a844bdafa2e2e8d2e?source=copy_link)\n" +
+                    "- 현재 로그인한 사용자의 회원 탈퇴를 처리합니다.\n" +
+                    "- 소프트 삭제 방식으로, 한 달 후 완전히 삭제됩니다.\n" +
+                    "- 탈퇴 즉시 모든 토큰이 무효화됩니다.\n" +
+                    "\n**Headers:**\n" +
+                    "  - `Authorization` (String, required): Bearer 토큰 형식의 액세스 토큰\n" +
+                    "\n**Response:**\n" +
+                    "  - 성공 시 200(OK)과 성공 메시지 반환\n" +
+                    "  - 탈퇴 후 재로그인 가능"
+    )
+    @PatchMapping("/withdraw")
+    public BaseResponse<Void> withdrawMember(
+            @RequestHeader("Authorization")
+            @Parameter(name = "Authorization", description = "Access Token. 형식: `Bearer <token>`", required = true,
+                    in = ParameterIn.HEADER, schema = @Schema(type = "string"))
+            String authorization
+    ) {
+        withdrawalService.withdrawCurrentUser(authorization);
+        return BaseResponse.onSuccess(SuccessStatus._OK, null);
     }
 
 }
