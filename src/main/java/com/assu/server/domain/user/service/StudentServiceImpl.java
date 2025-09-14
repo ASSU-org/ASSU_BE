@@ -17,6 +17,10 @@ import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -68,4 +72,44 @@ public class StudentServiceImpl implements StudentService {
 			)
 			.build();
 	}
+
+
+	@Override
+	@Transactional
+	public Page<StudentResponseDTO.UsageDetailDTO> getUnreviewedUsage(Long memberId, Pageable pageable) {
+		// 프론트에서 1-based 페이지를 보낸 경우 0-based 로 보정
+		pageable = PageRequest.of(
+			Math.max(pageable.getPageNumber() - 1, 0),
+			pageable.getPageSize(),
+			pageable.getSort()
+		);
+
+		Page<PartnershipUsage> contentList =
+			partnershipUsageRepository.findByUnreviewedUsage(memberId, pageable);
+
+		return contentList.map(u -> {
+			// 1. partnershipUsage의 paperContentId 로 paperContent 조회
+			PaperContent paperContent = paperContentRepository.findById(u.getContentId())
+				.orElse(null);
+
+			// 2. store 추출
+			Store store = (paperContent != null) ? paperContent.getPaper().getStore() : null;
+
+			// 3. 날짜 포맷팅
+			LocalDateTime ld = u.getCreatedAt();
+			String formatDate = ld.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+			return StudentResponseDTO.UsageDetailDTO.builder()
+				.partnershipUsageId(u.getId())
+				.adminName(u.getAdminName())
+				.storeName(u.getPlace())
+				.usedAt(formatDate)
+				.benefitDescription(u.getPartnershipContent())
+				.isReviewed(u.getIsReviewed())
+				.storeId((store != null) ? store.getId() : null) // store null 체크
+				.partnerId((store != null && store.getPartner() != null) ? store.getPartner().getId() : null)
+				.build();
+		});
+	}
+
 }

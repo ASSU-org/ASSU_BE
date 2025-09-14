@@ -11,8 +11,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/chat")  // 클라이언트 WebSocket 연결 지점
-                .setAllowedOriginPatterns("http://localhost:63342")
+                .setAllowedOriginPatterns(
+                        "http://localhost:63342",
+                        "http://localhost:5173",     // Vite 기본
+                        "http://localhost:3000",     // CRA/Next 기본
+                        "http://127.0.0.1:*",
+                        "http://192.168.*.*:*")       // 같은 LAN의 실제 기기 테스트용
                 .withSockJS();             // fallback for old browsers
+
+        // ✅ 모바일/안드로이드용 (네이티브 WebSocket)
+        registry.addEndpoint("/ws/chat-native")
+                .setAllowedOriginPatterns("*"); // wss 사용 시 TLS 세팅
     }
 
     @Override

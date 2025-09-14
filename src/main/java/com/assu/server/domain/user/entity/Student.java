@@ -49,10 +49,7 @@ public class Student {
     }
 
     public void setStamp() {
-        if (this.stamp == 10)
-            this.stamp = 1;
-        else
-            this.stamp++;
+        this.stamp++;
     }
 
     /**

@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 public class PaperController {
 
 	private final PaperQueryService paperQueryService;
-	private final MemberRepository memberRepository;
 
 	@GetMapping("/store/{storeId}/papers")
 	@Operation(summary = "유저에게 적용 가능한 제휴 컨텐츠 조회", description = "유저가 속한 단과대, 학부 admin_id과 store_id 를 가진 제휴 컨텐츠 제공")

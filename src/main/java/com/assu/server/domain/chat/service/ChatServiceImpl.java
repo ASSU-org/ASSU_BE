@@ -16,13 +16,21 @@ import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
+import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -31,29 +39,33 @@ public class ChatServiceImpl implements ChatService {
     private final PartnerRepository partnerRepository;
     private final AdminRepository adminRepository;
     private final MessageRepository messageRepository;
+    private final StoreRepository storeRepository;
 
 
     @Override
-    public List<ChatRoomListResultDTO> getChatRoomList() {
-//        Long memberId = SecurityUtil.getCurrentUserId;
-        Long memberId = 1L;
+    public List<ChatRoomListResultDTO> getChatRoomList(Long memberId) {
 
         List<ChatRoomListResultDTO> chatRoomList = chatRepository.findChattingRoomsByMemberId(memberId);
         return ChatConverter.toChatRoomListResultDTO(chatRoomList);
     }
 
     @Override
-    public ChatResponseDTO.CreateChatRoomResponseDTO createChatRoom(ChatRequestDTO.CreateChatRoomRequestDTO request) {
-//        Long memberId = SecurityUtil.getCurrentUserId;
-//        Long opponentId = request.getOpponentId();
+    public ChatResponseDTO.CreateChatRoomResponseDTO createChatRoom(ChatRequestDTO.CreateChatRoomRequestDTO request, Long memberId) {
 
-        Long adminId = request.getAdminId();
+        Long storeId = request.getStoreId();
         Long partnerId = request.getPartnerId();
 
-        Admin admin = adminRepository.findById(adminId)
+        Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
         Partner partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
+
+
+        if (!store.getPartner().getMember().getId().equals(partner.getMember().getId())) {
+            throw new DatabaseException(ErrorStatus.NO_SUCH_STORE_WITH_THAT_PARTNER);
+        }
 
         ChattingRoom room = ChatConverter.toCreateChattingRoom(admin, partner);
 
@@ -66,13 +78,11 @@ public class ChatServiceImpl implements ChatService {
                 admin.getName()
         );
         ChattingRoom savedRoom = chatRepository.save(room);
-
-
-
         return ChatConverter.toCreateChatRoomIdDTO(savedRoom);
     }
 
     @Override
+    @Transactional
     public ChatResponseDTO.SendMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request) {
         // 유효성 검사
         ChattingRoom room = chatRepository.findById(request.roomId())
@@ -83,43 +93,48 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
 
         Message message = ChatConverter.toMessageEntity(request, room, sender, receiver);
-        messageRepository.save(message);
+//        messageRepository.save(message);
+        log.info("saved message start");
+        Message saved = messageRepository.saveAndFlush(message);
+        log.info("saved message middle");
+        log.info("saved message id={}, roomId={}, senderId={}, receiverId={}",
+                saved.getId(), room.getId(), sender.getId(), receiver.getId());
 
-        return ChatConverter.toSendMessageDTO(message);
+        log.info("saved message end");
+        boolean exists = messageRepository.existsById(saved.getId());
+        log.info("Saved? {}", exists); // true 아니면 트랜잭션/DB 문제
+        return ChatConverter.toSendMessageDTO(saved);
     }
 
     @Transactional
     @Override
-    public ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId) {
-//        Long memberId = SecurityUtil.getCurrentUserId();
-        Long memberId = 2L;
+    public ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId, Long memberId) {
 
         List<Message> unreadMessages = messageRepository.findUnreadMessagesByRoomAndReceiver(roomId, memberId);
+        List<Long> readMessagesIdList = new ArrayList<>();
 
+        for(Message unreadMessage : unreadMessages) {
+            readMessagesIdList.add(unreadMessage.getId());
+        }
         unreadMessages.forEach(Message::markAsRead);
 
-        return new ChatResponseDTO.ReadMessageResponseDTO(roomId, unreadMessages.size());
+
+        return new ChatResponseDTO.ReadMessageResponseDTO(roomId, memberId,readMessagesIdList, unreadMessages.size(), true);
     }
 
     @Override
-    public ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId) {
-//        Long memberId = SecurityUtil.getCurrentUserId();
-        Long memberId = 1L;
+    public ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId, Long memberId) {
 
         ChattingRoom room = chatRepository.findById(roomId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ROOM));
 
-        List<ChatMessageDTO> allMessages = messageRepository.findAllMessagesByRoomAndMemberId(roomId, memberId);
+        List<ChatMessageDTO> allMessages = messageRepository.findAllMessagesByRoomAndMemberId(room.getId(), memberId);
 
-        return ChatConverter.toChatHistoryDTO(roomId, allMessages);
+        return ChatConverter.toChatHistoryDTO(room.getId(), allMessages);
     }
 
     @Override
-    public ChatResponseDTO.LeaveChattingRoomResponseDTO leaveChattingRoom(Long roomId) {
-//        Long memberId = SecurityUtil.getCurrentUserId();
-
-        Long memberId = 2L;
-
+    public ChatResponseDTO.LeaveChattingRoomResponseDTO leaveChattingRoom(Long roomId, Long memberId) {
         // 멤버 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));

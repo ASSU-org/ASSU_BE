@@ -60,27 +60,27 @@ public class CertificationController {
 		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.GROUP_SESSION_CREATE, result));
 	}
 
-	@MessageMapping("/certify")
-	@Operation(summary = "그룹 세션 인증 api", description = "그룹에 대한 세션 인증 요청을 보냅니다.")
-	public ResponseEntity<BaseResponse<Void>> certifyGroup(
-		CertificationRequestDTO.groupSessionRequest dto  , PrincipalDetails pd
-
-	) {
-		certificationService.handleCertification(dto, pd.getMember());
-
-		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.GROUP_CERTIFICATION_SUCCESS, null));
-	}
+	// @MessageMapping("/certify")
+	// @Operation(summary = "그룹 세션 인증 api", description = "그룹에 대한 세션 인증 요청을 보냅니다.")
+	// public ResponseEntity<BaseResponse<Void>> certifyGroup(
+	// 	CertificationRequestDTO.groupSessionRequest dto  , PrincipalDetails pd
+	//
+	// ) {
+	// 	certificationService.handleCertification(dto, pd.getMember());
+	//
+	// 	return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.GROUP_CERTIFICATION_SUCCESS, null));
+	// }
 
 	@PostMapping("/certification/personal")
 	@Operation(summary = "개인 인증 api", description = "사실 크게 필요없는데, 제휴 내역 통계를 위해 데이터를 post하는 api 입니다. "
 		+ "가게 별 제휴를 조회하고 people값이 null 인 제휴를 선택한 경우 그룹 인증 대신 요청하는 api 입니다.")
-	public ResponseEntity<BaseResponse<Void>> personalCertification(
+	public ResponseEntity<BaseResponse<String>> personalCertification(
 		@AuthenticationPrincipal PrincipalDetails pd,
 		@RequestBody CertificationRequestDTO.personalRequest dto
 	) {
 		certificationService.certificatePersonal(dto, pd.getMember());
 
-		return ResponseEntity.ok(BaseResponse.onSuccessWithoutData(SuccessStatus.PERSONAL_CERTIFICATION_SUCCESS));
+		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.PERSONAL_CERTIFICATION_SUCCESS, "null"));
 	}
 
 }
