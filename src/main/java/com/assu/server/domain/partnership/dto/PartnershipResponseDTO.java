@@ -1,6 +1,7 @@
 package com.assu.server.domain.partnership.dto;
 
 
+import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
 import lombok.*;
@@ -12,6 +13,7 @@ import java.util.List;
 public class PartnershipResponseDTO {
 
     @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
@@ -22,6 +24,7 @@ public class PartnershipResponseDTO {
         private Long adminId;
         private Long partnerId;
         private Long storeId;
+        private ActivationStatus isActivated;
         private List<PartnershipOptionResponseDTO> options;
     }
 
@@ -75,5 +78,45 @@ public class PartnershipResponseDTO {
         private String status;
         private String contractImageUrl;
         private WritePartnershipResponseDTO partnership;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateDraftResponseDTO {
+        private Long paperId; // 생성된 빈 제안서의 ID
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SuspendedPaperDTO {
+        private Long paperId;
+        private String partnerName;
+        private LocalDateTime createdAt;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class AdminPartnershipWithPartnerResponseDTO {
+        private Long paperId;
+        private boolean isPartnered; // 제휴 여부
+        private String status; // 제휴 상태
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class PartnerPartnershipWithAdminResponseDTO {
+        private Long paperId;
+        private boolean isPartnered; // 제휴 여부
+        private String status; // 제휴 상태
     }
 }

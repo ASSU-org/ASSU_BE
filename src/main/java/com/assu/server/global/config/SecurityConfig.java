@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/auth/admins/signup",
                                 "/auth/commons/login",
                                 "/auth/students/login",
-                                "/auth/students/ssu-verify"
+                                "/auth/students/ssu-verify",
+                                "/map/place" // 주소 입력용 장소 검색 API 제외ㅕ
                         ).permitAll()
 
                         // 나머지 요청은 JwtAuthFilter가 화이트리스트/보호자원 판별

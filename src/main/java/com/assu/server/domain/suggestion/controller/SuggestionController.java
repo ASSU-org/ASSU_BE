@@ -26,7 +26,7 @@ public class SuggestionController {
     @PostMapping
     @Operation(
             summary = "제휴 건의 API",
-            description = "[v1.0 (2025-09-03)](https://www.notion.so/_-2241197c19ed81e68840d565af59b534) 관리자에게 제휴를 건의합니다.\n"
+            description = "[v1.0 (2025-09-03)](https://www.notion.so/_-2241197c19ed81e68840d565af59b534) 현재 로그인한 학생(User)이 관리자에게 제휴를 건의합니다.\n"
     )
     public BaseResponse<SuggestionResponseDTO.WriteSuggestionResponseDTO> writeSuggestion(
             @RequestBody SuggestionRequestDTO.WriteSuggestionRequestDTO suggestionRequestDTO,
@@ -38,7 +38,7 @@ public class SuggestionController {
     @GetMapping("/admin")
     @Operation(
             summary = "제휴 건의대상 조회 API",
-            description = "[v1.0 (2025-09-03)](https://www.notion.so/_-2241197c19ed81e68840d565af59b534) 현재 로그인한 학생(User)이 제휴를 건의할 수 있는 학생회(Admin)을 조회합니다.\n"
+            description = "[v1.0 (2025-09-03)](https://www.notion.so/_-2241197c19ed81e68840d565af59b534) 현재 로그인한 학생(User)이 제휴를 건의할 수 있는 학생회(Admin)를 조회합니다.\n"
     )
     public BaseResponse<SuggestionResponseDTO.GetSuggestionAdminsDTO> getSuggestionAdmins(
             @AuthenticationPrincipal PrincipalDetails pd
@@ -49,7 +49,7 @@ public class SuggestionController {
     @GetMapping("/list")
     @Operation(
             summary = "제휴 건의 조회 API",
-            description = "모든 제휴 건의를 조회합니다."
+            description = "[v1.0 (2025-09-03)](https://www.notion.so/_-24c1197c19ed8083bf8be4b6a6a43f18) 현재 로그인한 학생회(Admin)가 받은 모든 제휴 건의를 조회합니다."
     )
     public BaseResponse<List<SuggestionResponseDTO.GetSuggestionResponseDTO>> getSuggestions(
             @AuthenticationPrincipal PrincipalDetails pd

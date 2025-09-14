@@ -53,9 +53,14 @@ public class SuggestionConverter {
                 .collect(Collectors.toList());
     }
 
-//    public static SuggestionResponseDTO.GetSuggestionAdminsDTO GetSuggestionAdminsResultDTO(Student student) {
-//        return SuggestionResponseDTO.GetSuggestionAdminsDTO.builder()
-//                .adminId()
-//                .build()
-//    }
+    public static SuggestionResponseDTO.GetSuggestionAdminsDTO toGetSuggestionAdmins(Admin universityAdmin, Admin departmentAdmin, Admin majorAdmin) {
+        return SuggestionResponseDTO.GetSuggestionAdminsDTO.builder()
+                .adminId(universityAdmin != null ? universityAdmin.getId() : null)
+                .adminName(universityAdmin != null ? universityAdmin.getName() : null)
+                .departId(departmentAdmin != null ? departmentAdmin.getId() : null)
+                .departName(departmentAdmin != null ? departmentAdmin.getName() : null)
+                .majorId(majorAdmin != null ? majorAdmin.getId() : null)
+                .majorName(majorAdmin != null ? majorAdmin.getName() : null)
+                .build();
+    }
 }

@@ -2,6 +2,7 @@ package com.assu.server.domain.suggestion.service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
+import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.domain.suggestion.converter.SuggestionConverter;
 import com.assu.server.domain.suggestion.dto.SuggestionRequestDTO;
 import com.assu.server.domain.suggestion.dto.SuggestionResponseDTO;
@@ -11,6 +12,7 @@ import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,8 +25,10 @@ public class SuggestionServiceImpl implements SuggestionService {
     private final SuggestionRepository suggestionRepository;
     private final AdminRepository adminRepository;
     private final StudentRepository studentRepository;
+    private final NotificationCommandService notificationCommandService;
 
     @Override
+    @Transactional
     public SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestion(SuggestionRequestDTO.WriteSuggestionRequestDTO request, Long userId) {
 
         Admin admin = adminRepository.findById(request.getAdminId())
@@ -35,6 +39,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 
         Suggestion suggestion = SuggestionConverter.toSuggestionEntity(request, admin, student);
         suggestionRepository.save(suggestion);
+        notificationCommandService.sendPartnerSuggestion(suggestion.getAdmin().getId(), suggestion.getId());
 
         return SuggestionConverter.writeSuggestionResultDTO(suggestion);
     }
@@ -54,8 +59,8 @@ public class SuggestionServiceImpl implements SuggestionService {
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STUDENT));
 
         List<Admin> adminList = adminRepository.findMatchingAdmins(
-                student.getUniversity().toString(),
-                student.getDepartment().toString(),
+                student.getUniversity(),
+                student.getDepartment(),
                 student.getMajor()
         );
 
@@ -63,6 +68,18 @@ public class SuggestionServiceImpl implements SuggestionService {
         Admin departmentAdmin = null;
         Admin majorAdmin = null;
 
-        return null;
+        for (Admin admin : adminList) {
+            if (admin.getMajor() != null) {
+                majorAdmin = admin;
+            }
+            else if (admin.getDepartment() != null) {
+                departmentAdmin = admin;
+            }
+            else {
+                universityAdmin = admin;
+            }
+        }
+
+        return SuggestionConverter.toGetSuggestionAdmins(universityAdmin, departmentAdmin, majorAdmin);
     }
 }
