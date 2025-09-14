@@ -4,6 +4,7 @@ package com.assu.server.domain.certification.converter;
 import com.assu.server.domain.certification.dto.CertificationRequestDTO;
 import com.assu.server.domain.certification.dto.CertificationResponseDTO;
 import com.assu.server.domain.certification.entity.AssociateCertification;
+import com.assu.server.domain.certification.entity.enums.SessionStatus;
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.store.entity.Store;
 
@@ -12,6 +13,7 @@ public class CertificationConverter {
 		return AssociateCertification.builder()
 			.store(store)
 			.partner(store.getPartner())
+			.status(SessionStatus.OPENED)
 			.isCertified(false)
 			.peopleNumber(dto.getPeople())
 			.tableNumber(dto.getTableNumber())

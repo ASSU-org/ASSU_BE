@@ -37,6 +37,7 @@ public enum SuccessStatus implements BaseCode {
     USER_PAPER_REQUEST_SUCCESS(HttpStatus.OK, "PAPER202", "제휴 요청이 성공적으로 처리되었습니다."),
 
     PARTNERSHIP_HISTORY_SUCCESS(HttpStatus.OK, "PARTNERSHIP202", "월 별 제휴 사용내역이 성공적으로 조회되었습니다."),
+    UNREVIEWED_HISTORY_SUCCESS(HttpStatus.OK, "PARTNERSHIP203", "리뷰 되지 않은 제휴 사용내역이 성공적으로 조회되었습니다."),
 
     // 그룹 인증
     GROUP_SESSION_CREATE(HttpStatus.OK, "GROUP201", "인증 세션 생성 및 대표자 구독이 완료되었습니다."),

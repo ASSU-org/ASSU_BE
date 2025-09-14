@@ -32,6 +32,10 @@ logging:
   level:
     org.springframework.web: DEBUG
     org.springframework.web.client.DefaultRestClient: OFF
+    org.springframework.messaging.simp: DEBUG
+    org.springframework.messaging.handler: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
 
 server:
   shutdown: graceful

@@ -15,6 +15,7 @@ import com.assu.server.domain.certification.converter.CertificationConverter;
 import com.assu.server.domain.certification.dto.CertificationProgressResponseDTO;
 import com.assu.server.domain.certification.dto.CertificationRequestDTO;
 import com.assu.server.domain.certification.dto.CertificationResponseDTO;
+import com.assu.server.domain.certification.dto.GroupSessionRequest;
 import com.assu.server.domain.certification.entity.AssociateCertification;
 import com.assu.server.domain.certification.entity.enums.SessionStatus;
 import com.assu.server.domain.certification.repository.AssociateCertificationRepository;
@@ -70,7 +71,7 @@ public class CertificationServiceImpl implements CertificationService {
 
 		sessionManager.openSession(sessionId);
 		// 세션 생성 직후 만료 시간을 5분으로 설정
-		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(5));
+		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(100));// TODO: 나중에 5분으로 변경
 
 		// 세션 여는 대표자는 제일 먼저 인증
 		sessionManager.addUserToSession(sessionId, userId);
@@ -80,7 +81,7 @@ public class CertificationServiceImpl implements CertificationService {
 	}
 
 	@Override
-	public void handleCertification(CertificationRequestDTO.groupSessionRequest dto, Member member) {
+	public void handleCertification(GroupSessionRequest dto, Member member) {
 		Long userId = member.getId();
 
 		// 제휴 대상인지 확인하기
@@ -107,8 +108,11 @@ public class CertificationServiceImpl implements CertificationService {
 			throw new GeneralException(ErrorStatus.SESSION_NOT_OPENED);
 
 		boolean isDoubledUser= sessionManager.hasUser(sessionId, userId);
-		if(isDoubledUser)
+		if(isDoubledUser) {
+			messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
+				new CertificationProgressResponseDTO("progress", 0,"doubled member", null));
 			throw new GeneralException(ErrorStatus.DOUBLE_CERTIFIED_USER);
+		}
 
 		sessionManager.addUserToSession(sessionId, userId);
 		int currentCertifiedNumber = sessionManager.getCurrentUserCount(sessionId);
