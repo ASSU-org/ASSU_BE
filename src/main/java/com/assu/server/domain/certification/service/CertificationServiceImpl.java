@@ -1,7 +1,6 @@
 package com.assu.server.domain.certification.service;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -13,18 +12,17 @@ import com.assu.server.domain.admin.service.AdminService;
 import com.assu.server.domain.certification.SessionTimeoutManager;
 import com.assu.server.domain.certification.component.CertificationSessionManager;
 import com.assu.server.domain.certification.converter.CertificationConverter;
+import com.assu.server.domain.certification.dto.CertificationProgressResponseDTO;
 import com.assu.server.domain.certification.dto.CertificationRequestDTO;
 import com.assu.server.domain.certification.dto.CertificationResponseDTO;
-import com.assu.server.domain.certification.dto.CurrentProgress;
+import com.assu.server.domain.certification.dto.GroupSessionRequest;
 import com.assu.server.domain.certification.entity.AssociateCertification;
-import com.assu.server.domain.certification.entity.QRCertification;
 import com.assu.server.domain.certification.entity.enums.SessionStatus;
 import com.assu.server.domain.certification.repository.AssociateCertificationRepository;
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
-import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.GeneralException;
 import jakarta.transaction.Transactional;
@@ -39,7 +37,6 @@ public class CertificationServiceImpl implements CertificationService {
 	private final AdminRepository adminRepository;
 	private final StoreRepository storeRepository;
 	private final AssociateCertificationRepository associateCertificationRepository;
-	private final StudentRepository studentRepository;
 
 	// 세션 메니저
 	private final CertificationSessionManager sessionManager;
@@ -74,7 +71,7 @@ public class CertificationServiceImpl implements CertificationService {
 
 		sessionManager.openSession(sessionId);
 		// 세션 생성 직후 만료 시간을 5분으로 설정
-		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(5));
+		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(100));// TODO: 나중에 5분으로 변경
 
 		// 세션 여는 대표자는 제일 먼저 인증
 		sessionManager.addUserToSession(sessionId, userId);
@@ -84,7 +81,7 @@ public class CertificationServiceImpl implements CertificationService {
 	}
 
 	@Override
-	public void handleCertification(CertificationRequestDTO.groupSessionRequest dto, Member member) {
+	public void handleCertification(GroupSessionRequest dto, Member member) {
 		Long userId = member.getId();
 
 		// 제휴 대상인지 확인하기
@@ -111,25 +108,15 @@ public class CertificationServiceImpl implements CertificationService {
 			throw new GeneralException(ErrorStatus.SESSION_NOT_OPENED);
 
 		boolean isDoubledUser= sessionManager.hasUser(sessionId, userId);
-		if(isDoubledUser)
+		if(isDoubledUser) {
+			messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
+				new CertificationProgressResponseDTO("progress", 0,"doubled member", null));
 			throw new GeneralException(ErrorStatus.DOUBLE_CERTIFIED_USER);
+		}
 
 		sessionManager.addUserToSession(sessionId, userId);
 		int currentCertifiedNumber = sessionManager.getCurrentUserCount(sessionId);
 
-		// messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
-		// 	new CurrentProgress.CertificationNumber(currentCertifiedNumber));
-		//
-		// if(currentCertifiedNumber >= session.getPeopleNumber()){
-		// 	session.setIsCertified(true);
-		// 	session.setStatus(SessionStatus.COMPLETED);
-		// 	associateCertificationRepository.save(session);
-		//
-		//
-		// 	messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
-		// 		new CurrentProgress.CompletedNotification("인증이 완료되었습니다.", sessionManager.snapshotUserIds(sessionId))
-		// 	);
-		// }
 		if(currentCertifiedNumber >= session.getPeopleNumber()){
 			session.setIsCertified(true);
 			session.setStatus(SessionStatus.COMPLETED);
@@ -137,14 +124,10 @@ public class CertificationServiceImpl implements CertificationService {
 
 			// 완료 알림에 현재 인원수도 포함
 			messagingTemplate.convertAndSend("/certification/progress/" + sessionId,
-				new CurrentProgress.CompletedNotification(
-					"인증이 완료되었습니다.",
-					sessionManager.snapshotUserIds(sessionId)
-				)
-			);
+				new CertificationProgressResponseDTO("completed", currentCertifiedNumber, "인증이 완료되었습니다.", sessionManager.snapshotUserIds(sessionId)));
 		} else {
 			messagingTemplate.convertAndSend("/certification/progress/" + sessionId,
-				new CurrentProgress.CertificationNumber(currentCertifiedNumber));
+				new CertificationProgressResponseDTO("progress", currentCertifiedNumber, null, null));
 		}
 
 

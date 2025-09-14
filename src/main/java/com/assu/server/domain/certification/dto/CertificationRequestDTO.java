@@ -1,7 +1,9 @@
 package com.assu.server.domain.certification.dto;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
 
 public class CertificationRequestDTO {
 
@@ -20,9 +22,11 @@ public class CertificationRequestDTO {
 		Integer tableNumber;
 	}
 
-	@Getter
-	public static class groupSessionRequest{
-		Long adminId;
-		Long sessionId;
-	}
+	// @Getter
+	// @NoArgsConstructor(access = AccessLevel.PROTECTED)
+	// @AllArgsConstructor
+	// public static class groupSessionRequest {
+	// 	private Long adminId;
+	// 	private Long sessionId;
+	// }
 }

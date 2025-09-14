@@ -13,6 +13,7 @@ public class PaperContentResponseDTO {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class storePaperContentResponse{
+		Long adminId;
 		String adminName;
 		String paperContent;
 		Long contentId;

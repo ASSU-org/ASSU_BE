@@ -48,6 +48,7 @@ public class MapResponseDTO {
     public static class StoreMapResponseDTO {
         private Long storeId;
         private Long adminId;
+        private String adminName;
         private String name;
         private String address;
         private Integer rate;

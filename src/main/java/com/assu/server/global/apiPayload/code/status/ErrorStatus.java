@@ -32,6 +32,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 알리고 SMS 전송 관련 에러
     FAILED_TO_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "ALIGO500", "알리고 SMS 전송에 실패했습니다."),
+    FAILED_TO_PARSE_ALIGO(HttpStatus.INTERNAL_SERVER_ERROR, "ALIGO500", "알리고 SMS 파싱에 실패했습니다."),
 
     // 인증 에러
     NOT_VERIFIED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"AUTH_4007","전화번호 인증에 실패했습니다."),
@@ -56,6 +57,7 @@ public enum ErrorStatus implements BaseErrorCode {
     EXISTED_EMAIL(HttpStatus.NOT_FOUND,"MEMBER_4008","이미 존재하는 이메일입니다."),
     EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4009","이미 존재하는 학번입니다."),
 
+    MEMBER_ALREADY_WITHDRAWN(HttpStatus.BAD_REQUEST, "MEMBER_4010", "이미 탈퇴된 회원입니다."),
 
     // 제휴 에러
     NO_SUCH_PAPER(HttpStatus.NOT_FOUND, "PAPER_9001", "제휴를 찾을 수 없습니다."),

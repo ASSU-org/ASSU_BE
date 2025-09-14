@@ -19,7 +19,10 @@ import java.time.LocalDateTime;
 public class SSUAuthAdapter implements RealmAuthAdapter {
     private final SSUAuthRepository ssuAuthRepository;
 
-    @Override public boolean supports(AuthRealm realm) { return realm == AuthRealm.SSU; }
+    @Override
+    public boolean supports(AuthRealm realm) {
+        return realm == AuthRealm.SSU;
+    }
 
     @Override
     public UserDetails loadUserDetails(String studentNumber) {
@@ -41,9 +44,17 @@ public class SSUAuthAdapter implements RealmAuthAdapter {
 
     @Override
     public Member loadMember(String studentNumber) {
-        return ssuAuthRepository.findByStudentNumber(studentNumber)
+        Member member = ssuAuthRepository.findByStudentNumber(studentNumber)
                 .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER))
                 .getMember();
+
+        // 탈퇴된 회원이 다시 로그인하면 복구
+        if (member.getDeletedAt() != null) {
+            member.setDeletedAt(null);
+            ssuAuthRepository.save(member.getSsuAuth());
+        }
+
+        return member;
     }
 
     @Override
@@ -57,8 +68,7 @@ public class SSUAuthAdapter implements RealmAuthAdapter {
                         .studentNumber(studentNumber)
                         .isAuthenticated(true)
                         .authenticatedAt(LocalDateTime.now())
-                        .build()
-        );
+                        .build());
     }
 
     @Override

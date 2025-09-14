@@ -1,5 +1,7 @@
 package com.assu.server.domain.user.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,14 +34,12 @@ public class StudentController {
 		summary = "월별 제휴 사용내역 조회 API",
 		description = "# [v1.0 (2025-09-09)](https://www.notion.so/_-2241197c19ed8134bd49d8841e841634?source=copy_link)\n" +
 			"- `multipart/form-data`로 호출합니다.\n" +
-			"- 처리: 정보 바탕으로 sessionManager에 session생성\n" +
-			"- 성공 시 201(Created)과 생성된 memberId 반환.\n" +
 			"\n**Request Parts:**\n" +
-			"  - `storeId` (Long, required): 스토어 id\n" +
 			"  - `year` (Integer, required): 년도\n" +
 			"  - `month` (Long, required): 월\n"+
 			"\n**Response:**\n" +
 			"  - 성공 시 partnership Usage 내역 반환 \n"+
+			"  - 해당 storeId, storeName 반환"+
 			"  - 해당 월에 사용한 제휴 수 반환"
 	)
 	public ResponseEntity<BaseResponse<StudentResponseDTO.myPartnership>> getMyPartnership(
@@ -50,14 +50,37 @@ public class StudentController {
 		return ResponseEntity.ok(BaseResponse.onSuccess(SuccessStatus.PARTNERSHIP_HISTORY_SUCCESS, result));
 	}
 
+	@GetMapping("/usage")
+	@Operation(
+		summary = "월별 제휴 사용내역 조회 API",
+		description = "# [v1.0 (2025-09-10)](https://www.notion.so/_-24c1197c19ed809a9d81e8f928e8355f?source=copy_link)\n" +
+			"- `multipart/form-data`로 호출합니다.\n" +
+			"\n**Request:**\n" +
+			"  - page : (Int, required) 이상의 정수 \n" +
+			"  - size : (Int, required) 기본 값 10 \n" +
+			"  - sort : (String, required) createdAt,desc 문자열로 입력\n" +
+			"\n**Response:**\n" +
+			"  - 성공 시 리뷰 되지 않은 partnership Usage 내역 반환 \n"+
+			"  - StudentResponseTO.UsageDetailDTO 객체 반환 \n"
+
+	)
+	public ResponseEntity<BaseResponse<Page<StudentResponseDTO.UsageDetailDTO>>> getUnreviewedUsage(
+		@AuthenticationPrincipal PrincipalDetails pd,
+		Pageable pageable
+	){
+		return ResponseEntity.ok(BaseResponse
+			.onSuccess(SuccessStatus.UNREVIEWED_HISTORY_SUCCESS,
+				studentService.getUnreviewedUsage(pd.getId(), pageable)));
+	}
+
 
 
 
 	@Operation(
 		summary = "사용자 stamp 개수 조회 API",
-		description = "# [v1.0 (2025-09-09)](https://www.notion.so/_-2241197c19ed8134bd49d8841e841634?source=copy_link)\n" +
+		description = "# [v1.0 (2025-09-09)](https://www.notion.so/2691197c19ed805c980dd546adee9301?source=copy_link)\n" +
 			"- `multipart/form-data`로 호출합니다.\n" +
-			"- 처리: 정보 바탕으로 sessionManager에 session생성\n" +
+			"- login 필요 "+
 			"\n**Response:**\n" +
 			"  - stamp 개수 반환 \n"
 	)
