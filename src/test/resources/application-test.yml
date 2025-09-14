@@ -27,12 +27,6 @@ jwt:
     push:
       enabled: false
 
-  messaging:
-    rabbit:
-      enabled: false
-    push:
-      enabled: false
-
 cloud:
   aws:
     s3:
