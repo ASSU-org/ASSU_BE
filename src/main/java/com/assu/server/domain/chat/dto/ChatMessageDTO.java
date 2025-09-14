@@ -1,6 +1,7 @@
 package com.assu.server.domain.chat.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +22,9 @@ public class ChatMessageDTO {
     private String message;
     private LocalDateTime sendTime;
 
+    @JsonProperty("isRead")
     private boolean isRead;
+
+    @JsonProperty("isMyMessage")
     private boolean isMyMessage;
 }
