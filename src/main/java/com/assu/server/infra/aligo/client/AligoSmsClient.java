@@ -6,6 +6,7 @@ import com.assu.server.infra.aligo.dto.AligoSendResponse;
 import com.assu.server.infra.aligo.exception.AligoException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AligoSmsClient {
@@ -47,13 +50,21 @@ public class AligoSmsClient {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData(params))
                 .retrieve()
+                .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        clientResponse -> clientResponse.bodyToMono(String.class).flatMap(errorBody -> {
+                            log.error("Aligo API 호출 실패. status={}, body={}", clientResponse.statusCode(), errorBody);
+                            return Mono.error(new AligoException(ErrorStatus.FAILED_TO_SEND_SMS));
+                        })
+                )
                 .bodyToMono(String.class)
-                .block(); // 동기로 변환
+                .block();
 
         try {
             return objectMapper.readValue(body, AligoSendResponse.class);
         } catch (Exception e) {
-            throw new AligoException(ErrorStatus.FAILED_TO_SEND_SMS);
+            log.error("Aligo 응답 파싱 실패. 원본 body: {}", body, e);
+            throw new AligoException(ErrorStatus.FAILED_TO_PARSE_ALIGO);
         }
     }
 }
