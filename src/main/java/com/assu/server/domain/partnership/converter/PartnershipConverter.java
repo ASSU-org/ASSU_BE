@@ -26,12 +26,13 @@ import java.util.stream.Collectors;
 
 public class PartnershipConverter {
 
-	public static PartnershipUsage toPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Student student) {
+	public static PartnershipUsage toPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Student student, Long paperId) {
 		return PartnershipUsage.builder()
 			.adminName(dto.getAdminName())
 			.date(LocalDate.now())
 			.place(dto.getPlaceName())
 			.student(student)
+			.paperId(paperId)
 			.isReviewed(false)
 			.contentId(dto.getContentId())
 			.partnershipContent(dto.getPartnershipContent())
@@ -116,6 +117,7 @@ public class PartnershipConverter {
 		String paperContentText = buildPaperContentText(content, goodsList, peopleValue);
 
 		return PaperContentResponseDTO.storePaperContentResponse.builder()
+			.adminId(content.getPaper().getAdmin().getId())
 			.adminName(content.getPaper().getAdmin().getName())
 			.cost(content.getCost())
 			.paperContent(paperContentText)
@@ -127,7 +129,7 @@ public class PartnershipConverter {
 
 
 	private static List<String> extractGoods(PaperContent content) {
-		if (content.getOptionType() == OptionType.SERVICE && content.getCategory() != null) {
+		if (content.getOptionType() == OptionType.SERVICE ) {
 			return content.getGoods().stream()
 				.map(Goods::getBelonging)
 				.toList();

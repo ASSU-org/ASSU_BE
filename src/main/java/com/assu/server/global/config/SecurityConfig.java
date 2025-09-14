@@ -40,8 +40,9 @@ public class SecurityConfig {
                                 "/auth/students/login",
                                 "/auth/students/ssu-verify"
                         ).permitAll()
+                    .requestMatchers("/ws/**").permitAll()
+                        // 나머지는 인증 필요
 
-                        // 나머지 요청은 JwtAuthFilter가 화이트리스트/보호자원 판별
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())
