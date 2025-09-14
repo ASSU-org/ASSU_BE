@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    Page<Notification> findByReceiverId(Long receiverId, Pageable pageable);
-    Page<Notification> findByReceiverIdAndIsReadFalse(Long receiverId, Pageable pageable);
+    Page<Notification> findByReceiverIdAndTypeNot(Long receiverId, NotificationType type, Pageable pageable);
+    Page<Notification> findByReceiverIdAndIsReadFalseAndTypeNot(Long receiverId, NotificationType type, Pageable pageable);
+    boolean existsByReceiverIdAndIsReadFalseAndTypeNot(Long receiverId, NotificationType type); // ← 핵심
 }

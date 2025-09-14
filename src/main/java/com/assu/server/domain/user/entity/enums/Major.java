@@ -1,11 +1,27 @@
 package com.assu.server.domain.user.entity.enums;
 
 public enum Major {
-    SW, // 소프트웨어학부
-    GM, // 글로벌미디어학과
-    COM, // 컴퓨터학부
-    EE, // 전자정보공학부
-    IP, // 정보보호학과
-    AI, // AI융합학과
-    MB // 미디어경영학과
+    SW(Department.IT, "소프트웨어학부"),
+    GM(Department.IT, "글로벌미디어학과"),
+    COM(Department.IT, "컴퓨터학부"),
+    EE(Department.IT, "전자정보공학부"),
+    IP(Department.IT, "정보보호학과"),
+    AI(Department.IT, "AI융합학과"),
+    MB(Department.IT, "미디어경영학과");
+
+    private final Department department;
+    private final String displayName;
+
+    Major(Department department, String displayName) {
+        this.department = department;
+        this.displayName = displayName;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
 }
