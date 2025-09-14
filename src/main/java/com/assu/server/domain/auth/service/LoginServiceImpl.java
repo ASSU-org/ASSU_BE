@@ -197,9 +197,9 @@ public class LoginServiceImpl implements LoginService {
                 var admin = member.getAdminProfile();
                 if (admin != null) {
                     builder.name(admin.getName())
-                            .university(admin.getUniversity().getDisplayName())
-                            .department(admin.getDepartment().getDisplayName())
-                            .major(admin.getMajor().getDisplayName());
+                            .university(admin.getUniversity() != null ? admin.getUniversity().getDisplayName() : null)
+                            .department(admin.getDepartment() != null ? admin.getDepartment().getDisplayName() : null)
+                            .major(admin.getMajor() != null ? admin.getMajor().getDisplayName() : null);
                 }
             }
             case PARTNER -> {
