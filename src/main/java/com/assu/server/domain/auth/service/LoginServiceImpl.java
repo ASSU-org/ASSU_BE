@@ -1,5 +1,6 @@
 package com.assu.server.domain.auth.service;
 
+import com.assu.server.domain.auth.dto.common.UserBasicInfo;
 import com.assu.server.domain.auth.dto.login.CommonLoginRequest;
 import com.assu.server.domain.auth.dto.login.LoginResponse;
 import com.assu.server.domain.auth.dto.login.RefreshResponse;
@@ -14,7 +15,10 @@ import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.security.jwt.JwtUtil;
 import com.assu.server.domain.user.entity.Student;
+import com.assu.server.domain.user.entity.enums.Department;
 import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
+import com.assu.server.domain.user.entity.enums.Major;
+import com.assu.server.domain.user.entity.enums.University;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import lombok.RequiredArgsConstructor;
@@ -56,9 +60,7 @@ public class LoginServiceImpl implements LoginService {
                 new LoginUsernamePasswordAuthenticationToken(
                         AuthRealm.COMMON,
                         request.getEmail(),
-                        request.getPassword()
-                )
-        );
+                        request.getPassword()));
 
         RealmAuthAdapter adapter = pickAdapter(AuthRealm.COMMON);
 
@@ -70,7 +72,7 @@ public class LoginServiceImpl implements LoginService {
                 member.getId(),
                 authentication.getName(), // email
                 member.getRole(),
-                adapter.authRealmValue()    // "COMMON"
+                adapter.authRealmValue() // "COMMON"
         );
 
         return LoginResponse.builder()
@@ -78,6 +80,7 @@ public class LoginServiceImpl implements LoginService {
                 .role(member.getRole())
                 .status(member.getIsActivated())
                 .tokens(tokens)
+                .basicInfo(buildUserBasicInfo(member))
                 .build();
     }
 
@@ -93,9 +96,9 @@ public class LoginServiceImpl implements LoginService {
     public LoginResponse loginSsuStudent(StudentTokenAuthPayload request) {
         // 1) 유세인트 인증
         USaintAuthRequest authRequest = USaintAuthRequest.builder()
-                        .sToken(request.getSToken())
-                        .sIdno(request.getSIdno())
-                        .build();
+                .sToken(request.getSToken())
+                .sIdno(request.getSIdno())
+                .build();
 
         USaintAuthResponse authResponse = ssuAuthService.uSaintAuth(authRequest);
 
@@ -109,7 +112,7 @@ public class LoginServiceImpl implements LoginService {
         // 3) Student 정보 업데이트 (유세인트에서 크롤링한 최신 정보로)
         Student student = member.getStudentProfile();
         if (student == null) {
-                throw new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER);
+            throw new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER);
         }
 
         // 유세인트에서 크롤링한 최신 정보로 업데이트
@@ -117,17 +120,16 @@ public class LoginServiceImpl implements LoginService {
                 authResponse.getName(),
                 authResponse.getMajor(),
                 parseEnrollmentStatus(authResponse.getEnrollmentStatus()),
-                authResponse.getYearSemester()
-        );
+                authResponse.getYearSemester());
 
         studentRepository.save(student);
 
         // 4) 토큰 발급
         Tokens tokens = jwtUtil.issueTokens(
-                        member.getId(),
-                        authResponse.getStudentNumber().toString(), // studentNumber
-                        member.getRole(),
-                        adapter.authRealmValue() // 예: "SSU"
+                member.getId(),
+                authResponse.getStudentNumber().toString(), // studentNumber
+                member.getRole(),
+                adapter.authRealmValue() // 예: "SSU"
         );
 
         return LoginResponse.builder()
@@ -135,6 +137,7 @@ public class LoginServiceImpl implements LoginService {
                 .role(member.getRole())
                 .status(member.getIsActivated())
                 .tokens(tokens)
+                .basicInfo(buildUserBasicInfo(member))
                 .build();
     }
 
@@ -154,8 +157,7 @@ public class LoginServiceImpl implements LoginService {
         return new RefreshResponse(
                 ((Number) jwtUtil.validateTokenOnlySignature(rotated.getAccessToken()).get("userId")).longValue(),
                 rotated.getAccessToken(),
-                rotated.getRefreshToken()
-        );
+                rotated.getRefreshToken());
     }
 
     private EnrollmentStatus parseEnrollmentStatus(String status) {
@@ -172,5 +174,43 @@ public class LoginServiceImpl implements LoginService {
             // 기본값은 재학으로 설정
             return EnrollmentStatus.ENROLLED;
         }
+    }
+
+    /**
+     * 사용자 기본 정보를 빌드하는 헬퍼 메서드
+     */
+    private UserBasicInfo buildUserBasicInfo(Member member) {
+        UserBasicInfo.UserBasicInfoBuilder builder = UserBasicInfo.builder();
+
+        switch (member.getRole()) {
+            case STUDENT -> {
+                Student student = member.getStudentProfile();
+                if (student != null) {
+                    builder.name(student.getName())
+                            .university(student.getUniversity().getDisplayName())
+                            .department(student.getDepartment().getDisplayName())
+                            .major(student.getMajor().getDisplayName());
+                }
+            }
+            case ADMIN -> {
+                // Admin 엔티티에서 정보 추출
+                var admin = member.getAdminProfile();
+                if (admin != null) {
+                    builder.name(admin.getName())
+                            .university(admin.getUniversity() != null ? admin.getUniversity().getDisplayName() : null)
+                            .department(admin.getDepartment() != null ? admin.getDepartment().getDisplayName() : null)
+                            .major(admin.getMajor() != null ? admin.getMajor().getDisplayName() : null);
+                }
+            }
+            case PARTNER -> {
+                // Partner 엔티티에서 정보 추출 (Partner는 name만 필요)
+                var partner = member.getPartnerProfile();
+                if (partner != null) {
+                    builder.name(partner.getName());
+                }
+            }
+        }
+
+        return builder.build();
     }
 }

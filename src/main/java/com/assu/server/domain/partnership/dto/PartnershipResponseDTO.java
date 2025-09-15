@@ -107,6 +107,9 @@ public class PartnershipResponseDTO {
         private Long paperId;
         private boolean isPartnered; // 제휴 여부
         private String status; // 제휴 상태
+        private Long partnerId;
+        private String partnerName;
+        private String partnerAddress;
     }
 
     @Getter
@@ -118,5 +121,8 @@ public class PartnershipResponseDTO {
         private Long paperId;
         private boolean isPartnered; // 제휴 여부
         private String status; // 제휴 상태
+        private Long adminId;
+        private String adminName;
+        private String adminAddress;
     }
 }

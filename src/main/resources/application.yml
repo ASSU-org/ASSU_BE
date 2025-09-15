@@ -19,19 +19,23 @@ spring:
         highlight_sql : true
   lifecycle:
     timeout-per-shutdown-phase: 30s
-  rabbitmq:
-    listener:
-      simple:
-        acknowledge-mode: manual
-        prefetch: 20
-        concurrency: 1
-        max-concurrency: 4
-        default-requeue-rejected: false
+    rabbitmq:
+      listener:
+        simple:
+          acknowledge-mode: manual
+          prefetch: 20
+          concurrency: 1
+          max-concurrency: 4
+          default-requeue-rejected: false
 
 logging:
   level:
     org.springframework.web: DEBUG
     org.springframework.web.client.DefaultRestClient: OFF
+    org.springframework.messaging.simp: DEBUG
+    org.springframework.messaging.handler: DEBUG
+    org.springframework.messaging: DEBUG
+    org.springframework.web.socket: DEBUG
 
 server:
   shutdown: graceful

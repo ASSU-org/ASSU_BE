@@ -1,13 +1,12 @@
 package com.assu.server.domain.auth.dto.login;
 
+import com.assu.server.domain.auth.dto.common.UserBasicInfo;
 import com.assu.server.domain.auth.dto.signup.Tokens;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.common.enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-
-import java.time.Instant;
 
 @Getter
 @Setter
@@ -29,4 +28,7 @@ public class LoginResponse {
 
     @Schema(description = "액세스 토큰/리프레시 토큰", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private Tokens tokens;
+
+    @Schema(description = "사용자 기본 정보 (캐싱용)")
+    private UserBasicInfo basicInfo;
 }

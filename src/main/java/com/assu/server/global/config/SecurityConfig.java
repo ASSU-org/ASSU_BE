@@ -21,6 +21,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // ✅ WebSocket 핸드셰이크 허용 (네이티브 + SockJS 모두 포함)
+                        .requestMatchers("/ws/**").permitAll()
+
                         // Swagger 등 공개 리소스
                         .requestMatchers(
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
@@ -41,8 +44,9 @@ public class SecurityConfig {
                                 "/auth/students/ssu-verify",
                                 "/map/place" // 주소 입력용 장소 검색 API 제외ㅕ
                         ).permitAll()
+                    .requestMatchers("/ws/**").permitAll()
+                        // 나머지는 인증 필요
 
-                        // 나머지 요청은 JwtAuthFilter가 화이트리스트/보호자원 판별
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

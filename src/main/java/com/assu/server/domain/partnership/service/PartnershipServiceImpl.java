@@ -8,6 +8,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.notification.repository.NotificationRepository;
+import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.domain.partnership.converter.PartnershipConverter;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.user.entity.PartnershipUsage;
@@ -33,6 +35,7 @@ import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
+import com.assu.server.global.exception.GeneralException;
 import com.assu.server.infra.s3.AmazonS3Manager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -50,14 +53,21 @@ public class PartnershipServiceImpl implements PartnershipService {
 
 	private final PartnershipUsageRepository partnershipUsageRepository;
 	private final StudentRepository studentRepository;
+    private final PaperContentRepository contentRepository;
+    private final NotificationCommandService notificationService;
+
 
 	public void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member){
 
 
 		List<PartnershipUsage> usages = new ArrayList<>();
 
+        PaperContent content = contentRepository.findById(dto.getContentId()).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT)
+        );
+        Long paperId = content.getPaper().getId();
 		// 1) 요청한 member 본인
-		usages.add(PartnershipConverter.toPartnershipUsage(dto, member.getStudentProfile()));
+		usages.add(PartnershipConverter.toPartnershipUsage(dto, member.getStudentProfile(), paperId));
         member.getStudentProfile().setStamp();
 
 		List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
@@ -65,14 +75,23 @@ public class PartnershipServiceImpl implements PartnershipService {
 		for (Long userId : userIds) {
             if(userId != member.getId()){
                 Student student = studentRepository.getReferenceById(userId);
-                usages.add(PartnershipConverter.toPartnershipUsage(dto, student));
+                usages.add(PartnershipConverter.toPartnershipUsage(dto, student, paperId));
                 student.setStamp();
             }
 
 		}
 
-		partnershipUsageRepository.saveAll(usages);
-
+        Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
+        );
+        Partner partner = store.getPartner();
+        if (partner != null) {
+            Long partnerId = partner.getId();
+            notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
+            partnershipUsageRepository.saveAll(usages);
+        } else {
+            throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
+        }
 	}
 
 
@@ -356,6 +375,10 @@ public class PartnershipServiceImpl implements PartnershipService {
     @Override
     @Transactional
     public PartnershipResponseDTO.AdminPartnershipWithPartnerResponseDTO checkPartnershipWithPartner(Long adminId, Long partnerId) {
+
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+
         List<ActivationStatus> targetStatuses = List.of(ActivationStatus.ACTIVE, ActivationStatus.SUSPEND);
         boolean isPartnered = paperRepository.existsByAdmin_IdAndPartner_IdAndIsActivatedIn(adminId, partnerId, targetStatuses);
 
@@ -377,12 +400,19 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .paperId(paperId)
                 .isPartnered(isPartnered)
                 .status(status)
+                .partnerId(partner.getId())
+                .partnerName(partner.getName())
+                .partnerAddress(partner.getAddress())
                 .build();
     }
 
     @Override
     @Transactional
     public PartnershipResponseDTO.PartnerPartnershipWithAdminResponseDTO checkPartnershipWithAdmin(Long partnerId, Long adminId) {
+
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+
         List<ActivationStatus> targetStatuses = List.of(ActivationStatus.ACTIVE, ActivationStatus.SUSPEND);
         boolean isPartnered = paperRepository.existsByAdmin_IdAndPartner_IdAndIsActivatedIn(adminId, partnerId, targetStatuses);
 
@@ -404,6 +434,9 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .paperId(paperId)
                 .isPartnered(isPartnered)
                 .status(status)
+                .adminId(admin.getId())
+                .adminName(admin.getName())
+                .adminAddress(admin.getOfficeAddress())
                 .build();
     }
 

@@ -42,11 +42,14 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     @JdbcTypeCode(SqlTypes.VARCHAR)
-    private UserRole role;  // STUDENT, ADMIN, PARTNER
+    private UserRole role; // STUDENT, ADMIN, PARTNER
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ActivationStatus isActivated;  // ACTIVE, INACTIVE, SUSPEND
+
+    // 소프트 삭제를 위한 삭제 시점
+    private LocalDateTime deletedAt;
 
     // 역할별 프로필 - 선택적으로 연관
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)

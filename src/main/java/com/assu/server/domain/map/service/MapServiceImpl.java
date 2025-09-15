@@ -7,8 +7,11 @@ import com.assu.server.domain.map.dto.MapRequestDTO;
 import com.assu.server.domain.map.dto.MapResponseDTO;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
+import com.assu.server.domain.partnership.entity.Goods;
 import com.assu.server.domain.partnership.entity.Paper;
 import com.assu.server.domain.partnership.entity.PaperContent;
+import com.assu.server.domain.partnership.entity.enums.OptionType;
+import com.assu.server.domain.partnership.repository.GoodsRepository;
 import com.assu.server.domain.partnership.repository.PaperContentRepository;
 import com.assu.server.domain.partnership.repository.PaperRepository;
 import com.assu.server.domain.store.entity.Store;
@@ -16,6 +19,8 @@ import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.config.KakaoLocalClient;
 import com.assu.server.global.exception.DatabaseException;
+import com.assu.server.global.exception.GeneralException;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
@@ -33,10 +38,10 @@ public class MapServiceImpl implements MapService {
     private final AdminRepository adminRepository;
     private final PartnerRepository partnerRepository;
     private final StoreRepository storeRepository;
-    private final KakaoLocalClient kakaoLocalClient;
     private final PaperContentRepository paperContentRepository;
     private final PaperRepository paperRepository;
     private final GeometryFactory geometryFactory;
+    private final GoodsRepository goodsRepository;
 
     @Override
     public List<MapResponseDTO.PartnerMapResponseDTO> getPartners(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
@@ -100,15 +105,17 @@ public class MapServiceImpl implements MapService {
             boolean hasPartner = (s.getPartner() != null);
 
             PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
-                    .orElse(null);
+                    .orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT));
 
             Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
                     .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
                     .orElse(null);
 
+            Admin admin = adminRepository.findById(adminId).orElse(null);
             return MapResponseDTO.StoreMapResponseDTO.builder()
                     .storeId(s.getId())
                     .adminId(adminId)
+                    .adminName(admin.getName())
                     .name(s.getName())
                     .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
                     .rate(s.getRate())
@@ -132,14 +139,38 @@ public class MapServiceImpl implements MapService {
         return stores.stream().map(s -> {
             boolean hasPartner = s.getPartner() != null;
             PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
-                    .orElse(null);
+                    .orElseThrow(
+                        () -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT)
+                    );
 
             Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
                     .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
                     .orElse(null);
 
+            Admin admin = adminRepository.findById(adminId).orElse(null);
+
+            String finalCategory = null;
+
+            if (content != null) {
+                // 2. content에 카테고리가 이미 존재하면 그 값을 사용합니다.
+                if (content.getCategory() != null) {
+                    finalCategory = content.getCategory();
+                }
+                // 3. 카테고리가 없고, 옵션 타입이 SERVICE인 경우 Goods를 조회합니다.
+                else if (content.getOptionType() == OptionType.SERVICE) {
+                    List<Goods> goods = goodsRepository.findByContentId(content.getId());
+
+                    // 4. (가장 중요) goods 리스트가 비어있지 않은지 반드시 확인합니다.
+                    if (!goods.isEmpty()) {
+                        finalCategory = goods.get(0).getBelonging();
+                    }
+                    // goods가 비어있으면 finalCategory는 그대로 null로 유지됩니다.
+                }
+            }
+
             return MapResponseDTO.StoreMapResponseDTO.builder()
                     .storeId(s.getId())
+                    .adminName(admin.getName())
                     .adminId(adminId)
                     .name(s.getName())
                     .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
@@ -148,7 +179,7 @@ public class MapServiceImpl implements MapService {
                     .optionType(content != null ? content.getOptionType() : null)
                     .people(content != null ? content.getPeople() : null)
                     .cost(content != null ? content.getCost() : null)
-                    .category(content != null ? content.getCategory() : null)
+                    .category(finalCategory)
                     .discountRate(content != null ? content.getDiscount() : null)
                     .hasPartner(hasPartner)
                     .latitude(s.getLatitude())
