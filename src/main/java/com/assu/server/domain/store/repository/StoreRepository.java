@@ -120,4 +120,6 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
     Optional<Store> findByName(String name);
     Optional<Store> findById(Long id);
 
+    Optional<Store> findByPartnerId(Long partnerId);
+
 }

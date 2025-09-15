@@ -27,8 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 @Service
@@ -52,14 +50,14 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatResponseDTO.CreateChatRoomResponseDTO createChatRoom(ChatRequestDTO.CreateChatRoomRequestDTO request, Long memberId) {
 
-        Long storeId = request.getStoreId();
+        Long adminId = request.getAdminId();
         Long partnerId = request.getPartnerId();
 
         Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
         Partner partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
-        Store store = storeRepository.findById(storeId)
+        Store store = storeRepository.findByPartnerId(partnerId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
 
