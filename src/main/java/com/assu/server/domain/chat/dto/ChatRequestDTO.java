@@ -5,7 +5,7 @@ import lombok.Getter;
 public class ChatRequestDTO {
     @Getter
     public static class CreateChatRoomRequestDTO {
-        private Long storeId;
+        private Long adminId;
         private Long partnerId;
     }
 
