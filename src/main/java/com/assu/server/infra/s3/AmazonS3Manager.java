@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -133,6 +134,20 @@ public class AmazonS3Manager{
 
     public String generateKeyName(String path) {
         return path + '/' + UUID.randomUUID();
+    }
+
+    public void deleteFile(String keyName) {
+        if (keyName == null || keyName.isBlank()) return;
+        try {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(amazonConfig.getBucket())
+                    .key(keyName)
+                    .build());
+            log.debug("S3 삭제 완료 key={}", keyName);
+        } catch (Exception e) {
+            log.error("S3 파일 삭제 실패. key={}", keyName, e);
+            throw new RuntimeException("S3 delete failed", e);
+        }
     }
 
 }
