@@ -53,7 +53,7 @@ public class ChatServiceImpl implements ChatService {
         Long adminId = request.getAdminId();
         Long partnerId = request.getPartnerId();
 
-        Admin admin = adminRepository.findById(memberId)
+        Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
         Partner partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
