@@ -67,16 +67,8 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
         select distinct a
         from Admin a
         where lower(a.name) like lower(concat('%', :keyword, '%'))
-          and exists (
-              select 1 from Paper pc
-              where pc.admin = a
-                and pc.partner.id = :partnerId
-                and pc.isActivated = :status
-          )
         """)
-    List<Admin> searchPartneredByName(
-            @Param("partnerId") Long partnerId,
-            @Param("status") ActivationStatus status,
+    List<Admin> searchAdminByKeyword(
             @Param("keyword") String keyword
     );
 

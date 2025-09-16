@@ -47,7 +47,7 @@ public class MapController {
 
     @Operation(
             summary = "검색어 기반 장소 조회 API",
-            description = "검색어를 입력해주세요. (user → store 전체조회 / admin → 제휴중인 partner 조회 / partner → 제휴중인 admin 조회)"
+            description = "검색어를 입력해주세요. (user → store 전체조회 / admin → partner 전체조회 / partner → admin 전체조회)"
     )
     @GetMapping("/search")
     public BaseResponse<?> getLocationsByKeyword(
