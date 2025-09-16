@@ -23,6 +23,7 @@ public class MapResponseDTO {
         private LocalDate partnershipEndDate;
         private Double latitude;
         private Double longitude;
+        private String profileUrl;
     }
 
     @Getter
@@ -39,6 +40,7 @@ public class MapResponseDTO {
         private LocalDate partnershipEndDate;
         private Double latitude;
         private Double longitude;
+        private String profileUrl;
     }
 
     @Getter
@@ -61,6 +63,8 @@ public class MapResponseDTO {
         private boolean hasPartner;
         private Double latitude;
         private Double longitude;
+        private String profileUrl;
+
     }
 
     @Getter @NoArgsConstructor @AllArgsConstructor @Builder

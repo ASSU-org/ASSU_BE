@@ -98,6 +98,13 @@ public enum ErrorStatus implements BaseErrorCode {
     // 주소 에러
     NO_SUCH_ADDRESS(HttpStatus.NOT_FOUND, "ADDRESS_7001", "주소를 찾을 수 없습니다."),
 
+    // 프로필(Profile) 관련 에러
+    PROFILE_IMAGE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PROFILE_5001", "프로필 이미지 업로드에 실패했습니다."),
+    PROFILE_IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PROFILE_5002", "프로필 이미지 삭제에 실패했습니다."),
+    PROFILE_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "PROFILE_4001", "존재하지 않는 프로필 이미지입니다."),
+    PROFILE_IMAGE_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "PROFILE_4002", "지원하지 않는 이미지 형식입니다."),
+    PROFILE_IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, "PROFILE_4003", "허용된 크기를 초과한 이미지입니다."),
+
     ;
 
     private final HttpStatus httpStatus;
