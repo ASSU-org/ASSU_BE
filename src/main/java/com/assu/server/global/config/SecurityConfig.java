@@ -27,9 +27,6 @@ public class SecurityConfig {
                                 "/swagger-resources/**", "/webjars/**"
                         ).permitAll()
 
-                        // 로그아웃은 인증 필요
-                        .requestMatchers("/auth/logout").authenticated()
-
                         .requestMatchers(// Auth (로그아웃 제외)
                                 "/auth/phone-verification/send",
                                 "/auth/phone-verification/verify",

@@ -19,7 +19,7 @@ public enum SuccessStatus implements BaseCode {
     MEMBER_CREATED(HttpStatus.CREATED, "MEMBER_201", "성공적으로 생성되었습니다."),
 
     //인증 관련 성공
-    SEND_AUTH_NUMBER_SUCCESS(HttpStatus.OK, "AUTH_200", "성공적으로 조회되었습니다."),
+    SEND_AUTH_NUMBER_SUCCESS(HttpStatus.OK, "AUTH_200", "성공적으로 전송되었습니다."),
     VERIFY_AUTH_NUMBER_SUCCESS(HttpStatus.OK, "AUTH_201", "성공적으로 생성되었습니다."),
 
     //신고 성공
