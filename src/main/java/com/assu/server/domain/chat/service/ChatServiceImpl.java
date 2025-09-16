@@ -53,7 +53,7 @@ public class ChatServiceImpl implements ChatService {
         Long adminId = request.getAdminId();
         Long partnerId = request.getPartnerId();
 
-        Admin admin = adminRepository.findById(memberId)
+        Admin admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
         Partner partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
@@ -95,6 +95,8 @@ public class ChatServiceImpl implements ChatService {
         log.info("saved message start");
         Message saved = messageRepository.saveAndFlush(message);
         log.info("saved message middle");
+        log.info("REQ roomId={}, senderId={}, receiverId={}, message={}",
+                request.roomId(), request.senderId(), request.receiverId(), request.message());
         log.info("saved message id={}, roomId={}, senderId={}, receiverId={}",
                 saved.getId(), room.getId(), sender.getId(), receiver.getId());
 

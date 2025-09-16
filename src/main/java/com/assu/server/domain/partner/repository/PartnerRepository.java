@@ -50,16 +50,10 @@ public interface PartnerRepository extends JpaRepository<Partner, Long> {
         select distinct p
         from Partner p
         where lower(p.name) like lower(concat('%', :keyword, '%'))
-          and exists (
-              select 1 from Paper pc
-              where pc.partner = p
-                and pc.admin.id = :adminId
-                and pc.isActivated = :status
-          )
         """)
-    List<Partner> searchPartneredByName(
-            @Param("adminId") Long adminId,
-            @Param("status") ActivationStatus status,
+    List<Partner> searchPartnerByKeyword(
             @Param("keyword") String keyword
     );
+
+
 }

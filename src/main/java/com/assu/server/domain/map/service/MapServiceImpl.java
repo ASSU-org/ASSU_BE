@@ -5,6 +5,8 @@ import com.assu.server.domain.admin.repository.AdminRepository;
 import com.assu.server.domain.common.enums.ActivationStatus;
 import com.assu.server.domain.map.dto.MapRequestDTO;
 import com.assu.server.domain.map.dto.MapResponseDTO;
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.partner.entity.Partner;
 import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.partnership.entity.Goods;
@@ -21,12 +23,14 @@ import com.assu.server.global.config.KakaoLocalClient;
 import com.assu.server.global.exception.DatabaseException;
 import com.assu.server.global.exception.GeneralException;
 
+import com.assu.server.infra.s3.AmazonS3Manager;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.auth.scheme.internal.S3EndpointResolverAware;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,11 +46,10 @@ public class MapServiceImpl implements MapService {
     private final PaperRepository paperRepository;
     private final GeometryFactory geometryFactory;
     private final GoodsRepository goodsRepository;
+    private final AmazonS3Manager amazonS3Manager;
 
     @Override
     public List<MapResponseDTO.PartnerMapResponseDTO> getPartners(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
-        Admin admin = adminRepository.findById(memberId)
-                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
         String wkt = toWKT(viewport);
         List<Partner> partners = partnerRepository.findAllWithinViewport(wkt);
@@ -54,6 +57,9 @@ public class MapServiceImpl implements MapService {
         return partners.stream().map(p -> {
             Paper active = paperRepository.findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(memberId, p.getId(), ActivationStatus.ACTIVE)
                     .orElse(null);
+
+            String key = (p.getMember() != null) ? p.getMember().getProfileUrl() : null;
+            String url = amazonS3Manager.generatePresignedUrl(key);
 
             return MapResponseDTO.PartnerMapResponseDTO.builder()
                     .partnerId(p.getId())
@@ -65,22 +71,22 @@ public class MapServiceImpl implements MapService {
                     .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
                     .latitude(p.getLatitude())
                     .longitude(p.getLongitude())
+                    .profileUrl(url)
                     .build();
         }).toList();
     }
 
     @Override
     public List<MapResponseDTO.AdminMapResponseDTO> getAdmins(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
-
-        Partner partner = partnerRepository.findById(memberId)
-                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
-
         String wkt = toWKT(viewport);
         List<Admin> admins = adminRepository.findAllWithinViewport(wkt);
 
         return admins.stream().map(a -> {
             Paper active = paperRepository.findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(a.getId(), memberId, ActivationStatus.ACTIVE)
                     .orElse(null);
+
+            String key = (a.getMember() != null) ? a.getMember().getProfileUrl() : null;
+            String url = amazonS3Manager.generatePresignedUrl(key);
 
             return MapResponseDTO.AdminMapResponseDTO.builder()
                     .adminId(a.getId())
@@ -92,6 +98,7 @@ public class MapServiceImpl implements MapService {
                     .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
                     .latitude(a.getLatitude())
                     .longitude(a.getLongitude())
+                    .profileUrl(url)
                     .build();
         }).toList();
     }
@@ -106,6 +113,9 @@ public class MapServiceImpl implements MapService {
 
             PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
                     .orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT));
+
+            String key = (s.getPartner() != null) ? s.getPartner().getMember().getProfileUrl() : null;
+            String url = amazonS3Manager.generatePresignedUrl(key);
 
             Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
                     .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
@@ -128,6 +138,7 @@ public class MapServiceImpl implements MapService {
                     .hasPartner(hasPartner)
                     .latitude(s.getLatitude())
                     .longitude(s.getLongitude())
+                    .profileUrl(url)
                     .build();
         }).toList();
     }
@@ -142,6 +153,9 @@ public class MapServiceImpl implements MapService {
                     .orElseThrow(
                         () -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT)
                     );
+
+            String key = (s.getPartner() != null) ? s.getPartner().getMember().getProfileUrl() : null;
+            String url = amazonS3Manager.generatePresignedUrl(key);
 
             Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
                     .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
@@ -184,22 +198,22 @@ public class MapServiceImpl implements MapService {
                     .hasPartner(hasPartner)
                     .latitude(s.getLatitude())
                     .longitude(s.getLongitude())
+                    .profileUrl(url)
                     .build();
         }).toList();
     }
 
     @Override
     public List<MapResponseDTO.PartnerMapResponseDTO> searchPartner(String keyword, Long memberId) {
-
-        Admin admin = adminRepository.findById(memberId)
-                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
-
-        List<Partner> partners = partnerRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
+        List<Partner> partners = partnerRepository.searchPartnerByKeyword(keyword);
 
         return partners.stream().map(p -> {
                 Paper active = paperRepository
                                     .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(memberId, p.getId(), ActivationStatus.ACTIVE)
                                     .orElse(null);
+
+            String key = (p.getMember() != null) ? p.getMember().getProfileUrl() : null;
+            String url = amazonS3Manager.generatePresignedUrl(key);
 
                 return MapResponseDTO.PartnerMapResponseDTO.builder()
                     .partnerId(p.getId())
@@ -211,22 +225,22 @@ public class MapServiceImpl implements MapService {
                     .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
                     .latitude(p.getLatitude())
                     .longitude(p.getLongitude())
+                    .profileUrl(url)
                     .build();
         }).toList();
     }
 
     @Override
     public List<MapResponseDTO.AdminMapResponseDTO> searchAdmin(String keyword, Long memberId) {
-
-        Partner partner = partnerRepository.findById(memberId)
-                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
-
-        List<Admin> admins = adminRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
+        List<Admin> admins = adminRepository.searchAdminByKeyword(keyword);
 
         return admins.stream().map(a -> {
             Paper active = paperRepository
                     .findTopByAdmin_IdAndPartner_IdAndIsActivatedOrderByIdDesc(a.getId(), memberId, ActivationStatus.ACTIVE)
                     .orElse(null);
+
+            String key = (a.getMember() != null) ? a.getMember().getProfileUrl() : null;
+            String url = amazonS3Manager.generatePresignedUrl(key);
 
             return MapResponseDTO.AdminMapResponseDTO.builder()
                     .adminId(a.getId())
@@ -238,6 +252,7 @@ public class MapServiceImpl implements MapService {
                     .partnershipEndDate(active != null ? active.getPartnershipPeriodEnd() : null)
                     .latitude(a.getLatitude())
                     .longitude(a.getLongitude())
+                    .profileUrl(url)
                     .build();
         }).toList();
     }
