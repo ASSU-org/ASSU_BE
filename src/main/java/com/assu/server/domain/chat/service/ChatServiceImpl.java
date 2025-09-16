@@ -95,6 +95,8 @@ public class ChatServiceImpl implements ChatService {
         log.info("saved message start");
         Message saved = messageRepository.saveAndFlush(message);
         log.info("saved message middle");
+        log.info("REQ roomId={}, senderId={}, receiverId={}, message={}",
+                request.roomId(), request.senderId(), request.receiverId(), request.message());
         log.info("saved message id={}, roomId={}, senderId={}, receiverId={}",
                 saved.getId(), room.getId(), sender.getId(), receiver.getId());
 
