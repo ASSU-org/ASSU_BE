@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findMemberById(Long id);
     
     List<Member> findByDeletedAtBefore(LocalDateTime deletedAt);
+
+    Member findByAdminProfile(Admin adminProfile);
 }
