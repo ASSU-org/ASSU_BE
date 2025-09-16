@@ -305,7 +305,7 @@ public class AuthController {
                     "- 처리: Refresh 무효화(선택), Access 블랙리스트 등록.\n" +
                     "- 성공 시 200(OK)."
     )
-    @DeleteMapping("/logout")
+    @PostMapping("/logout")
     public BaseResponse<Void> logout(
             @RequestHeader("Authorization")
             @Parameter(name = "Authorization", description = "Access Token. 형식: `Bearer <token>`", required = true,
