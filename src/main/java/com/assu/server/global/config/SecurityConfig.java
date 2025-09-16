@@ -22,7 +22,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // ✅ WebSocket 핸드셰이크 허용 (네이티브 + SockJS 모두 포함)
-                        .requestMatchers("/ws","/ws/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
 
                         // Swagger 등 공개 리소스
                         .requestMatchers(
@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/auth/admins/signup",
                                 "/auth/commons/login",
                                 "/auth/students/login",
-                                "/auth/students/ssu-verify"
+                                "/auth/students/ssu-verify",
+                                "/map/place"
                         ).permitAll()
                     .requestMatchers("/ws/**").permitAll()
                         // 나머지는 인증 필요
