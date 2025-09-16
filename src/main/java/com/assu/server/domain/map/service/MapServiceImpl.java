@@ -196,7 +196,7 @@ public class MapServiceImpl implements MapService {
         Admin admin = adminRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
-        List<Partner> partners = partnerRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
+        List<Partner> partners = partnerRepository.searchPartnerByKeyword(keyword);
 
         return partners.stream().map(p -> {
                 Paper active = paperRepository
@@ -223,7 +223,7 @@ public class MapServiceImpl implements MapService {
         Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
 
-        List<Admin> admins = adminRepository.searchPartneredByName(memberId, ActivationStatus.ACTIVE, keyword);
+        List<Admin> admins = adminRepository.searchAdminByKeyword(keyword);
 
         return admins.stream().map(a -> {
             Paper active = paperRepository
