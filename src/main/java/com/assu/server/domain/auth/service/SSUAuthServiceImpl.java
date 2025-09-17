@@ -136,6 +136,63 @@ public class SSUAuthServiceImpl implements SSUAuthService {
 
                     // 매핑된 Enum 값 저장
                     switch (majorStr) {
+                        // 인문대학
+                        case "기독교학과" -> usaintAuthResponse.setMajor(Major.CHRISTIAN_STUDIES);
+                        case "국어국문학과" -> usaintAuthResponse.setMajor(Major.KOREAN_LITERATURE);
+                        case "영어영문학과" -> usaintAuthResponse.setMajor(Major.ENGLISH_LITERATURE);
+                        case "독어독문학과" -> usaintAuthResponse.setMajor(Major.GERMAN_LITERATURE);
+                        case "불어불문학과" -> usaintAuthResponse.setMajor(Major.FRENCH_LITERATURE);
+                        case "중어중문학과" -> usaintAuthResponse.setMajor(Major.CHINESE_LITERATURE);
+                        case "일어일문학과" -> usaintAuthResponse.setMajor(Major.JAPANESE_LITERATURE);
+                        case "철학과" -> usaintAuthResponse.setMajor(Major.PHILOSOPHY);
+                        case "사학과" -> usaintAuthResponse.setMajor(Major.HISTORY);
+                        case "예술창작학부" -> usaintAuthResponse.setMajor(Major.CREATIVE_ARTS);
+                        case "스포츠학부" -> usaintAuthResponse.setMajor(Major.SPORTS);
+
+                        // 자연과학대학
+                        case "수학과" -> usaintAuthResponse.setMajor(Major.MATHEMATICS);
+                        case "화학과" -> usaintAuthResponse.setMajor(Major.CHEMISTRY);
+                        case "의생명시스템학부" -> usaintAuthResponse.setMajor(Major.BIOMEDICAL_SYSTEMS);
+                        case "물리학과" -> usaintAuthResponse.setMajor(Major.PHYSICS);
+                        case "정보통계ㆍ보험수리학과" -> usaintAuthResponse.setMajor(Major.STATISTICS_ACTUARIAL);
+
+                        // 법과대학
+                        case "법학과" -> usaintAuthResponse.setMajor(Major.LAW);
+                        case "국제법무학과" -> usaintAuthResponse.setMajor(Major.INTERNATIONAL_LAW);
+
+                        // 사회과학대학
+                        case "사회복지학부" -> usaintAuthResponse.setMajor(Major.SOCIAL_WELFARE);
+                        case "정치외교학과" -> usaintAuthResponse.setMajor(Major.POLITICAL_SCIENCE);
+                        case "언론홍보학과" -> usaintAuthResponse.setMajor(Major.MEDIA_COMMUNICATION);
+                        case "행정학부" -> usaintAuthResponse.setMajor(Major.PUBLIC_ADMINISTRATION);
+                        case "정보사회학과" -> usaintAuthResponse.setMajor(Major.INFORMATION_SOCIETY);
+                        case "평생교육학과" -> usaintAuthResponse.setMajor(Major.LIFELONG_EDUCATION);
+
+                        // 경제통상대학
+                        case "경제학과" -> usaintAuthResponse.setMajor(Major.ECONOMICS);
+                        case "금융경제학과" -> usaintAuthResponse.setMajor(Major.FINANCIAL_ECONOMICS);
+                        case "글로벌통상학과" -> usaintAuthResponse.setMajor(Major.GLOBAL_TRADE);
+                        case "국제무역학과" -> usaintAuthResponse.setMajor(Major.INTERNATIONAL_TRADE);
+
+                        // 경영대학
+                        case "경영학부" -> usaintAuthResponse.setMajor(Major.BUSINESS_ADMINISTRATION);
+                        case "회계학과" -> usaintAuthResponse.setMajor(Major.ACCOUNTING);
+                        case "벤처경영학과" -> usaintAuthResponse.setMajor(Major.VENTURE_MANAGEMENT);
+                        case "복지경영학과" -> usaintAuthResponse.setMajor(Major.WELFARE_MANAGEMENT);
+                        case "벤처중소기업학과" -> usaintAuthResponse.setMajor(Major.VENTURE_SME);
+                        case "금융학부" -> usaintAuthResponse.setMajor(Major.FINANCE);
+                        case "혁신경영학과" -> usaintAuthResponse.setMajor(Major.INNOVATION_MANAGEMENT);
+                        case "회계세무학과" -> usaintAuthResponse.setMajor(Major.ACCOUNTING_TAX);
+
+                        // 공과대학
+                        case "화학공학과" -> usaintAuthResponse.setMajor(Major.CHEMICAL_ENGINEERING);
+                        case "전기공학부" -> usaintAuthResponse.setMajor(Major.ELECTRICAL_ENGINEERING);
+                        case "건축학부" -> usaintAuthResponse.setMajor(Major.ARCHITECTURE);
+                        case "산업ㆍ정보시스템공학과" -> usaintAuthResponse.setMajor(Major.INDUSTRIAL_INFO_SYSTEMS);
+                        case "기계공학부" -> usaintAuthResponse.setMajor(Major.MECHANICAL_ENGINEERING);
+                        case "신소재공학과" -> usaintAuthResponse.setMajor(Major.MATERIALS_SCIENCE);
+
+                        // IT대학
                         case "컴퓨터학부" -> usaintAuthResponse.setMajor(Major.COM);
                         case "소프트웨어학부" -> usaintAuthResponse.setMajor(Major.SW);
                         case "글로벌미디어학부" -> usaintAuthResponse.setMajor(Major.GM);
@@ -143,6 +200,10 @@ public class SSUAuthServiceImpl implements SSUAuthService {
                         case "AI융합학부" -> usaintAuthResponse.setMajor(Major.AI);
                         case "전자정보공학부" -> usaintAuthResponse.setMajor(Major.EE);
                         case "정보보호학과" -> usaintAuthResponse.setMajor(Major.IP);
+
+                        // 자유전공학부
+                        case "자유전공학부" -> usaintAuthResponse.setMajor(Major.LIBERAL_ARTS);
+
                         default -> {
                             log.debug("{} is not a supported major.", majorStr);
                             throw new CustomAuthException(ErrorStatus.SSU_SAINT_UNSUPPORTED_MAJOR);
@@ -164,8 +225,8 @@ public class SSUAuthServiceImpl implements SSUAuthService {
                 .uri(url)
                 .header("Cookie", "sToken=" + sToken + "; sIdno=" + sIdno)
                 .retrieve()
-                .toEntity(String.class)   // ResponseEntity<String> 전체 반환 (body + header 포함)
-                .block();                 // 동기 방식
+                .toEntity(String.class) // ResponseEntity<String> 전체 반환 (body + header 포함)
+                .block(); // 동기 방식
     }
 
     private ResponseEntity<String> requestUSaintPortal(StringBuilder cookie) {
