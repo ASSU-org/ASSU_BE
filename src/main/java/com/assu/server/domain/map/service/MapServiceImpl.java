@@ -12,6 +12,7 @@ import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.partnership.entity.Goods;
 import com.assu.server.domain.partnership.entity.Paper;
 import com.assu.server.domain.partnership.entity.PaperContent;
+import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
 import com.assu.server.domain.partnership.repository.GoodsRepository;
 import com.assu.server.domain.partnership.repository.PaperContentRepository;
@@ -115,9 +116,14 @@ public class MapServiceImpl implements MapService {
             final boolean hasPartner = (s.getPartner() != null);
 
             // 2-1) 유효한 paper_content만 조회 (없으면 null 허용)
-            final PaperContent content = paperContentRepository
-                    .findLatestValidByStoreId(s.getId())
-                    .orElse(null);
+            final PaperContent content = paperContentRepository.findLatestValidByStoreId(
+                    s.getId(),
+                    ActivationStatus.ACTIVE,
+                    OptionType.SERVICE,
+                    OptionType.DISCOUNT,
+                    CriterionType.PRICE,
+                    CriterionType.HEADCOUNT
+            ).orElse(null);
 
             // 2-2) admin 정보 (null-safe)
             final Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
