@@ -18,9 +18,9 @@ public class SuggestionConverter {
     public static SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestionResultDTO(Suggestion suggestion){
         return SuggestionResponseDTO.WriteSuggestionResponseDTO.builder()
                 .suggestionId(suggestion.getId())
-                .memberId(suggestion.getStudent().getId())
-                .suggestionSubjectId(suggestion.getAdmin().getId())
-                .suggestionStore(suggestion.getStoreName())
+                .userId(suggestion.getStudent().getId())
+                .adminId(suggestion.getAdmin().getId())
+                .storeName(suggestion.getStoreName())
                 .suggestionBenefit(suggestion.getContent())
                 .build();
     }
@@ -40,6 +40,7 @@ public class SuggestionConverter {
         return SuggestionResponseDTO.GetSuggestionResponseDTO.builder()
                 .suggestionId(s.getId())
                 .createdAt(s.getCreatedAt())
+                .storeName(s.getStoreName())
                 .content(s.getContent())
                 .enrollmentStatus(student.getEnrollmentStatus())
                 .studentMajor(student.getMajor())
@@ -50,5 +51,16 @@ public class SuggestionConverter {
         return list.stream()
                 .map(SuggestionConverter::GetSuggestionResultDTO)
                 .collect(Collectors.toList());
+    }
+
+    public static SuggestionResponseDTO.GetSuggestionAdminsDTO toGetSuggestionAdmins(Admin universityAdmin, Admin departmentAdmin, Admin majorAdmin) {
+        return SuggestionResponseDTO.GetSuggestionAdminsDTO.builder()
+                .adminId(universityAdmin != null ? universityAdmin.getId() : null)
+                .adminName(universityAdmin != null ? universityAdmin.getName() : null)
+                .departId(departmentAdmin != null ? departmentAdmin.getId() : null)
+                .departName(departmentAdmin != null ? departmentAdmin.getName() : null)
+                .majorId(majorAdmin != null ? majorAdmin.getId() : null)
+                .majorName(majorAdmin != null ? majorAdmin.getName() : null)
+                .build();
     }
 }
