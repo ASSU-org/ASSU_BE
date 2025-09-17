@@ -1,7 +1,6 @@
 package com.assu.server.domain.auth.service;
 
 import com.assu.server.domain.auth.dto.verification.VerificationRequestDTO;
-import com.assu.server.domain.auth.dto.verification.VerificationResponseDTO;
 import com.assu.server.domain.auth.exception.CustomAuthException;
 import com.assu.server.domain.auth.repository.CommonAuthRepository;
 import com.assu.server.domain.member.repository.MemberRepository;
