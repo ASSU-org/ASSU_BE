@@ -31,4 +31,25 @@ public interface PaperContentRepository extends JpaRepository<PaperContent, Long
     List<PaperContent> findAllByOnePaperIdInFetchGoods(@Param("paperIds") Long paperIds);
 
     Optional<PaperContent> findById(Long id);
+
+    @Query("""
+        SELECT pc FROM PaperContent pc
+        JOIN pc.paper p
+        WHERE p.store.id = :storeId
+          AND p.isActivated = com.assu.server.domain.paper.enums.IsActivated.ACTIVE
+          AND CURRENT_DATE BETWEEN p.partnershipPeriodStart AND p.partnershipPeriodEnd
+          AND (
+                (pc.optionType = com.assu.server.domain.paper.enums.OptionType.SERVICE AND
+                    (
+                      (pc.criterionType = com.assu.server.domain.paper.enums.CriterionType.PRICE AND pc.cost IS NOT NULL)
+                      OR
+                      (pc.criterionType = com.assu.server.domain.paper.enums.CriterionType.HEADCOUNT AND pc.cost IS NOT NULL AND pc.people IS NOT NULL)
+                    )
+                )
+                OR
+                (pc.optionType = com.assu.server.domain.paper.enums.OptionType.DISCOUNT AND pc.discount IS NOT NULL)
+              )
+        ORDER BY pc.id DESC
+        """)
+    Optional<PaperContent> findLatestValidByStoreId(@Param("storeId") Long storeId);
 }
