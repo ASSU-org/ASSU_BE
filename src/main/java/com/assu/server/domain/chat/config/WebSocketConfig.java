@@ -16,11 +16,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         "http://localhost:5173",     // Vite 기본
                         "http://localhost:3000",     // CRA/Next 기본
                         "http://127.0.0.1:*",
-                        "http://192.168.*.*:*")       // 같은 LAN의 실제 기기 테스트용
-                .withSockJS();             // fallback for old browsers
+                        "http://192.168.*.*:*");       // 같은 LAN의 실제 기기 테스트용// fallback for old browsers
 
         // ✅ 모바일/안드로이드용 (네이티브 WebSocket)
-        registry.addEndpoint("/ws/chat-native")
+        registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*"); // wss 사용 시 TLS 세팅
     }
 
