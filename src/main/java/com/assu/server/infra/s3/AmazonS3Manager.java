@@ -71,7 +71,7 @@ public class AmazonS3Manager{
     }
 
 
-    // FE로 url을 보내기 위해 사용하는 메서드
+    // 그대로 사용
     public String generatePresignedUrl(String keyName) {
         if (keyName == null || keyName.isBlank()) return null;
 
@@ -81,7 +81,7 @@ public class AmazonS3Manager{
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
+                .signatureDuration(Duration.ofMinutes(10)) // 유효기간 10분
                 .getObjectRequest(getObjectRequest)
                 .build();
 
