@@ -2,18 +2,7 @@ package com.assu.server.domain.suggestion.service;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.admin.repository.AdminRepository;
-import com.assu.server.domain.auth.entity.SSUAuth;
-import com.assu.server.domain.auth.repository.SSUAuthRepository;
-import com.assu.server.domain.member.entity.Member;
-import com.assu.server.domain.member.repository.MemberRepository;
-import com.assu.server.domain.partnership.converter.PartnershipConverter;
-import com.assu.server.domain.partnership.dto.PartnershipResponseDTO;
-import com.assu.server.domain.partnership.entity.Goods;
-import com.assu.server.domain.partnership.entity.Paper;
-import com.assu.server.domain.partnership.entity.PaperContent;
-import com.assu.server.domain.partnership.repository.PaperContentRepository;
-import com.assu.server.domain.partnership.repository.PaperRepository;
-import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.domain.suggestion.converter.SuggestionConverter;
 import com.assu.server.domain.suggestion.dto.SuggestionRequestDTO;
 import com.assu.server.domain.suggestion.dto.SuggestionResponseDTO;
@@ -23,10 +12,10 @@ import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.repository.StudentRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -36,8 +25,10 @@ public class SuggestionServiceImpl implements SuggestionService {
     private final SuggestionRepository suggestionRepository;
     private final AdminRepository adminRepository;
     private final StudentRepository studentRepository;
+    private final NotificationCommandService notificationCommandService;
 
     @Override
+    @Transactional
     public SuggestionResponseDTO.WriteSuggestionResponseDTO writeSuggestion(SuggestionRequestDTO.WriteSuggestionRequestDTO request, Long userId) {
 
         Admin admin = adminRepository.findById(request.getAdminId())
@@ -48,6 +39,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 
         Suggestion suggestion = SuggestionConverter.toSuggestionEntity(request, admin, student);
         suggestionRepository.save(suggestion);
+        notificationCommandService.sendPartnerSuggestion(suggestion.getAdmin().getId(), suggestion.getId());
 
         return SuggestionConverter.writeSuggestionResultDTO(suggestion);
     }
@@ -58,5 +50,36 @@ public class SuggestionServiceImpl implements SuggestionService {
                 .findAllSuggestions(adminId);
 
         return SuggestionConverter.toGetSuggestionDTOList(list);
+    }
+
+    @Override
+    public SuggestionResponseDTO.GetSuggestionAdminsDTO getSuggestionAdmins(Long userId) {
+
+        Student student = studentRepository.findById(userId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STUDENT));
+
+        List<Admin> adminList = adminRepository.findMatchingAdmins(
+                student.getUniversity(),
+                student.getDepartment(),
+                student.getMajor()
+        );
+
+        Admin universityAdmin = null;
+        Admin departmentAdmin = null;
+        Admin majorAdmin = null;
+
+        for (Admin admin : adminList) {
+            if (admin.getMajor() != null) {
+                majorAdmin = admin;
+            }
+            else if (admin.getDepartment() != null) {
+                departmentAdmin = admin;
+            }
+            else {
+                universityAdmin = admin;
+            }
+        }
+
+        return SuggestionConverter.toGetSuggestionAdmins(universityAdmin, departmentAdmin, majorAdmin);
     }
 }
