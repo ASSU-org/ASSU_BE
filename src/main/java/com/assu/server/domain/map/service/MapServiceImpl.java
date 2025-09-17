@@ -12,6 +12,7 @@ import com.assu.server.domain.partner.repository.PartnerRepository;
 import com.assu.server.domain.partnership.entity.Goods;
 import com.assu.server.domain.partnership.entity.Paper;
 import com.assu.server.domain.partnership.entity.PaperContent;
+import com.assu.server.domain.partnership.entity.enums.CriterionType;
 import com.assu.server.domain.partnership.entity.enums.OptionType;
 import com.assu.server.domain.partnership.repository.GoodsRepository;
 import com.assu.server.domain.partnership.repository.PaperContentRepository;
@@ -105,27 +106,47 @@ public class MapServiceImpl implements MapService {
 
     @Override
     public List<MapResponseDTO.StoreMapResponseDTO> getStores(MapRequestDTO.ViewOnMapDTO viewport, Long memberId) {
-        String wkt = toWKT(viewport);
-        List<Store> stores = storeRepository.findAllWithinViewport(wkt);
+        final String wkt = toWKT(viewport);
 
+        // 1) 뷰포트 내 매장 조회
+        final List<Store> stores = storeRepository.findAllWithinViewport(wkt);
+
+        // 2) 매장별 content는 "있으면 사용, 없으면 null" 전략
         return stores.stream().map(s -> {
-            boolean hasPartner = (s.getPartner() != null);
+            final boolean hasPartner = (s.getPartner() != null);
 
-            PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
-                    .orElseThrow(() -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT));
+            // 2-1) 유효한 paper_content만 조회 (없으면 null 허용)
+            final PaperContent content = paperContentRepository.findLatestValidByStoreId(
+                    s.getId(),
+                    ActivationStatus.ACTIVE,
+                    OptionType.SERVICE,
+                    OptionType.DISCOUNT,
+                    CriterionType.PRICE,
+                    CriterionType.HEADCOUNT
+            ).orElse(null);
 
-            String key = (s.getPartner() != null) ? s.getPartner().getMember().getProfileUrl() : null;
-            String url = amazonS3Manager.generatePresignedUrl(key);
-
-            Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
+            // 2-2) admin 정보 (null-safe)
+            final Long adminId = paperRepository.findTopPaperByStoreId(s.getId())
                     .map(p -> p.getAdmin() != null ? p.getAdmin().getId() : null)
                     .orElse(null);
 
-            Admin admin = adminRepository.findById(adminId).orElse(null);
+            String adminName = null;
+            if (adminId != null) {
+                final Admin admin = adminRepository.findById(adminId).orElse(null);
+                adminName = (admin != null ? admin.getName() : null);
+            }
+
+            // 2-3) S3 presigned URL (키가 없으면 null)
+            final String key = (s.getPartner() != null && s.getPartner().getMember() != null)
+                    ? s.getPartner().getMember().getProfileUrl()
+                    : null;
+            final String profileUrl = (key != null ? amazonS3Manager.generatePresignedUrl(key) : null);
+
+            // 2-4) DTO 빌드 (content null 허용)
             return MapResponseDTO.StoreMapResponseDTO.builder()
                     .storeId(s.getId())
                     .adminId(adminId)
-                    .adminName(admin.getName())
+                    .adminName(adminName)
                     .name(s.getName())
                     .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
                     .rate(s.getRate())
@@ -138,7 +159,7 @@ public class MapServiceImpl implements MapService {
                     .hasPartner(hasPartner)
                     .latitude(s.getLatitude())
                     .longitude(s.getLongitude())
-                    .profileUrl(url)
+                    .profileUrl(profileUrl)
                     .build();
         }).toList();
     }
