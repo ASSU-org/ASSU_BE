@@ -149,7 +149,7 @@ public class SSUAuthServiceImpl implements SSUAuthService {
                         }
                     }
                 }
-                case "과정/학적" -> usaintAuthResponse.setEnrollmentStatus(strong.text());
+                case "과정/학기" -> usaintAuthResponse.setEnrollmentStatus(strong.text());
                 case "학년/학기" -> usaintAuthResponse.setYearSemester(strong.text());
             }
         }
