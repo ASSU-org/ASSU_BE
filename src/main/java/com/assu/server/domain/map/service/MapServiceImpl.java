@@ -116,13 +116,13 @@ public class MapServiceImpl implements MapService {
             final boolean hasPartner = (s.getPartner() != null);
 
             // 2-1) 유효한 paper_content만 조회 (없으면 null 허용)
-            final PaperContent content = paperContentRepository.findLatestValidByStoreId(
+            final PaperContent content = paperContentRepository.findLatestValidByStoreIdNative(
                     s.getId(),
-                    ActivationStatus.ACTIVE,
-                    OptionType.SERVICE,
-                    OptionType.DISCOUNT,
-                    CriterionType.PRICE,
-                    CriterionType.HEADCOUNT
+                    ActivationStatus.ACTIVE.name(),
+                    OptionType.SERVICE.name(),
+                    OptionType.DISCOUNT.name(),
+                    CriterionType.PRICE.name(),
+                    CriterionType.HEADCOUNT.name()
             ).orElse(null);
 
             // 2-2) admin 정보 (null-safe)

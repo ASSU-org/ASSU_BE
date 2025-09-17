@@ -22,8 +22,12 @@ public class Paper extends BaseEntity {
 	private Long id;
 
 
+	@Setter
 	private LocalDate partnershipPeriodStart; //  LocalDate vs String
+
+	@Setter
 	private LocalDate partnershipPeriodEnd;
+
 	@Setter
     @Enumerated(EnumType.STRING)
 	private ActivationStatus isActivated;

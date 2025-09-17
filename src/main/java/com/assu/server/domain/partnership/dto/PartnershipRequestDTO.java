@@ -23,9 +23,10 @@ public class PartnershipRequestDTO {
         Long discount;
         List<Long> userIds;
     }
+
     @Getter
     public static class WritePartnershipRequestDTO {
-        private Long adminId; // 제안 학생회 아이디
+        private Long paperId; // 제휴 제안서 아이디
         private LocalDate partnershipPeriodStart;
         private LocalDate partnershipPeriodEnd;
         private List<PartnershipOptionRequestDTO> options; // 동적으로 받는 제안 항목
@@ -65,5 +66,10 @@ public class PartnershipRequestDTO {
         private LocalDate partnershipPeriodStart;
         private LocalDate partnershipPeriodEnd;
         private List<PartnershipOptionRequestDTO> options;
+    }
+
+    @Getter
+    public static class CreateDraftRequestDTO {
+        private Long partnerId; // 제안서를 보낼 제휴업체 ID
     }
 }

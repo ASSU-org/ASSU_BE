@@ -107,7 +107,8 @@ public class PartnershipServiceImpl implements PartnershipService {
     private final AmazonS3Manager amazonS3Manager;
 
     @Override
-    public PartnershipResponseDTO.WritePartnershipResponseDTO writePartnershipAsPartner(
+    @Transactional
+    public PartnershipResponseDTO.WritePartnershipResponseDTO updatePartnership(
             PartnershipRequestDTO.WritePartnershipRequestDTO request,
             Long memberId
     ) {
@@ -115,37 +116,40 @@ public class PartnershipServiceImpl implements PartnershipService {
             throw new DatabaseException(ErrorStatus._BAD_REQUEST);
         }
 
+        Paper paper = paperRepository.findById(request.getPaperId())
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
+
         Partner partner = partnerRepository.findById(memberId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
 
-        Admin admin = adminRepository.findById(request.getAdminId())
+        Admin admin = adminRepository.findById(paper.getAdmin().getId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
 
         Store store = storeRepository.findByPartner(partner)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
-        return writePartnership(request, admin, partner, store);
-    }
+        PartnershipConverter.updatePaperFromDto(paper, request);
 
-    public PartnershipResponseDTO.WritePartnershipResponseDTO writePartnership(PartnershipRequestDTO.WritePartnershipRequestDTO request, Admin admin, Partner partner, Store store) {
+        List<PaperContent> existingContents = paperContentRepository.findByPaperId(request.getPaperId());
+        if (!existingContents.isEmpty()) {
+            List<Long> contentIds = existingContents.stream().map(PaperContent::getId).toList();
+            goodsRepository.deleteAllByContentIds(contentIds);
+            paperContentRepository.deleteAll(existingContents);
+        }
 
-        Paper paper = PartnershipConverter.toPaperEntity(request, admin, partner, store);
-        paper = paperRepository.save(paper);
-
-        List<PaperContent> contents = PartnershipConverter.toPaperContents(request, paper);
-        contents = contents.isEmpty() ? contents : paperContentRepository.saveAll(contents);
+        List<PaperContent> newContents = PartnershipConverter.toPaperContents(request, paper);
+        newContents = newContents.isEmpty() ? newContents : paperContentRepository.saveAll(newContents);
 
         List<List<Goods>> requestGoodsBatches = PartnershipConverter.toGoodsBatches(request);
 
         List<List<Goods>> attachedGoodsBatches = new ArrayList<>();
         List<Goods> toPersist = new ArrayList<>();
 
-        for(int i = 0;i < contents.size();i++){
-            PaperContent content = contents.get(i);
+        for (int i = 0; i < newContents.size(); i++) {
+            PaperContent content = newContents.get(i);
             List<Goods> batch = (requestGoodsBatches.size() > i) ? requestGoodsBatches.get(i) : Collections.emptyList();
-
-            List<Goods> attached = new ArrayList<>(batch.size());
-            for(Goods g : batch){
+            List<Goods> attached = new ArrayList<>();
+            for (Goods g : batch) {
                 Goods entity = Goods.builder()
                         .content(content)
                         .belonging(g.getBelonging())
@@ -155,11 +159,11 @@ public class PartnershipServiceImpl implements PartnershipService {
             }
             attachedGoodsBatches.add(attached);
         }
-
-        if(!toPersist.isEmpty()){
+        if (!toPersist.isEmpty()) {
             goodsRepository.saveAll(toPersist);
         }
-        return PartnershipConverter.writePartnershipResultDTO(paper, contents, attachedGoodsBatches);
+
+        return PartnershipConverter.writePartnershipResultDTO(paper, newContents, attachedGoodsBatches);
     }
 
     @Override
@@ -191,6 +195,7 @@ public class PartnershipServiceImpl implements PartnershipService {
     }
 
     @Override
+    @Transactional
     public PartnershipResponseDTO.WritePartnershipResponseDTO getPartnership(Long partnershipId) {
         Paper paper = paperRepository.findById(partnershipId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
@@ -202,6 +207,20 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .toList();
 
         return PartnershipConverter.writePartnershipResultDTO(paper, contents, goodsBatches);
+    }
+
+    @Override
+    @Transactional
+    public List<PartnershipResponseDTO.SuspendedPaperDTO> getSuspendedPapers(Long adminId) {
+        List<Paper> suspendedPapers = paperRepository.findAllByIsActivatedWithPartner(ActivationStatus.SUSPEND);
+
+        return suspendedPapers.stream()
+                .map(paper -> PartnershipResponseDTO.SuspendedPaperDTO.builder()
+                        .paperId(paper.getId())
+                        .partnerName(paper.getPartner().getName())
+                        .createdAt(paper.getCreatedAt())
+                        .build())
+                .toList();
     }
 
     @Override
@@ -316,6 +335,108 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .status(store.getIsActivate() == null ? null : store.getIsActivate().name())
                 .contractImageUrl(url)
                 .partnership(partnership)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public PartnershipResponseDTO.CreateDraftResponseDTO createDraftPartnership(PartnershipRequestDTO.CreateDraftRequestDTO request, Long adminId) {
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+        Partner partner = partnerRepository.findById(request.getPartnerId())
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+        Store store = storeRepository.findByPartner(partner)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
+
+        Paper draftPaper = PartnershipConverter.toDraftPaperEntity(admin, partner, store);
+        paperRepository.save(draftPaper);
+
+        return PartnershipConverter.toCreateDraftResponseDTO(draftPaper);
+    }
+
+    @Override
+    @Transactional
+    public void deletePartnership(Long paperId) {
+        Paper paper = paperRepository.findById(paperId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
+
+        List<PaperContent> contentsToDelete = paperContentRepository.findByPaperId(paperId);
+
+        if (contentsToDelete != null && !contentsToDelete.isEmpty()) {
+            List<Long> contentIds = contentsToDelete.stream().map(PaperContent::getId).toList();
+            goodsRepository.deleteAllByContentIds(contentIds);
+
+            paperContentRepository.deleteAll(contentsToDelete);
+        }
+
+        paperRepository.delete(paper);
+    }
+
+    @Override
+    @Transactional
+    public PartnershipResponseDTO.AdminPartnershipWithPartnerResponseDTO checkPartnershipWithPartner(Long adminId, Long partnerId) {
+
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+
+        List<ActivationStatus> targetStatuses = List.of(ActivationStatus.ACTIVE, ActivationStatus.SUSPEND);
+        boolean isPartnered = paperRepository.existsByAdmin_IdAndPartner_IdAndIsActivatedIn(adminId, partnerId, targetStatuses);
+
+        Long paperId = null;
+        String status = "NONE";
+
+        if (isPartnered) {
+            Optional<Paper> latestActiveOrSuspendPaper = paperRepository
+                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedInOrderByIdDesc(adminId, partnerId, targetStatuses);
+
+            if (latestActiveOrSuspendPaper.isPresent()) {
+                Paper paper = latestActiveOrSuspendPaper.get();
+                paperId = paper.getId();
+                status = paper.getIsActivated().name();
+            }
+        }
+
+        return PartnershipResponseDTO.AdminPartnershipWithPartnerResponseDTO.builder()
+                .paperId(paperId)
+                .isPartnered(isPartnered)
+                .status(status)
+                .partnerId(partner.getId())
+                .partnerName(partner.getName())
+                .partnerAddress(partner.getAddress())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public PartnershipResponseDTO.PartnerPartnershipWithAdminResponseDTO checkPartnershipWithAdmin(Long partnerId, Long adminId) {
+
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+
+        List<ActivationStatus> targetStatuses = List.of(ActivationStatus.ACTIVE, ActivationStatus.SUSPEND, ActivationStatus.BLANK);
+        boolean isPartnered = paperRepository.existsByAdmin_IdAndPartner_IdAndIsActivatedIn(adminId, partnerId, targetStatuses);
+
+        Long paperId = null;
+        String status = "NONE";
+
+        if (isPartnered) {
+            Optional<Paper> latestActiveOrSuspendPaper = paperRepository
+                    .findTopByAdmin_IdAndPartner_IdAndIsActivatedInOrderByIdDesc(adminId, partnerId, targetStatuses);
+
+            if (latestActiveOrSuspendPaper.isPresent()) {
+                Paper paper = latestActiveOrSuspendPaper.get();
+                paperId = paper.getId();
+                status = paper.getIsActivated().name();
+            }
+        }
+
+        return PartnershipResponseDTO.PartnerPartnershipWithAdminResponseDTO.builder()
+                .paperId(paperId)
+                .isPartnered(isPartnered)
+                .status(status)
+                .adminId(admin.getId())
+                .adminName(admin.getName())
+                .adminAddress(admin.getOfficeAddress())
                 .build();
     }
 
