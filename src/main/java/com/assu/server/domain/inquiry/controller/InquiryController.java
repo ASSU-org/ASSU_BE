@@ -123,4 +123,18 @@ public class InquiryController {
         String key = profileImageService.updateProfileImage(pd.getMemberId(), image);
         return BaseResponse.onSuccess(SuccessStatus._OK, new ProfileImageResponse(key));
     }
+
+    @Operation(
+            summary = "프로필 이미지 조회 API",
+            description = "# [v1.0 (2025-09-18)](/2711197c19ed8039bbe2c48380c9f4c8?source=copy_link)\n" +
+                    "- 로그인한 사용자의 프로필 이미지 presigned URL을 반환합니다.\n" +
+                    "- URL은 일정 시간 동안만 유효합니다."
+    )
+    @GetMapping("/profile/image")
+    public BaseResponse<ProfileImageResponse> getProfileImage(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ) {
+        String url = profileImageService.getProfileImageUrl(pd.getMemberId());
+        return BaseResponse.onSuccess(SuccessStatus._OK, new ProfileImageResponse(url));
+    }
 }
