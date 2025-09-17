@@ -51,5 +51,27 @@ public class ProfileImageServiceImpl implements ProfileImageService{
         // 5) 호출자에 key 반환 (FE는 필요 시 presigned URL 생성해 사용)
         return uploadedKey;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getProfileImageUrl(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER));
+
+        String keyOrUrl = member.getProfileUrl();
+        if (keyOrUrl == null || keyOrUrl.isBlank()) {
+            throw new CustomAuthException(ErrorStatus.PROFILE_IMAGE_NOT_FOUND);
+        }
+
+        if (keyOrUrl.startsWith("http://") || keyOrUrl.startsWith("https://")) {
+            return keyOrUrl;
+        }
+
+        String presigned = amazonS3Manager.generatePresignedUrl(keyOrUrl);
+        if (presigned == null) {
+            throw new CustomAuthException(ErrorStatus.PROFILE_IMAGE_NOT_FOUND);
+        }
+        return presigned;
+    }
 }
 
