@@ -162,9 +162,21 @@ public class ChatServiceImpl implements ChatService {
             isLeftSuccessfully = true;
             chatRepository.save(chattingRoom);
         } else if(memberCount == 1) {
-            isRoomDeleted = true;
+            if (isAdmin) {
+                chattingRoom.setAdmin(null);
+            } else if (isPartner) {
+                chattingRoom.setPartner(null);
+            }
+            chattingRoom.updateMemberCount(0);
             isLeftSuccessfully = true;
-            chatRepository.delete(chattingRoom);
+
+            // ✅ 방에 아무도 안 남았을 때만 삭제
+            if (chattingRoom.getAdmin() == null && chattingRoom.getPartner() == null) {
+                isRoomDeleted = true;
+                chatRepository.delete(chattingRoom);
+            } else {
+                chatRepository.save(chattingRoom);
+            }
 
         } else if(memberCount == 0) {
             throw new DatabaseException(ErrorStatus.NO_MEMBER);
