@@ -55,6 +55,10 @@ public interface ChatRepository extends JpaRepository<ChattingRoom, Long> {
       LEFT JOIN a.member  am
       WHERE pm.id = :memberId
       OR am.id = :memberId
+      ORDER BY
+             (SELECT MAX(m.createdAt)
+              FROM Message m
+              WHERE m.chattingRoom.id = r.id) DESC
     """)
     List<ChatRoomListResultDTO> findChattingRoomsByMemberId(@Param("memberId") Long memberId);
 
