@@ -63,6 +63,7 @@ public class ChatConverter {
 
     public static ChatResponseDTO.SendMessageResponseDTO toSendMessageDTO(Message message) {
         return ChatResponseDTO.SendMessageResponseDTO.builder()
+                .messageId(message.getId())
                 .roomId(message.getChattingRoom().getId())
                 .senderId(message.getSender().getId())
                 .receiverId(message.getReceiver().getId())
