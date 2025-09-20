@@ -30,20 +30,20 @@ public interface ChatRepository extends JpaRepository<ChattingRoom, Long> {
      AND m.receiver.id = :memberId
      AND m.isRead = false),
      CASE
-         WHEN pm.id   IS NULL AND am.id = :memberId THEN NULL
-         WHEN am.id   IS NULL AND pm.id = :memberId THEN NULL
+         WHEN pm.id   IS NULL AND am.id = :memberId THEN -1
+         WHEN am.id   IS NULL AND pm.id = :memberId THEN -1
          WHEN pm.id = :memberId THEN a.id
          ELSE p.id
        END,
      CASE
-         WHEN pm.id   IS NULL AND am.id = :memberId THEN NULL
-         WHEN am.id   IS NULL AND pm.id = :memberId THEN NULL
+         WHEN pm.id   IS NULL AND am.id = :memberId THEN -1
+         WHEN am.id   IS NULL AND pm.id = :memberId THEN -1
          WHEN pm.id = :memberId THEN a.name
          ELSE p.name
        END,
      CASE
-         WHEN pm.id   IS NULL AND am.id = :memberId THEN NULL
-         WHEN am.id   IS NULL AND pm.id = :memberId THEN NULL
+         WHEN pm.id   IS NULL AND am.id = :memberId THEN -1
+         WHEN am.id   IS NULL AND pm.id = :memberId THEN -1
          WHEN pm.id = :memberId THEN am.profileUrl
          ELSE pm.profileUrl
        END
@@ -55,6 +55,10 @@ public interface ChatRepository extends JpaRepository<ChattingRoom, Long> {
       LEFT JOIN a.member  am
       WHERE pm.id = :memberId
       OR am.id = :memberId
+      ORDER BY
+             (SELECT MAX(m.createdAt)
+              FROM Message m
+              WHERE m.chattingRoom.id = r.id) DESC
     """)
     List<ChatRoomListResultDTO> findChattingRoomsByMemberId(@Param("memberId") Long memberId);
 

@@ -279,6 +279,8 @@ public class PartnershipConverter {
                 .adminId(paper.getAdmin()    != null ? paper.getAdmin().getId()     : null)
                 .partnerId(paper.getPartner()!= null ? paper.getPartner().getId()   : null) // 수동등록이면 null
                 .storeId(paper.getStore()    != null ? paper.getStore().getId()     : null)
+                .storeName(paper.getStore().getName())
+                .adminName(paper.getAdmin().getName())
 				.isActivated(paper.getIsActivated())
                 .options(optionDTOS)
                 .build();

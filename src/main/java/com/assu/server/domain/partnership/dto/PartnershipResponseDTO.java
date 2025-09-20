@@ -24,6 +24,9 @@ public class PartnershipResponseDTO {
         private Long adminId;
         private Long partnerId;
         private Long storeId;
+        private String storeName;
+        private String adminName;
+        private Boolean activated;
         private ActivationStatus isActivated;
         private List<PartnershipOptionResponseDTO> options;
     }
