@@ -13,6 +13,7 @@ import com.assu.server.domain.auth.dto.ssu.USaintAuthRequest;
 import com.assu.server.domain.auth.dto.ssu.USaintAuthResponse;
 import com.assu.server.domain.auth.service.*;
 import com.assu.server.domain.user.entity.enums.University;
+import com.assu.server.domain.auth.dto.verification.VerificationRequestDTO;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +42,7 @@ public class AuthController {
     private final LogoutService logoutService;
     private final SSUAuthService ssuAuthService;
     private final WithdrawalService withdrawalService;
+    private final VerificationService verificationService;
 
     @Operation(
             summary = "휴대폰 인증번호 발송 API",
@@ -80,6 +82,36 @@ public class AuthController {
                 request.getAuthNumber()
         );
         return BaseResponse.onSuccess(SuccessStatus.VERIFY_AUTH_NUMBER_SUCCESS, null);
+    }
+
+    @Operation(summary = "전화번호 중복 체크 API", description = "# [v1.0 (2025-01-15)]\n" +
+                    "- 입력한 전화번호가 이미 가입된 사용자가 있는지 확인합니다.\n" +
+                    "- 중복된 전화번호가 있으면 에러를 반환합니다.\n" +
+                    "\n**Request Body:**\n" +
+                    "  - `phoneNumber` (String, required): 확인할 전화번호 (010XXXXXXXX 형식)\n" +
+                    "\n**Response:**\n" +
+                    "  - 성공 시 200(OK)과 사용 가능 메시지 반환\n" +
+                    "  - 중복 시 404(NOT_FOUND)와 에러 메시지 반환")
+    @PostMapping("/phone-verification/check")
+    public BaseResponse<Void> checkPhoneNumberAvailability(
+            @RequestBody @Valid VerificationRequestDTO.PhoneVerificationCheckRequest request) {
+        verificationService.checkPhoneNumberAvailability(request);
+        return BaseResponse.onSuccess(SuccessStatus._OK, null);
+    }
+
+    @Operation(summary = "이메일 중복 체크 API", description = "# [v1.0 (2025-01-15)]\n" +
+                    "- 입력한 이메일이 이미 가입된 사용자가 있는지 확인합니다.\n" +
+                    "- 중복된 이메일이 있으면 에러를 반환합니다.\n" +
+                    "\n**Request Body:**\n" +
+                    "  - `email` (String, required): 확인할 이메일 주소\n" +
+                    "\n**Response:**\n" +
+                    "  - 성공 시 200(OK)과 사용 가능 메시지 반환\n" +
+                    "  - 중복 시 404(NOT_FOUND)와 에러 메시지 반환")
+    @PostMapping("/email-verification/check")
+    public BaseResponse<Void> checkEmailAvailability(
+            @RequestBody @Valid VerificationRequestDTO.EmailVerificationCheckRequest request) {
+        verificationService.checkEmailAvailability(request);
+        return BaseResponse.onSuccess(SuccessStatus._OK, null);
     }
 
     @Operation(

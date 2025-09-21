@@ -47,6 +47,7 @@ public class PartnerServiceImpl implements PartnerService {
                         .adminAddress(a.getOfficeAddress())
                         .adminDetailAddress(a.getDetailAddress())
                         .adminName(a.getName())
+                        .adminUrl(a.getMember().getProfileUrl())
                         .build())
                 .collect(Collectors.toList());
 

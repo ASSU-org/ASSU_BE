@@ -54,6 +54,18 @@ public class PartnershipConverter {
                 .build();
     }
 
+	public static Paper toDraftPaperEntity(Admin admin, Partner partner, Store store) {
+		return Paper.builder()
+				.admin(admin)
+				.partner(partner)
+				.store(store)
+				.partnershipPeriodStart(null)
+				.partnershipPeriodEnd(null)
+				.isActivated(ActivationStatus.BLANK)
+				.contractImageKey(null)
+				.build();
+	}
+
     public static List<PaperContent> toPaperContents(
             PartnershipRequestDTO.WritePartnershipRequestDTO partnershipRequestDTO,
             Paper paper
@@ -61,20 +73,17 @@ public class PartnershipConverter {
         if (partnershipRequestDTO.getOptions() == null || partnershipRequestDTO.getOptions().isEmpty()) {
             return Collections.emptyList();
         }
-        List<PaperContent> contents = new ArrayList<>(partnershipRequestDTO.getOptions().size());
-        for (var o : partnershipRequestDTO.getOptions()) {
-            PaperContent content = PaperContent.builder()
-                    .paper(paper)
-                    .criterionType(o.getCriterionType())
-                    .optionType(o.getOptionType())
-                    .people(o.getPeople())
-                    .cost(o.getCost())
-                    .category(o.getCategory())
-                    .discount(o.getDiscountRate())
-                    .build();
-            contents.add(content);
-        }
-        return contents;
+		return partnershipRequestDTO.getOptions().stream()
+				.map(optionDto -> PaperContent.builder()
+						.paper(paper) // 어떤 Paper에 속하는지 연결
+						.optionType(optionDto.getOptionType())
+						.criterionType(optionDto.getCriterionType())
+						.people(optionDto.getPeople())
+						.cost(optionDto.getCost())
+						.category(optionDto.getCategory())
+						.discount(optionDto.getDiscountRate()) // DTO의 discountRate를 Entity의 discount에 매핑
+						.build())
+				.toList();
     }
 
 
@@ -84,22 +93,20 @@ public class PartnershipConverter {
             PartnershipRequestDTO.WritePartnershipRequestDTO partnershipRequestDTO
     ) {
         if (partnershipRequestDTO == null || partnershipRequestDTO.getOptions().isEmpty()) {
-            return List.of();
+            return Collections.emptyList();
         }
-        List<List<Goods>> batches = new ArrayList<>(partnershipRequestDTO.getOptions().size());
-        for (var o : partnershipRequestDTO.getOptions()) {
-            if (o.getGoods() == null || o.getGoods().isEmpty()) {
-                batches.add(List.of());
-                continue;
-            }
-            List<Goods> goodsList = o.getGoods().stream()
-                    .map(g -> Goods.builder()
-                            .belonging(g.getGoodsName())
-                            .build())
-                    .collect(Collectors.toList());
-            batches.add(goodsList);
-        }
-        return batches;
+        return partnershipRequestDTO.getOptions().stream()
+				.map(optionDto -> {
+					if (optionDto.getGoods() == null || optionDto.getGoods().isEmpty()) {
+						return Collections.<Goods>emptyList();
+					}
+					return optionDto.getGoods().stream()
+							.map(goodsDto -> Goods.builder()
+									.belonging(goodsDto.getGoodsName()) // DTO의 goodsName을 엔티티의 belonging에 매핑
+									.build())
+							.toList();
+				})
+				.toList();
     }
 
 
@@ -272,6 +279,9 @@ public class PartnershipConverter {
                 .adminId(paper.getAdmin()    != null ? paper.getAdmin().getId()     : null)
                 .partnerId(paper.getPartner()!= null ? paper.getPartner().getId()   : null) // 수동등록이면 null
                 .storeId(paper.getStore()    != null ? paper.getStore().getId()     : null)
+                .storeName(paper.getStore().getName())
+                .adminName(paper.getAdmin().getName())
+				.isActivated(paper.getIsActivated())
                 .options(optionDTOS)
                 .build();
     }
@@ -285,4 +295,15 @@ public class PartnershipConverter {
                         .build())
                 .toList();
     }
+
+	public static PartnershipResponseDTO.CreateDraftResponseDTO toCreateDraftResponseDTO(Paper paper) {
+		return PartnershipResponseDTO.CreateDraftResponseDTO.builder()
+				.paperId(paper.getId())
+				.build();
+	}
+
+	public static void updatePaperFromDto(Paper paper, PartnershipRequestDTO.WritePartnershipRequestDTO dto) {
+		paper.setPartnershipPeriodStart(dto.getPartnershipPeriodStart());
+		paper.setPartnershipPeriodEnd(dto.getPartnershipPeriodEnd());
+	}
 }
