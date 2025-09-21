@@ -57,8 +57,13 @@ public class PartnershipServiceImpl implements PartnershipService {
     private final NotificationCommandService notificationService;
 
 
+    @Override
+    @Transactional
 	public void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member){
 
+        Student requestStudent = studentRepository.findById(member.getId()).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_STUDENT) // 혹은 적절한 예외 처리
+        );
 
 		List<PartnershipUsage> usages = new ArrayList<>();
 
@@ -67,8 +72,9 @@ public class PartnershipServiceImpl implements PartnershipService {
         );
         Long paperId = content.getPaper().getId();
 		// 1) 요청한 member 본인
-		usages.add(PartnershipConverter.toPartnershipUsage(dto, member.getStudentProfile(), paperId));
-        member.getStudentProfile().setStamp();
+		usages.add(PartnershipConverter.toPartnershipUsage(dto, requestStudent, paperId));
+        requestStudent.setStamp();
+        System.out.println("update 된 stamp : "+requestStudent.getStamp());
 
 		List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
 		// 2) dto의 userIds에 있는 다른 사용자들
@@ -85,13 +91,15 @@ public class PartnershipServiceImpl implements PartnershipService {
             () -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
         );
         Partner partner = store.getPartner();
-        if (partner != null) {
-            Long partnerId = partner.getId();
-            notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
-            partnershipUsageRepository.saveAll(usages);
-        } else {
-            throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
-        }
+        System.out.println("✨partnerId✨ = "+partner.getId());
+        // if (partner != null) {
+        //     Long partnerId = partner.getId();
+        //     System.out.println("알림 요청이 들어갑니다.");
+        //     notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
+        //     partnershipUsageRepository.saveAll(usages);
+        // } else {
+        //     throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
+        // }
 	}
 
 
