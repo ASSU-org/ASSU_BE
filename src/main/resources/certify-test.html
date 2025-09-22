@@ -1,56 +1,335 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <title>Certify Test</title>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 인증 테스트 - 인증자</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]::placeholder, input[type="password"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .certify-button {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            width: 100%;
+            margin: 20px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .certify-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .certify-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status.ready {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4CAF50;
+        }
+
+        .status.sending {
+            background: rgba(255, 193, 7, 0.3);
+            border: 1px solid #FFC107;
+        }
+
+        .status.success {
+            background: rgba(33, 150, 243, 0.3);
+            border: 1px solid #2196F3;
+        }
+
+        .status.error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 1px solid #f44336;
+        }
+
+        .qr-section {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .manual-input {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .small-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        .small-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
 </head>
 <body>
-<h1>WebSocket Certify Test</h1>
+<div class="container">
+    <h1>🔐 WebSocket 인증 테스트 - 인증자</h1>
 
-<div>
-    <label>세션 ID: <input id="sessionId" type="text" value="1"></label><br>
-    <label>adminName: <input id="adminId" type="text" value="2"></label><br>
-    <button onclick="connect()">Connect & Subscribe</button>
-    <button onclick="sendCertify()">Send Certify</button>
+    <div class="section">
+        <h3>📋 서버 설정</h3>
+        <div class="input-group">
+            <label for="serverUrl">서버 URL:</label>
+            <input type="text" id="serverUrl" value="http://10.0.2.2:8080/ws-certify/sock" placeholder="http://localhost:8080/ws-certify/sock">
+        </div>
+
+        <div class="input-group">
+            <label for="token">JWT Token:</label>
+            <input type="password" id="token" placeholder="Bearer 토큰을 입력하세요">
+        </div>
+    </div>
+
+    <div class="qr-section">
+        <h3>📱 QR 코드 스캔</h3>
+        <p>안드로이드 앱에서 생성된 QR 코드를 스캔하거나</p>
+        <p>아래에 수동으로 정보를 입력하세요</p>
+    </div>
+
+    <div class="manual-input">
+        <h3>✍️ 수동 입력</h3>
+        <div class="input-group">
+            <label for="adminId">Admin ID:</label>
+            <input type="text" id="adminId" placeholder="2" value="2">
+        </div>
+
+        <div class="input-group">
+            <label for="sessionId">세션 ID:</label>
+            <input type="text" id="sessionId" placeholder="40" value="40">
+        </div>
+    </div>
+
+    <button id="certifyBtn" class="certify-button" onclick="sendCertificationRequest()">
+        🚀 인증 요청 보내기
+    </button>
+
+    <div id="status" class="status ready">준비됨 - 정보를 입력하고 인증 요청을 보내세요</div>
+
+    <div class="section">
+        <h3>📊 빠른 테스트</h3>
+        <p>다양한 시나리오로 빠르게 테스트해보세요:</p>
+        <button class="small-button" onclick="quickTest('normal')">일반 인증</button>
+        <button class="small-button" onclick="quickTest('duplicate')">중복 인증 테스트</button>
+        <button class="small-button" onclick="quickTest('invalid')">잘못된 세션</button>
+    </div>
+
+    <div class="section">
+        <h3>📝 실시간 로그</h3>
+        <button class="small-button" onclick="clearLog()">로그 초기화</button>
+        <div id="log" class="log"></div>
+    </div>
 </div>
 
-<pre id="log" style="background:#eee; padding:10px; height:300px; overflow:auto;"></pre>
-
 <script>
-    let stompClient = null;
-
-    function log(msg) {
-        document.getElementById("log").textContent += msg + "\n";
+    function addLog(message) {
+        const log = document.getElementById('log');
+        const timestamp = new Date().toLocaleTimeString();
+        log.textContent += `[${timestamp}] ${message}\n`;
+        log.scrollTop = log.scrollHeight;
     }
 
-    function connect() {
-        const socket = new SockJS('http://localhost:8080/ws');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, () => {
-            const sessionId = document.getElementById("sessionId").value;
-            const topic = `/certification/progress/${sessionId}`;
-            stompClient.subscribe(topic, (message) => {
-                log("Received: " + message.body);
-            });
-            log("Connected & Subscribed to " + topic);
+    function updateStatus(type, message) {
+        const statusEl = document.getElementById('status');
+        const certifyBtn = document.getElementById('certifyBtn');
+
+        statusEl.className = `status ${type}`;
+        statusEl.textContent = message;
+
+        if (type === 'sending') {
+            certifyBtn.disabled = true;
+            certifyBtn.textContent = '전송 중...';
+        } else {
+            certifyBtn.disabled = false;
+            certifyBtn.textContent = '🚀 인증 요청 보내기';
+        }
+    }
+
+    function sendCertificationRequest() {
+        const serverUrl = document.getElementById('serverUrl').value;
+        const token = document.getElementById('token').value;
+        const adminId = document.getElementById('adminId').value;
+        const sessionId = document.getElementById('sessionId').value;
+
+        if (!token || !adminId || !sessionId) {
+            alert('모든 필드를 입력해주세요!');
+            return;
+        }
+
+        addLog('🚀 인증 요청 시작...');
+        updateStatus('sending', '인증 요청 전송 중...');
+
+        const socket = new SockJS(serverUrl);
+        const stompClient = Stomp.over(socket);
+
+        // STOMP 디버그 비활성화 (너무 많은 로그 방지)
+        stompClient.debug = null;
+
+        const headers = {
+            'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`
+        };
+
+        stompClient.connect(headers, function(frame) {
+            addLog('✅ WebSocket 연결 성공');
+
+            // 인증 요청 메시지 생성
+            const certificationMessage = {
+                adminId: parseInt(adminId),
+                sessionId: parseInt(sessionId)
+            };
+
+            addLog(`📤 인증 요청 전송: ${JSON.stringify(certificationMessage)}`);
+
+            // 인증 요청 전송
+            stompClient.send('/app/certify', {}, JSON.stringify(certificationMessage));
+
+            addLog('✅ 인증 요청 전송 완료');
+            updateStatus('success', '인증 요청이 성공적으로 전송되었습니다!');
+
+            // 3초 후 연결 종료
+            setTimeout(() => {
+                stompClient.disconnect();
+                addLog('🔌 연결 종료됨');
+                updateStatus('ready', '전송 완료 - 다시 요청하려면 버튼을 클릭하세요');
+            }, 3000);
+
+        }, function(error) {
+            addLog(`❌ 연결 실패: ${error}`);
+            updateStatus('error', `연결 실패: ${error.message || error}`);
+            console.error('Connection error:', error);
         });
     }
 
+    function quickTest(type) {
+        switch(type) {
+            case 'normal':
+                document.getElementById('adminId').value = '2';
+                document.getElementById('sessionId').value = '33';
+                addLog('📋 일반 인증 테스트 설정 완료');
+                break;
 
-    function sendCertify() {
-        if (!stompClient || !stompClient.connected) {
-            log("Not connected.");
-            return;
+            case 'duplicate':
+                // 같은 설정으로 두 번 호출
+                sendCertificationRequest();
+                setTimeout(() => {
+                    addLog('🔄 중복 인증 테스트 - 2초 후 재시도');
+                    sendCertificationRequest();
+                }, 2000);
+                return;
+
+            case 'invalid':
+                document.getElementById('adminId').value = '999';
+                document.getElementById('sessionId').value = '999';
+                addLog('📋 잘못된 세션 테스트 설정 완료');
+                break;
         }
-        const payload = {
-            adminId: parseInt(document.getElementById("adminId").value),
-            sessionId: parseInt(document.getElementById("sessionId").value)
-        };
-        stompClient.send("/certification/certify", {}, JSON.stringify(payload));
-        log("Sent: " + JSON.stringify(payload));
     }
+
+    function clearLog() {
+        document.getElementById('log').textContent = '';
+    }
+
+    // 페이지 로드 시 초기 설정
+    window.onload = function() {
+        addLog('🌐 인증자 페이지 로드됨');
+        addLog('💡 사용법: 토큰 입력 → Admin ID, 세션 ID 입력 → 인증 요청 버튼 클릭');
+    };
 </script>
 </body>
 </html>
