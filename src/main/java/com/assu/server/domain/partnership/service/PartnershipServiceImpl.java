@@ -91,15 +91,14 @@ public class PartnershipServiceImpl implements PartnershipService {
             () -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
         );
         Partner partner = store.getPartner();
-        System.out.println("✨partnerId✨ = "+partner.getId());
-        // if (partner != null) {
-        //     Long partnerId = partner.getId();
-        //     System.out.println("알림 요청이 들어갑니다.");
-        //     notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
-        //     partnershipUsageRepository.saveAll(usages);
-        // } else {
-        //     throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
-        // }
+        if (partner != null) {
+            Long partnerId = partner.getId();
+            System.out.println("알림 요청이 들어갑니다.");
+            notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
+            partnershipUsageRepository.saveAll(usages);
+        } else {
+            throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
+        }
 	}
 
 
