@@ -72,9 +72,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-certify")
             .setAllowedOriginPatterns("*");
 
-        registry.addEndpoint("/ws-certify/sock")
-            .setAllowedOriginPatterns("*")
-            .withSockJS(); // ⬅️ SockJS를 반드시 포함해야 합니다.
 
     }
 
