@@ -110,7 +110,8 @@ public class CertificationServiceImpl implements CertificationService {
 		boolean isDoubledUser= sessionManager.hasUser(sessionId, userId);
 		if(isDoubledUser) {
 			messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
-				new CertificationProgressResponseDTO("progress", 0,"doubled member", null));
+				new CertificationProgressResponseDTO("progress", null,
+					"doubled member", sessionManager.snapshotUserIds(sessionId)));
 			throw new GeneralException(ErrorStatus.DOUBLE_CERTIFIED_USER);
 		}
 
@@ -127,11 +128,8 @@ public class CertificationServiceImpl implements CertificationService {
 				new CertificationProgressResponseDTO("completed", currentCertifiedNumber, "인증이 완료되었습니다.", sessionManager.snapshotUserIds(sessionId)));
 		} else {
 			messagingTemplate.convertAndSend("/certification/progress/" + sessionId,
-				new CertificationProgressResponseDTO("progress", currentCertifiedNumber, null, null));
+				new CertificationProgressResponseDTO("progress", currentCertifiedNumber, null, sessionManager.snapshotUserIds(sessionId)));
 		}
-
-
-
 	}
 
 	@Override
