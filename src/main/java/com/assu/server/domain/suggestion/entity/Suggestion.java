@@ -2,10 +2,12 @@ package com.assu.server.domain.suggestion.entity;
 
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.common.entity.BaseEntity;
-import com.assu.server.domain.store.entity.Store;
+import com.assu.server.domain.common.entity.enums.ReportedStatus;
 import com.assu.server.domain.user.entity.Student;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,4 +39,13 @@ public class Suggestion extends BaseEntity {
 
 	private String storeName;
 	private String content;
+
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private ReportedStatus status = ReportedStatus.NORMAL;
+
+	// 신고 상태 업데이트 메서드
+	public void updateReportedStatus(ReportedStatus status) {
+		this.status = status;
+	}
 }
