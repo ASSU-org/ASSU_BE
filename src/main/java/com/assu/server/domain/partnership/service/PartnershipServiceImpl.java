@@ -82,7 +82,6 @@ public class PartnershipServiceImpl implements PartnershipService {
         List<PartnershipUsage> usages = studentsToUpdate.stream()
             .map(student -> {
                 student.setStamp();
-                System.out.println("스탬프 업데이트 - 학생 ID: " + student.getId() + ", 현재 스탬프: " + student.getStamp());
                 return PartnershipConverter.toPartnershipUsage(dto, student, paperId);
             })
             .collect(Collectors.toList());
