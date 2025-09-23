@@ -14,6 +14,7 @@ import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.repository.PartnershipUsageRepository;
 import com.assu.server.domain.user.repository.StudentRepository;
+import com.assu.server.domain.common.entity.enums.ReportedStatus;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import com.assu.server.global.exception.GeneralException;
@@ -40,7 +41,6 @@ public class ReviewServiceImpl implements ReviewService {
     private final StudentRepository studentRepository;
     private final AmazonS3Manager amazonS3Manager;
     private final PartnershipUsageRepository partnershipUsageRepository;
-
 
     @Override
     public ReviewResponseDTO.WriteReviewResponseDTO writeReview(ReviewRequestDTO.WriteReviewRequestDTO request, Long memberId, List<MultipartFile> reviewImages) {
@@ -97,7 +97,9 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         return reviewRepository.save(review);
-    }    private String generateReviewImageKeyName(Long memberId, Long reviewId, int imageIndex) {
+    }
+
+    private String generateReviewImageKeyName(Long memberId, Long reviewId, int imageIndex) {
         LocalDateTime now = LocalDateTime.now();
         String year = String.valueOf(now.getYear());
         String month = String.format("%02d", now.getMonthValue());
@@ -128,7 +130,12 @@ public class ReviewServiceImpl implements ReviewService {
         Store store = storeRepository.findByPartner(partner)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
-        Page<Review> reviews = reviewRepository.findByStoreId(store.getId(), pageable);
+        // 신고되지 않은 리뷰와 신고되지 않은 학생이 작성한 리뷰만 조회
+        Page<Review> reviews = reviewRepository.findByStoreIdAndStatusAndStudentStatus(
+                store.getId(),
+                ReportedStatus.NORMAL,
+                ReportedStatus.NORMAL,
+                pageable);
 
         for (Review review : reviews) {
             updateReviewImageUrls(review);
@@ -146,6 +153,7 @@ public class ReviewServiceImpl implements ReviewService {
             .build();
 
     }
+
     private void updateReviewImageUrls(Review review) {
         for (ReviewPhoto reviewPhoto : review.getImageList()) {
             if (reviewPhoto.getKeyName() != null) {
@@ -162,7 +170,13 @@ public class ReviewServiceImpl implements ReviewService {
         pageable = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
         Store store = storeRepository.findById(storeId).orElseThrow(
             () -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
-        Page<Review> reviews = reviewRepository.findByStoreId(store.getId(), pageable);
+
+        // 신고되지 않은 리뷰와 신고되지 않은 학생이 작성한 리뷰만 조회
+        Page<Review> reviews = reviewRepository.findByStoreIdAndStatusAndStudentStatus(
+                store.getId(),
+                ReportedStatus.NORMAL,
+                ReportedStatus.NORMAL,
+                pageable);
 
         for (Review review : reviews) {
             updateReviewImageUrls(review);
@@ -174,7 +188,8 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public ReviewResponseDTO.StandardScoreResponseDTO standardScore(Long storeId) {
-        Float score = reviewRepository.standardScore(storeId);
+        // 신고되지 않은 리뷰와 신고되지 않은 학생이 작성한 리뷰만으로 평균 계산
+        Float score = reviewRepository.standardScoreWithStatus(storeId, ReportedStatus.NORMAL, ReportedStatus.NORMAL);
         if(score == null){
             score = 0f;
         }
@@ -191,7 +206,12 @@ public class ReviewServiceImpl implements ReviewService {
         Store store = storeRepository.findByPartner(partner)
             .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_STORE));
 
-        Float score = reviewRepository.standardScore(store.getId());
+        // 신고되지 않은 리뷰와 신고되지 않은 학생이 작성한 리뷰만으로 평균 계산
+        Float score = reviewRepository.standardScoreWithStatus(store.getId(), ReportedStatus.NORMAL,
+                ReportedStatus.NORMAL);
+        if (score == null) {
+            score = 0f;
+        }
         System.out.println(store.getId());
         return ReviewResponseDTO.StandardScoreResponseDTO
             .builder()
