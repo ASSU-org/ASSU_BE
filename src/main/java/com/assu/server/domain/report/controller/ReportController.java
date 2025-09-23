@@ -23,7 +23,7 @@ public class ReportController {
     private final ReportService reportService;
 
     @Operation(summary = "콘텐츠 신고 API",
-            description = "# [v1.0 (2025-09-24)]()\n" +
+            description = "# [v1.0 (2025-09-24)](https://clumsy-seeder-416.notion.site/API-2771197c19ed80b79afbf3d8d8d82c15?source=copy_link)\n" +
             "- 신고자는 본인 Member ID로 자동 설정됩니다.\n" +
             "- 자기 자신의 콘텐츠를 신고할 수 없습니다.\n" +
             "- 동일한 대상을 중복 신고할 수 없습니다.\n\n" +
@@ -46,7 +46,7 @@ public class ReportController {
     }
 
     @Operation(summary = "작성자 신고 API",
-            description = "# [v1.0 (2025-09-24)]()\n" +
+            description = "# [v1.0 (2025-09-24)](https://clumsy-seeder-416.notion.site/API-2771197c19ed80f8ab45e70772fcfc58?source=copy_link)\n" +
             "- 신고자는 본인 Member ID로 자동 설정됩니다.\n" +
             "- 자기 자신을 신고할 수 없습니다.\n" +
             "- 동일한 작성자를 중복 신고할 수 없습니다.\n\n" +
