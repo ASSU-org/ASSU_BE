@@ -38,21 +38,6 @@ public class PartnershipConverter {
 			.partnershipContent(dto.getPartnershipContent())
 			.build();
 	}
-    public static Paper toPaperEntity(
-            PartnershipRequestDTO.WritePartnershipRequestDTO partnershipRequestDTO,
-            Admin admin,
-            Partner partner,
-            Store store
-    ) {
-        return Paper.builder()
-                .partnershipPeriodStart(partnershipRequestDTO.getPartnershipPeriodStart())
-                .partnershipPeriodEnd(partnershipRequestDTO.getPartnershipPeriodEnd())
-                .isActivated(ActivationStatus.SUSPEND)
-                .admin(admin)
-                .store(store)
-                .partner(partner)
-                .build();
-    }
 
 	public static Paper toDraftPaperEntity(Admin admin, Partner partner, Store store) {
 		return Paper.builder()
@@ -305,5 +290,6 @@ public class PartnershipConverter {
 	public static void updatePaperFromDto(Paper paper, PartnershipRequestDTO.WritePartnershipRequestDTO dto) {
 		paper.setPartnershipPeriodStart(dto.getPartnershipPeriodStart());
 		paper.setPartnershipPeriodEnd(dto.getPartnershipPeriodEnd());
+		paper.setIsActivated(ActivationStatus.SUSPEND);
 	}
 }
