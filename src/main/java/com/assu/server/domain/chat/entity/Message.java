@@ -49,5 +49,6 @@ public class Message extends BaseEntity {
 
     public void markAsRead() {
         this.isRead = true;
+        this.unreadCount = 0;
     }
 }
