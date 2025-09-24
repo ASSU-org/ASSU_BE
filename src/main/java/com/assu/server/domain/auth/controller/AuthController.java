@@ -84,7 +84,8 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus.VERIFY_AUTH_NUMBER_SUCCESS, null);
     }
 
-    @Operation(summary = "전화번호 중복 체크 API", description = "# [v1.0 (2025-01-15)]\n" +
+    @Operation(summary = "전화번호 중복 체크 API",
+            description = "# [v1.0 (2025-09-18)](https://clumsy-seeder-416.notion.site/2551197c19ed808a9757f7f0fc4cf09b?source=copy_link)\n" +
                     "- 입력한 전화번호가 이미 가입된 사용자가 있는지 확인합니다.\n" +
                     "- 중복된 전화번호가 있으면 에러를 반환합니다.\n" +
                     "\n**Request Body:**\n" +
@@ -99,7 +100,8 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus._OK, null);
     }
 
-    @Operation(summary = "이메일 중복 체크 API", description = "# [v1.0 (2025-01-15)]\n" +
+    @Operation(summary = "이메일 중복 체크 API",
+            description = "# [v1.0 (2025-09-18)](https://clumsy-seeder-416.notion.site/2551197c19ed802d8f6dd373dd045f3a?source=copy_link)\n" +
                     "- 입력한 이메일이 이미 가입된 사용자가 있는지 확인합니다.\n" +
                     "- 중복된 이메일이 있으면 에러를 반환합니다.\n" +
                     "\n**Request Body:**\n" +

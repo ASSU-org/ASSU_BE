@@ -43,7 +43,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
     // 멤버 에러
     NO_SUCH_MEMBER(HttpStatus.NOT_FOUND,"MEMBER_4001","존재하지 않는 멤버 ID입니다."),
-    NO_STUENT_TYPE(HttpStatus.BAD_REQUEST, "MEMBER4002", "학생 타입이 아닌 멤버입니다."),
+    NO_STUDENT_TYPE(HttpStatus.BAD_REQUEST, "MEMBER4002", "학생 타입이 아닌 멤버입니다."),
 
     NO_SUCH_ADMIN(HttpStatus.NOT_FOUND,"MEMBER_4002","존재하지 않는 admin ID 입니다."),
     NO_SUCH_PARTNER(HttpStatus.NOT_FOUND,"MEMBER_4003","존재하지 않는 partner ID 입니다."),
@@ -105,12 +105,20 @@ public enum ErrorStatus implements BaseErrorCode {
     PROFILE_IMAGE_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "PROFILE_4002", "지원하지 않는 이미지 형식입니다."),
     PROFILE_IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, "PROFILE_4003", "허용된 크기를 초과한 이미지입니다."),
 
+    // Suggestion 관련 에러
+    NO_SUCH_SUGGESTION(HttpStatus.NOT_FOUND, "SUGGESTION_4001", "존재하지 않는 건의글입니다."),
+
+    // 신고(Report) 관련 에러
+    REPORT_DUPLICATE(HttpStatus.CONFLICT, "REPORT_4001", "이미 신고한 대상입니다."),
+    REPORT_SELF_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REPORT_4002", "자신을 신고할 수 없습니다."),
+    REVIEW_REPORT_SELF_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REPORT_4003", "자신의 리뷰를 신고할 수 없습니다."),
+    SUGGESTION_REPORT_SELF_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REPORT_4004", "자신의 건의글을 신고할 수 없습니다."),
+    INVALID_REPORT_TYPE(HttpStatus.BAD_REQUEST, "REPORT_4005", "유효하지 않은 신고 타입입니다."),
     ;
 
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
-
 
     @Override
     public ErrorReasonDTO getReasonHttpStatus() {

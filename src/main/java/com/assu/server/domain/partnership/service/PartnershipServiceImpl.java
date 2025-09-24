@@ -252,12 +252,17 @@ public class PartnershipServiceImpl implements PartnershipService {
     @Override
     @Transactional
     public List<PartnershipResponseDTO.SuspendedPaperDTO> getSuspendedPapers(Long adminId) {
-        List<Paper> suspendedPapers = paperRepository.findAllByIsActivatedWithPartner(ActivationStatus.SUSPEND);
+        List<Paper> suspendedPapers =
+                paperRepository.findAllSuspendedByAdminWithPartner(ActivationStatus.SUSPEND, adminId);
 
         return suspendedPapers.stream()
                 .map(paper -> PartnershipResponseDTO.SuspendedPaperDTO.builder()
                         .paperId(paper.getId())
-                        .partnerName(paper.getPartner().getName())
+                        .partnerName(
+                                paper.getPartner() != null
+                                        ? paper.getPartner().getName()
+                                        : (paper.getStore() != null ? paper.getStore().getName() : "미등록")
+                        )
                         .createdAt(paper.getCreatedAt())
                         .build())
                 .toList();
@@ -400,16 +405,25 @@ public class PartnershipServiceImpl implements PartnershipService {
         Paper paper = paperRepository.findById(paperId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
 
+        // 1. paperContent + goods 삭제
         List<PaperContent> contentsToDelete = paperContentRepository.findByPaperId(paperId);
-
         if (contentsToDelete != null && !contentsToDelete.isEmpty()) {
-            List<Long> contentIds = contentsToDelete.stream().map(PaperContent::getId).toList();
-            goodsRepository.deleteAllByContentIds(contentIds);
+            List<Long> contentIds = contentsToDelete.stream()
+                    .map(PaperContent::getId)
+                    .toList();
 
+            goodsRepository.deleteAllByContentIds(contentIds);
             paperContentRepository.deleteAll(contentsToDelete);
         }
 
+        // 2. paper 삭제
         paperRepository.delete(paper);
+
+        // 3. 임시 store 삭제 (partner가 null인 경우만)
+        Store store = paper.getStore();
+        if (store != null && paper.getPartner() == null) {
+            storeRepository.delete(store);
+        }
     }
 
     @Override

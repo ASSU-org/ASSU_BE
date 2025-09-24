@@ -19,7 +19,6 @@ import com.assu.server.domain.partnership.repository.PaperRepository;
 import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.domain.user.entity.Student;
-import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.GeneralException;
 
@@ -41,7 +40,7 @@ public class PaperQueryServiceImpl implements PaperQueryService {
 
 		// 역할이 학생이 아닌 경우 : 이미 type별로 ui를 분기 시켜놔서 그럴일 없을 것 같긴 하지만 혹시 몰라서 처리함
 		if(member.getRole() != UserRole.STUDENT)
-			throw new GeneralException(ErrorStatus.NO_STUENT_TYPE);
+			throw new GeneralException(ErrorStatus.NO_STUDENT_TYPE);
 
 		Student student = member.getStudentProfile();
 

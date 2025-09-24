@@ -1,16 +1,14 @@
 package com.assu.server.domain.user.entity;
 
+import com.assu.server.domain.common.entity.enums.ReportedStatus;
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.user.entity.enums.Department;
 import com.assu.server.domain.user.entity.enums.EnrollmentStatus;
 import com.assu.server.domain.user.entity.enums.Major;
 import com.assu.server.domain.user.entity.enums.University;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -44,6 +42,10 @@ public class Student {
     @Enumerated(EnumType.STRING)
     private Major major;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ReportedStatus status = ReportedStatus.NORMAL;
+
     public void setMember(Member member) {
         this.member = member;
     }
@@ -65,5 +67,10 @@ public class Student {
         this.major = major;
         this.enrollmentStatus = enrollmentStatus;
         this.yearSemester = yearSemester;
+    }
+
+    // 신고 상태 업데이트 메서드
+    public void updateReportedStatus(ReportedStatus status) {
+        this.status = status;
     }
 }
