@@ -36,6 +36,8 @@ public class Message extends BaseEntity {
 
 	private String message;
 
+    private Integer unreadCount;
+
 //	private LocalDateTime sendTime;
 //	private LocalDateTime readTime;
 
