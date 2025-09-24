@@ -37,8 +37,19 @@ public interface PaperRepository extends JpaRepository<Paper, Long> {
     Optional<Paper> findTopByAdmin_IdAndPartner_IdAndIsActivatedInOrderByIdDesc(Long adminId, Long partnerId, List<ActivationStatus> statuses);
 
     // Admin 기준 (SUSPEND)
-    @Query("select p from Paper p join fetch p.partner where p.isActivated = :status order by p.createdAt desc")
-    List<Paper> findAllByIsActivatedWithPartner(@Param("status") ActivationStatus status);
+    @Query("""
+select p
+from Paper p
+left join fetch p.partner pt
+left join fetch p.store s
+where p.isActivated = :status
+  and p.admin.id = :adminId
+order by p.createdAt desc
+""")
+    List<Paper> findAllSuspendedByAdminWithPartner(
+            @Param("status") ActivationStatus status,
+            @Param("adminId") Long adminId
+    );
 
     // Partner 기준 (ACTIVE)
     List<Paper> findByPartner_IdAndIsActivated(Long partnerId, ActivationStatus status, Sort sort);
