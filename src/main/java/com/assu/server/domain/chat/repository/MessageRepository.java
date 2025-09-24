@@ -17,6 +17,15 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 """)
     List<Message> findUnreadMessagesByRoomAndReceiver(Long roomId, Long receiverId);
 
+    @Query("""
+        SELECT COUNT(m)
+        FROM Message m
+        WHERE m.chattingRoom.id = :roomId
+        AND m.receiver.id = :receiverId
+        AND m.isRead = false
+    """)
+    Long countUnreadMessagesByRoomAndReceiver(@Param("roomId") Long roomId, @Param("receiverId") Long receiverId);
+
 
     @Query("""
         SELECT new com.assu.server.domain.chat.dto.ChatMessageDTO (

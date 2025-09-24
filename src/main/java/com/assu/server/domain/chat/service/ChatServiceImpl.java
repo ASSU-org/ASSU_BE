@@ -91,7 +91,6 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
 
         Message message = ChatConverter.toMessageEntity(request, room, sender, receiver);
-//        messageRepository.save(message);
         Message saved = messageRepository.saveAndFlush(message);
         log.info("saved message id={}, roomId={}, senderId={}, receiverId={}",
                 saved.getId(), room.getId(), sender.getId(), receiver.getId());
