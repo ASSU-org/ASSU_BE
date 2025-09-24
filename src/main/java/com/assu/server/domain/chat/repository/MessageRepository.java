@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("""
@@ -25,6 +24,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             m.id,
             m.message,
             m.createdAt,
+            m.unreadCount,
             m.isRead,
             CASE WHEN m.sender.id = :memberId THEN true
             ELSE false
