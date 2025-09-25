@@ -57,42 +57,82 @@ public class PartnershipServiceImpl implements PartnershipService {
     private final NotificationCommandService notificationService;
 
 
-	public void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member){
-
-
-		List<PartnershipUsage> usages = new ArrayList<>();
-
+    @Override
+    @Transactional
+    public void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member) {
+        // 1. 제휴 내용(PaperContent) 조회
         PaperContent content = contentRepository.findById(dto.getContentId()).orElseThrow(
             () -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT)
         );
         Long paperId = content.getPaper().getId();
-		// 1) 요청한 member 본인
-		usages.add(PartnershipConverter.toPartnershipUsage(dto, member.getStudentProfile(), paperId));
-        member.getStudentProfile().setStamp();
 
-		List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
-		// 2) dto의 userIds에 있는 다른 사용자들
-		for (Long userId : userIds) {
-            if(userId != member.getId()){
-                Student student = studentRepository.getReferenceById(userId);
-                usages.add(PartnershipConverter.toPartnershipUsage(dto, student, paperId));
-                student.setStamp();
-            }
-
-		}
-
-        Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
-            () -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
-        );
-        Partner partner = store.getPartner();
-        if (partner != null) {
-            Long partnerId = partner.getId();
-            notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
-            partnershipUsageRepository.saveAll(usages);
-        } else {
-            throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
+        // 2. 중복을 허용하지 않는 Set을 사용하여 모든 사용자 ID를 수집
+        Set<Long> uniqueUserIds = new HashSet<>();
+        // 요청자 본인 ID 추가
+        uniqueUserIds.add(member.getId());
+        // DTO에 포함된 사용자 ID들 추가 (null일 경우 무시)
+        if (dto.getUserIds() != null) {
+            uniqueUserIds.addAll(dto.getUserIds());
         }
-	}
+
+        // 3. 모든 학생 정보를 DB에서 한 번의 쿼리로 조회 (N+1 문제 해결)
+        List<Student> studentsToUpdate = studentRepository.findAllById(uniqueUserIds);
+
+        // 4. 조회된 학생들에 대해 PartnershipUsage 생성 및 스탬프 업데이트
+        List<PartnershipUsage> usages = studentsToUpdate.stream()
+            .map(student -> {
+                student.setStamp();
+                return PartnershipConverter.toPartnershipUsage(dto, student, paperId);
+            })
+            .collect(Collectors.toList());
+
+        // 5. 생성된 모든 Usage 기록을 한 번에 저장
+        partnershipUsageRepository.saveAll(usages);
+
+        // @Transactional 환경에서는 studentsToUpdate의 변경 사항(스탬프)이 자동으로 DB에 반영됩니다.
+    }
+	// public void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member){
+    //
+    //     Student requestStudent = studentRepository.findById(member.getId()).orElseThrow(
+    //         () -> new GeneralException(ErrorStatus.NO_SUCH_STUDENT) // 혹은 적절한 예외 처리
+    //     );
+    //
+	// 	List<PartnershipUsage> usages = new ArrayList<>();
+    //
+    //     PaperContent content = contentRepository.findById(dto.getContentId()).orElseThrow(
+    //         () -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT)
+    //     );
+    //     Long paperId = content.getPaper().getId();
+	// 	// 1) 요청한 member 본인
+	// 	usages.add(PartnershipConverter.toPartnershipUsage(dto, requestStudent, paperId));
+    //     requestStudent.setStamp();
+    //     System.out.println("update 된 stamp : "+requestStudent.getStamp());
+    //
+	// 	List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
+	// 	// 2) dto의 userIds에 있는 다른 사용자들
+	// 	for (Long userId : userIds) {
+    //         if(userId != member.getId()){
+    //             Student student = studentRepository.getReferenceById(userId);
+    //             usages.add(PartnershipConverter.toPartnershipUsage(dto, student, paperId));
+    //             student.setStamp();
+    //         }
+    //
+	// 	}
+    //     partnershipUsageRepository.saveAll(usages);
+    //
+    //     // Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
+    //     //     () -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
+    //     // );
+    //     // Partner partner = store.getPartner();
+    //     // if (partner != null) {
+    //     //     Long partnerId = partner.getId();
+    //     //     System.out.println("알림 요청이 들어갑니다.");
+    //     //     notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
+    //     //
+    //     // } else {
+    //     //     throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
+    //     // }
+	// }
 
 
 
@@ -212,12 +252,17 @@ public class PartnershipServiceImpl implements PartnershipService {
     @Override
     @Transactional
     public List<PartnershipResponseDTO.SuspendedPaperDTO> getSuspendedPapers(Long adminId) {
-        List<Paper> suspendedPapers = paperRepository.findAllByIsActivatedWithPartner(ActivationStatus.SUSPEND);
+        List<Paper> suspendedPapers =
+                paperRepository.findAllSuspendedByAdminWithPartner(ActivationStatus.SUSPEND, adminId);
 
         return suspendedPapers.stream()
                 .map(paper -> PartnershipResponseDTO.SuspendedPaperDTO.builder()
                         .paperId(paper.getId())
-                        .partnerName(paper.getPartner().getName())
+                        .partnerName(
+                                paper.getPartner() != null
+                                        ? paper.getPartner().getName()
+                                        : (paper.getStore() != null ? paper.getStore().getName() : "미등록")
+                        )
                         .createdAt(paper.getCreatedAt())
                         .build())
                 .toList();
@@ -360,16 +405,25 @@ public class PartnershipServiceImpl implements PartnershipService {
         Paper paper = paperRepository.findById(paperId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
 
+        // 1. paperContent + goods 삭제
         List<PaperContent> contentsToDelete = paperContentRepository.findByPaperId(paperId);
-
         if (contentsToDelete != null && !contentsToDelete.isEmpty()) {
-            List<Long> contentIds = contentsToDelete.stream().map(PaperContent::getId).toList();
-            goodsRepository.deleteAllByContentIds(contentIds);
+            List<Long> contentIds = contentsToDelete.stream()
+                    .map(PaperContent::getId)
+                    .toList();
 
+            goodsRepository.deleteAllByContentIds(contentIds);
             paperContentRepository.deleteAll(contentsToDelete);
         }
 
+        // 2. paper 삭제
         paperRepository.delete(paper);
+
+        // 3. 임시 store 삭제 (partner가 null인 경우만)
+        Store store = paper.getStore();
+        if (store != null && paper.getPartner() == null) {
+            storeRepository.delete(store);
+        }
     }
 
     @Override

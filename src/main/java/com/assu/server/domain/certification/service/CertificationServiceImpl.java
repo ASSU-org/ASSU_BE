@@ -71,7 +71,7 @@ public class CertificationServiceImpl implements CertificationService {
 
 		sessionManager.openSession(sessionId);
 		// 세션 생성 직후 만료 시간을 5분으로 설정
-		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(100));// TODO: 나중에 5분으로 변경
+		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(10));// TODO: 나중에 5분으로 변경
 
 		// 세션 여는 대표자는 제일 먼저 인증
 		sessionManager.addUserToSession(sessionId, userId);
@@ -110,7 +110,8 @@ public class CertificationServiceImpl implements CertificationService {
 		boolean isDoubledUser= sessionManager.hasUser(sessionId, userId);
 		if(isDoubledUser) {
 			messagingTemplate.convertAndSend("/certification/progress/"+sessionId,
-				new CertificationProgressResponseDTO("progress", 0,"doubled member", null));
+				new CertificationProgressResponseDTO("progress", null,
+					"doubled member", sessionManager.snapshotUserIds(sessionId)));
 			throw new GeneralException(ErrorStatus.DOUBLE_CERTIFIED_USER);
 		}
 
@@ -127,11 +128,8 @@ public class CertificationServiceImpl implements CertificationService {
 				new CertificationProgressResponseDTO("completed", currentCertifiedNumber, "인증이 완료되었습니다.", sessionManager.snapshotUserIds(sessionId)));
 		} else {
 			messagingTemplate.convertAndSend("/certification/progress/" + sessionId,
-				new CertificationProgressResponseDTO("progress", currentCertifiedNumber, null, null));
+				new CertificationProgressResponseDTO("progress", currentCertifiedNumber, null, sessionManager.snapshotUserIds(sessionId)));
 		}
-
-
-
 	}
 
 	@Override

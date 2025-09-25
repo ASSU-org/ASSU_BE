@@ -37,13 +37,4 @@ public class CertificationProgressResponseDTO {
 	private Integer count;
 	private String message;
 	private List<Long> userIds;
-
-	// 생성자들
-	public static CertificationProgressResponseDTO progress(int count) {
-		return new CertificationProgressResponseDTO("progress", count, null, null);
-	}
-
-	public static CertificationProgressResponseDTO completed(String message, List<Long> userIds) {
-		return new CertificationProgressResponseDTO("completed", userIds.size(), message, userIds);
-	}
 }
