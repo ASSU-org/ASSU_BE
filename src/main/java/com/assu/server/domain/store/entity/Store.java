@@ -24,6 +24,7 @@ public class Store extends BaseEntity {
 	@JoinColumn(name = "partner_id")
 	private Partner partner;
 
+	@Setter
 	private Integer rate;
 
 	@Setter
