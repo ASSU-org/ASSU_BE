@@ -53,9 +53,9 @@ public enum ErrorStatus implements BaseErrorCode {
     NO_PAPER_FOR_STORE(HttpStatus.NOT_FOUND, "ADMIN_4005", "존재하지 않는 paper ID입니다."),
     NO_AVAILABLE_PARTNER(HttpStatus.NOT_FOUND, "MEMBER_4009", "제휴업체를 찾을 수 없습니다."),
     NO_SUCH_STORE_WITH_THAT_PARTNER(HttpStatus.NOT_FOUND,"MEMBER_4006","해당 store ID에 해당하는 partner ID가 존재하지 않습니다."),
-    EXISTED_PHONE(HttpStatus.NOT_FOUND,"MEMBER_4007","이미 존재하는 전화번호입니다."),
-    EXISTED_EMAIL(HttpStatus.NOT_FOUND,"MEMBER_4008","이미 존재하는 이메일입니다."),
-    EXISTED_STUDENT(HttpStatus.NOT_FOUND,"MEMBER_4009","이미 존재하는 학번입니다."),
+    EXISTED_PHONE(HttpStatus.CONFLICT,"MEMBER_4007","이미 존재하는 전화번호입니다."),
+    EXISTED_EMAIL(HttpStatus.CONFLICT,"MEMBER_4008","이미 존재하는 이메일입니다."),
+    EXISTED_STUDENT(HttpStatus.CONFLICT,"MEMBER_4009","이미 존재하는 학번입니다."),
 
     MEMBER_ALREADY_WITHDRAWN(HttpStatus.BAD_REQUEST, "MEMBER_4010", "이미 탈퇴된 회원입니다."),
 

@@ -36,6 +36,8 @@ public class Message extends BaseEntity {
 
 	private String message;
 
+    private Integer unreadCount;
+
 //	private LocalDateTime sendTime;
 //	private LocalDateTime readTime;
 
@@ -47,5 +49,6 @@ public class Message extends BaseEntity {
 
     public void markAsRead() {
         this.isRead = true;
+        this.unreadCount = 0;
     }
 }

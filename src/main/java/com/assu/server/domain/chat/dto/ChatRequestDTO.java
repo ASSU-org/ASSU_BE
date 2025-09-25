@@ -1,6 +1,7 @@
 package com.assu.server.domain.chat.dto;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class ChatRequestDTO {
     @Getter
@@ -9,10 +10,13 @@ public class ChatRequestDTO {
         private Long partnerId;
     }
 
-    public record ChatMessageRequestDTO(
-        Long roomId,
-        Long senderId,
-        Long receiverId,
-        String message
-        ) {}
+    @Getter
+    @Setter
+    public static class ChatMessageRequestDTO {
+        private Long roomId;
+        private Long senderId;
+        private Long receiverId;
+        private String message;
+        private int unreadCountForSender;
+    }
 }

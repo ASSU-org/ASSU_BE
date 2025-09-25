@@ -52,6 +52,7 @@ public class ReviewServiceImpl implements ReviewService {
         );
         pu.setIsReviewed(true);
         partnershipUsageRepository.save(pu);
+        recalcAndUpdateStoreRate(review.getStore().getId());
         return ReviewConverter.writeReviewResultDTO(review);
     }
 
@@ -147,11 +148,16 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional
     public ReviewResponseDTO.DeleteReviewResponseDTO deleteReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus._BAD_REQUEST));
+
+        Long storeId = review.getStore().getId();
+        recalcAndUpdateStoreRate(storeId);
+
         reviewRepository.deleteById(reviewId);
         return ReviewResponseDTO.DeleteReviewResponseDTO.builder()
             .reviewId(reviewId)
             .build();
-
     }
 
     private void updateReviewImageUrls(Review review) {
@@ -218,5 +224,22 @@ public class ReviewServiceImpl implements ReviewService {
             .score(score)
             .build();
 
+    }
+
+    private void recalcAndUpdateStoreRate(Long storeId) {
+        // 이 시점에 영속성 컨텍스트의 변경분을 DB로 내보내 평균에 반영
+        reviewRepository.flush();
+
+        Float avg = reviewRepository.standardScoreWithStatus(
+                storeId, ReportedStatus.NORMAL, ReportedStatus.NORMAL
+        );
+        if (avg == null) avg = 0f;
+
+        int rounded = (int) (Math.round(avg * 10f) / 10f);
+
+        storeRepository.findById(storeId).ifPresent(s -> {
+            s.setRate(rounded);
+            storeRepository.save(s);
+        });
     }
 }

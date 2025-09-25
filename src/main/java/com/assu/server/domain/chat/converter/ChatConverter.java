@@ -57,7 +57,8 @@ public class ChatConverter {
                 .chattingRoom(room)
                 .sender(sender)
                 .receiver(receiver)
-                .message(request.message())
+                .message(request.getMessage())
+                .unreadCount(request.getUnreadCountForSender())
                 .build();
     }
 
@@ -70,6 +71,7 @@ public class ChatConverter {
                 .message(message.getMessage())
                 .sentAt(message.getCreatedAt())
                 .messageType(message.getType())
+                .unreadCountForSender(message.getUnreadCount())
                 .build();
     }
 
