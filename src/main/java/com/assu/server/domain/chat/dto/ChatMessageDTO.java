@@ -22,6 +22,9 @@ public class ChatMessageDTO {
     private String message;
     private LocalDateTime sendTime;
 
+    @JsonProperty("unreadCountForSender")
+    private Integer unreadCount;
+
     @JsonProperty("isRead")
     private boolean isRead;
 
