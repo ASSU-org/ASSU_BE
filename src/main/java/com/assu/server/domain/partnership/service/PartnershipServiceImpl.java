@@ -359,6 +359,8 @@ public class PartnershipServiceImpl implements PartnershipService {
         Paper draftPaper = PartnershipConverter.toDraftPaperEntity(admin, partner, store);
         paperRepository.save(draftPaper);
 
+        notificationService.sendPartnerProposal(partner.getId(), draftPaper.getId(), admin.getName());
+
         return PartnershipConverter.toCreateDraftResponseDTO(draftPaper);
     }
 
