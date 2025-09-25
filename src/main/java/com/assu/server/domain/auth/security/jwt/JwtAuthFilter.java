@@ -49,9 +49,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
             "/swagger-resources/**", "/webjars/**",
             // Auth (로그아웃/탈퇴/리프레시 제외)
-            "/auth/phone-verification/send",
+            "/auth/phone-verification/check-and-send",
             "/auth/phone-verification/verify",
-            "/auth/phone-verification/check",
             "/auth/email-verification/check",
             "/auth/students/signup",
             "/auth/partners/signup",
