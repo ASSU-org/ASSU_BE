@@ -10,6 +10,7 @@ import com.assu.server.domain.suggestion.entity.Suggestion;
 import com.assu.server.domain.suggestion.repository.SuggestionRepository;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.user.repository.StudentRepository;
+import com.assu.server.domain.common.entity.enums.ReportedStatus;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.exception.DatabaseException;
 import jakarta.transaction.Transactional;
@@ -46,8 +47,9 @@ public class SuggestionServiceImpl implements SuggestionService {
 
     @Override
     public List<SuggestionResponseDTO.GetSuggestionResponseDTO> getSuggestions(Long adminId) {
+        // 신고되지 않은 건의글과 신고되지 않은 학생이 작성한 건의글만 조회
         List<Suggestion> list = suggestionRepository
-                .findAllSuggestions(adminId);
+                .findAllSuggestionsWithStatus(adminId, ReportedStatus.NORMAL, ReportedStatus.NORMAL);
 
         return SuggestionConverter.toGetSuggestionDTOList(list);
     }

@@ -2,8 +2,11 @@ package com.assu.server.domain.chat.controller;
 
 import com.assu.server.domain.chat.dto.ChatRequestDTO;
 import com.assu.server.domain.chat.dto.ChatResponseDTO;
+import com.assu.server.domain.chat.dto.ChatRoomUpdateDTO;
+import com.assu.server.domain.chat.repository.MessageRepository;
 import com.assu.server.domain.chat.service.ChatService;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PresenceTracker;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,8 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final PresenceTracker presenceTracker;
+    private final MessageRepository messageRepository;
 
     @Operation(
             summary = "채팅방을 생성하는 API",
@@ -61,10 +66,33 @@ public class ChatController {
     )
     @MessageMapping("/send")
     public void handleMessage(@Payload ChatRequestDTO.ChatMessageRequestDTO request) {
-        log.info("[WS] handleMessage IN: {}", request);   // ★ 호출 여부 확인
-        ChatResponseDTO.SendMessageResponseDTO response = chatService.handleMessage(request);
-        log.info("[WS] handleMessage SAVED id={}", response.messageId()); // 저장 확인용
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.roomId(), response);
+        // 먼저 접속 여부 확인 후 unreadCount 계산
+        boolean receiverInRoom = presenceTracker.isInRoom(request.getReceiverId(), request.getRoomId());
+        int unreadForSender = receiverInRoom ? 0 : 1;
+        request.setUnreadCountForSender(unreadForSender);
+
+        ChatResponseDTO.SendMessageResponseDTO saved = chatService.handleMessage(request);
+        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.getRoomId(), saved);
+
+        if (!receiverInRoom) {
+            Long totalUnreadCount = messageRepository.countUnreadMessagesByRoomAndReceiver(
+                    request.getRoomId(),
+                    request.getReceiverId()
+            );
+
+            ChatRoomUpdateDTO updateDTO = ChatRoomUpdateDTO.builder()
+                    .roomId(request.getRoomId())
+                    .lastMessage(saved.message())
+                    .lastMessageTime(saved.sentAt())
+                    .unreadCount(totalUnreadCount)
+                    .build();
+
+            simpMessagingTemplate.convertAndSendToUser(
+                    request.getReceiverId().toString(),
+                    "/queue/updates",
+                    updateDTO
+            );
+        }
     }
 
     @Operation(

@@ -31,13 +31,15 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(// Auth (로그아웃 제외)
-                                "/auth/phone-verification/send",
+                                "/auth/phone-verification/check-and-send",
                                 "/auth/phone-verification/verify",
+                                "/auth/email-verification/check",
                                 "/auth/students/signup",
                                 "/auth/partners/signup",
                                 "/auth/admins/signup",
                                 "/auth/commons/login",
                                 "/auth/students/login",
+                                "/auth/tokens/refresh",
                                 "/auth/students/ssu-verify",
                                 "/map/place"
                         ).permitAll()

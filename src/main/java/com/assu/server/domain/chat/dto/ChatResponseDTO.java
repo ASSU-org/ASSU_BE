@@ -33,8 +33,15 @@ public class ChatResponseDTO {
         String message,
         MessageType messageType,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-        LocalDateTime sentAt
-    ) {}
+        LocalDateTime sentAt,
+        Integer unreadCountForSender
+    ) {
+        public SendMessageResponseDTO withUnreadCountForSender(Integer count) {
+            return new SendMessageResponseDTO(
+                    messageId, roomId, senderId, receiverId, message, messageType, sentAt, count
+            );
+        }
+    }
 
     // 메시지 읽음 처리
     public record ReadMessageResponseDTO(

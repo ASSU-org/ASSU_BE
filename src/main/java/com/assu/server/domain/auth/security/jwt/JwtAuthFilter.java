@@ -48,14 +48,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String[] WHITELIST = {
             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
             "/swagger-resources/**", "/webjars/**",
-            // Auth (로그아웃 제외)
-            "/auth/phone-verification/send",
+            // Auth (로그아웃/탈퇴/리프레시 제외)
+            "/auth/phone-verification/check-and-send",
             "/auth/phone-verification/verify",
+            "/auth/email-verification/check",
             "/auth/students/signup",
             "/auth/partners/signup",
             "/auth/admins/signup",
             "/auth/commons/login",
             "/auth/students/login",
+            "/auth/tokens/refresh",
             "/auth/students/ssu-verify"
     };
 

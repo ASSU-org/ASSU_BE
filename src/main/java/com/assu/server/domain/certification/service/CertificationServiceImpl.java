@@ -71,7 +71,7 @@ public class CertificationServiceImpl implements CertificationService {
 
 		sessionManager.openSession(sessionId);
 		// 세션 생성 직후 만료 시간을 5분으로 설정
-		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(100));// TODO: 나중에 5분으로 변경
+		timeoutManager.scheduleTimeout(sessionId, Duration.ofMinutes(10));// TODO: 나중에 5분으로 변경
 
 		// 세션 여는 대표자는 제일 먼저 인증
 		sessionManager.addUserToSession(sessionId, userId);

@@ -37,28 +37,29 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuthController {
 
     private final PhoneAuthService phoneAuthService;
+    private final EmailAuthService emailAuthService;
     private final SignUpService signUpService;
     private final LoginService loginService;
     private final LogoutService logoutService;
     private final SSUAuthService ssuAuthService;
     private final WithdrawalService withdrawalService;
-    private final VerificationService verificationService;
 
     @Operation(
-            summary = "휴대폰 인증번호 발송 API",
-            description = "# [v1.0 (2025-09-03)](https://clumsy-seeder-416.notion.site/2241197c19ed801bbcd9f61c3e5f5457?source=copy_link)\n" +
+            summary = "휴대폰 번호 중복가입 확인 및 인증번호 발송 API",
+            description = "# [v1.1 (2025-09-25)](https://clumsy-seeder-416.notion.site/2241197c19ed801bbcd9f61c3e5f5457?source=copy_link)\n" +
                     "- 입력한 휴대폰 번호로 1회용 인증번호(OTP)를 발송합니다.\n" +
+                    "- 중복된 전화번호가 있으면 에러를 반환합니다.\n" +
                     "- 유효시간/재요청 제한 정책은 서버 설정에 따릅니다.\n" +
                     "\n**Request Body:**\n" +
                     "  - `phoneNumber` (String, required): 인증번호를 받을 휴대폰 번호\n" +
                     "\n**Response:**\n" +
                     "  - 성공 시 200(OK)과 성공 메시지 반환"
     )
-    @PostMapping("/phone-verification/send")
-    public BaseResponse<Void> sendAuthNumber(
+    @PostMapping("/phone-verification/check-and-send")
+    public BaseResponse<Void> checkPhoneAvailabilityAndSendAuthNumber(
             @RequestBody @Valid PhoneAuthRequestDTO.PhoneAuthSendRequest request
     ) {
-        phoneAuthService.sendAuthNumber(request.getPhoneNumber());
+        phoneAuthService.checkAndSendAuthNumber(request.getPhoneNumber());
         return BaseResponse.onSuccess(SuccessStatus.SEND_AUTH_NUMBER_SUCCESS, null);
     }
 
@@ -84,22 +85,8 @@ public class AuthController {
         return BaseResponse.onSuccess(SuccessStatus.VERIFY_AUTH_NUMBER_SUCCESS, null);
     }
 
-    @Operation(summary = "전화번호 중복 체크 API", description = "# [v1.0 (2025-01-15)]\n" +
-                    "- 입력한 전화번호가 이미 가입된 사용자가 있는지 확인합니다.\n" +
-                    "- 중복된 전화번호가 있으면 에러를 반환합니다.\n" +
-                    "\n**Request Body:**\n" +
-                    "  - `phoneNumber` (String, required): 확인할 전화번호 (010XXXXXXXX 형식)\n" +
-                    "\n**Response:**\n" +
-                    "  - 성공 시 200(OK)과 사용 가능 메시지 반환\n" +
-                    "  - 중복 시 404(NOT_FOUND)와 에러 메시지 반환")
-    @PostMapping("/phone-verification/check")
-    public BaseResponse<Void> checkPhoneNumberAvailability(
-            @RequestBody @Valid VerificationRequestDTO.PhoneVerificationCheckRequest request) {
-        verificationService.checkPhoneNumberAvailability(request);
-        return BaseResponse.onSuccess(SuccessStatus._OK, null);
-    }
-
-    @Operation(summary = "이메일 중복 체크 API", description = "# [v1.0 (2025-01-15)]\n" +
+    @Operation(summary = "이메일 형식 및 중복가입 확인 API",
+            description = "# [v1.0 (2025-09-18)](https://clumsy-seeder-416.notion.site/2551197c19ed802d8f6dd373dd045f3a?source=copy_link)\n" +
                     "- 입력한 이메일이 이미 가입된 사용자가 있는지 확인합니다.\n" +
                     "- 중복된 이메일이 있으면 에러를 반환합니다.\n" +
                     "\n**Request Body:**\n" +
@@ -110,7 +97,7 @@ public class AuthController {
     @PostMapping("/email-verification/check")
     public BaseResponse<Void> checkEmailAvailability(
             @RequestBody @Valid VerificationRequestDTO.EmailVerificationCheckRequest request) {
-        verificationService.checkEmailAvailability(request);
+        emailAuthService.checkEmailAvailability(request);
         return BaseResponse.onSuccess(SuccessStatus._OK, null);
     }
 
