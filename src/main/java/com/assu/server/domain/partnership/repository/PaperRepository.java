@@ -44,9 +44,10 @@ left join fetch p.partner pt
 left join fetch p.store s
 where p.isActivated = :status
   and p.admin.id = :adminId
+  and p.partner is null
 order by p.createdAt desc
 """)
-    List<Paper> findAllSuspendedByAdminWithPartner(
+    List<Paper> findAllSuspendedByAdminWithNoPartner(
             @Param("status") ActivationStatus status,
             @Param("adminId") Long adminId
     );

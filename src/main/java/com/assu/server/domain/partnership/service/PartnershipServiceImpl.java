@@ -253,7 +253,7 @@ public class PartnershipServiceImpl implements PartnershipService {
     @Transactional
     public List<PartnershipResponseDTO.SuspendedPaperDTO> getSuspendedPapers(Long adminId) {
         List<Paper> suspendedPapers =
-                paperRepository.findAllSuspendedByAdminWithPartner(ActivationStatus.SUSPEND, adminId);
+                paperRepository.findAllSuspendedByAdminWithNoPartner(ActivationStatus.SUSPEND, adminId);
 
         return suspendedPapers.stream()
                 .map(paper -> PartnershipResponseDTO.SuspendedPaperDTO.builder()
