@@ -2,11 +2,7 @@ package com.assu.server.domain.partnership.service;
 
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
-import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.partnership.dto.PartnershipResponseDTO;
-import com.assu.server.global.util.PrincipalDetails;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -26,7 +22,7 @@ public interface PartnershipService {
     List<PartnershipResponseDTO.WritePartnershipResponseDTO> listPartnershipsForPartner(boolean all, Long adminId);
 
     // 제휴 제안서 조회
-    PartnershipResponseDTO.WritePartnershipResponseDTO getPartnership(Long partnershipId);
+    PartnershipResponseDTO.GetPartnershipDetailResponseDTO getPartnership(Long partnershipId);
     List<PartnershipResponseDTO.SuspendedPaperDTO> getSuspendedPapers(Long adminId);
 
     // 제휴 상태 업데이트
