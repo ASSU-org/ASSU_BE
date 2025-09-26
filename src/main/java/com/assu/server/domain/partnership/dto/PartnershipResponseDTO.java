@@ -128,4 +128,14 @@ public class PartnershipResponseDTO {
         private String adminName;
         private String adminAddress;
     }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class GetPartnershipDetailResponseDTO {
+        private LocalDateTime updatedAt;
+        private WritePartnershipResponseDTO responseInfo;
+    }
 }

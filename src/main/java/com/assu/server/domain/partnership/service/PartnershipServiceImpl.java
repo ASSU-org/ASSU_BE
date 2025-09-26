@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.assu.server.domain.member.entity.Member;
-import com.assu.server.domain.notification.repository.NotificationRepository;
 import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.domain.partnership.converter.PartnershipConverter;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
@@ -236,7 +235,7 @@ public class PartnershipServiceImpl implements PartnershipService {
 
     @Override
     @Transactional
-    public PartnershipResponseDTO.WritePartnershipResponseDTO getPartnership(Long partnershipId) {
+    public PartnershipResponseDTO.GetPartnershipDetailResponseDTO getPartnership(Long partnershipId) {
         Paper paper = paperRepository.findById(partnershipId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
 
@@ -246,7 +245,7 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .map(pc -> pc.getGoods() == null ? Collections.<Goods>emptyList() : pc.getGoods())
                 .toList();
 
-        return PartnershipConverter.writePartnershipResultDTO(paper, contents, goodsBatches);
+        return PartnershipConverter.getPartnershipResultDTO(paper, contents, goodsBatches);
     }
 
     @Override
