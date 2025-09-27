@@ -80,7 +80,7 @@ public class BlockServiceImpl implements BlockService {
             throw new GeneralException(ErrorStatus._BAD_REQUEST);
         }
 
-        if (blockRepository.existsByBlockerAndBlocked(blocker, blocked)) {
+        if (blockRepository.existsBlockRelationBetween(blocker, blocked)) {
             return BlockConverter.toCheckBlockDTO(blockedId, blockedName, true);
         }
         else  {
