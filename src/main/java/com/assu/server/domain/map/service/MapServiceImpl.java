@@ -73,6 +73,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(p.getLatitude())
                     .longitude(p.getLongitude())
                     .profileUrl(url)
+                    .phoneNumber(p.getMember().getPhoneNum())
                     .build();
         }).toList();
     }
@@ -100,6 +101,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(a.getLatitude())
                     .longitude(a.getLongitude())
                     .profileUrl(url)
+                    .phoneNumber(a.getMember().getPhoneNum())
                     .build();
         }).toList();
     }
@@ -160,6 +162,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(s.getLatitude())
                     .longitude(s.getLongitude())
                     .profileUrl(profileUrl)
+                    .phoneNumber(s.getPartner().getMember().getPhoneNum())
                     .build();
         }).toList();
     }
@@ -220,6 +223,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(s.getLatitude())
                     .longitude(s.getLongitude())
                     .profileUrl(url)
+                    .phoneNumber(s.getPartner().getMember().getPhoneNum())
                     .build();
         }).toList();
     }
@@ -247,6 +251,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(p.getLatitude())
                     .longitude(p.getLongitude())
                     .profileUrl(url)
+                    .phoneNumber(p.getMember().getPhoneNum())
                     .build();
         }).toList();
     }
@@ -274,6 +279,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(a.getLatitude())
                     .longitude(a.getLongitude())
                     .profileUrl(url)
+                    .phoneNumber(a.getMember().getPhoneNum())
                     .build();
         }).toList();
     }

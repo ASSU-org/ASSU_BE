@@ -24,6 +24,7 @@ public class MapResponseDTO {
         private Double latitude;
         private Double longitude;
         private String profileUrl;
+        private String phoneNumber;
     }
 
     @Getter
@@ -41,6 +42,7 @@ public class MapResponseDTO {
         private Double latitude;
         private Double longitude;
         private String profileUrl;
+        private String phoneNumber;
     }
 
     @Getter
@@ -64,6 +66,7 @@ public class MapResponseDTO {
         private Double latitude;
         private Double longitude;
         private String profileUrl;
+        private String phoneNumber;
 
     }
 

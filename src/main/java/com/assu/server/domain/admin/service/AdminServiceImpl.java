@@ -58,6 +58,7 @@ public class AdminServiceImpl implements AdminService {
                 .partnerAddress(picked.getAddress())
                 .partnerDetailAddress(picked.getDetailAddress())
                 .partnerUrl(picked.getMember().getProfileUrl())
+                .partnerPhone(picked.getMember().getPhoneNum())
                 .build();
     }
 
