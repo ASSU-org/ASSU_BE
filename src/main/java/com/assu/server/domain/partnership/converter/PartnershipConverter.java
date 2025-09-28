@@ -1,8 +1,10 @@
 package com.assu.server.domain.partnership.converter;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 
+import com.assu.server.domain.common.entity.BaseEntity;
 import com.assu.server.domain.partnership.dto.PaperContentResponseDTO;
 import com.assu.server.domain.admin.entity.Admin;
 import com.assu.server.domain.common.enums.ActivationStatus;
@@ -17,9 +19,6 @@ import com.assu.server.domain.partnership.entity.enums.OptionType;
 import com.assu.server.domain.user.entity.PartnershipUsage;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.store.entity.Store;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class PartnershipConverter {
 
@@ -295,12 +294,56 @@ public class PartnershipConverter {
 			List<PaperContent> contents,
 			List<List<Goods>> goodsBatches
 	) {
-		PartnershipResponseDTO.WritePartnershipResponseDTO responseInfo =
-				writePartnershipResultDTO(paper, contents, goodsBatches);
+		List<LocalDateTime> allTimestamps = new ArrayList<>();
+
+		if (paper.getUpdatedAt() != null) allTimestamps.add(paper.getUpdatedAt());
+		if (contents != null) {
+			contents.stream()
+					.map(BaseEntity::getUpdatedAt)
+					.filter(Objects::nonNull)
+					.forEach(allTimestamps::add);
+		}
+		if (goodsBatches != null) {
+			goodsBatches.stream()
+					.flatMap(List::stream)
+					.map(BaseEntity::getUpdatedAt)
+					.filter(Objects::nonNull)
+					.forEach(allTimestamps::add);
+		}
+
+		LocalDateTime mostRecentUpdatedAt = allTimestamps.stream()
+				.max(Comparator.naturalOrder())
+				.orElse(paper.getUpdatedAt());
+
+		List<PartnershipResponseDTO.PartnershipOptionResponseDTO> optionDTOS = new ArrayList<>();
+		if (contents != null) {
+			for (int i = 0; i < contents.size(); i++) {
+				PaperContent pc = contents.get(i);
+				List<Goods> goods = (goodsBatches != null && goodsBatches.size() > i)
+						? goodsBatches.get(i) : List.of();
+				optionDTOS.add(
+						PartnershipResponseDTO.PartnershipOptionResponseDTO.builder()
+								.optionType(pc.getOptionType())
+								.criterionType(pc.getCriterionType())
+								.people(pc.getPeople())
+								.cost(pc.getCost())
+								.category(pc.getCategory())
+								.discountRate(pc.getDiscount())
+								.goods(goodsResultDTO(goods))
+								.build()
+				);
+			}
+		}
 
 		return PartnershipResponseDTO.GetPartnershipDetailResponseDTO.builder()
-				.updatedAt(paper.getUpdatedAt()) // UpdatedAt 값 가져오기
-				.responseInfo(responseInfo)      // 상세정보 DTO 설정
+				.partnershipId(paper.getId())
+				.updatedAt(mostRecentUpdatedAt) // 가장 최근 UpdatedAt 값 가져오기
+				.partnershipPeriodStart(paper.getPartnershipPeriodStart())
+				.partnershipPeriodEnd(paper.getPartnershipPeriodEnd())
+				.adminId(paper.getAdmin()    != null ? paper.getAdmin().getId()     : null)
+				.partnerId(paper.getPartner()!= null ? paper.getPartner().getId()   : null) // 수동등록이면 null
+				.storeId(paper.getStore()    != null ? paper.getStore().getId()     : null)
+				.options(optionDTOS)
 				.build();
 	}
 }
