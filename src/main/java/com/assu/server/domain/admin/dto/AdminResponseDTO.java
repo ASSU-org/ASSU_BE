@@ -17,5 +17,6 @@ public class AdminResponseDTO {
         private String partnerDetailAddress;
         private String partnerName;
         private String partnerUrl;
+        private String partnerPhone;
     }
 }
