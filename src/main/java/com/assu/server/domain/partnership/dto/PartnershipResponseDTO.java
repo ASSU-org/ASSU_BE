@@ -26,7 +26,6 @@ public class PartnershipResponseDTO {
         private Long storeId;
         private String storeName;
         private String adminName;
-        private Boolean activated;
         private ActivationStatus isActivated;
         private List<PartnershipOptionResponseDTO> options;
     }
@@ -135,7 +134,13 @@ public class PartnershipResponseDTO {
     @AllArgsConstructor
     @Builder
     public static class GetPartnershipDetailResponseDTO {
+        private Long partnershipId;
         private LocalDateTime updatedAt;
-        private WritePartnershipResponseDTO responseInfo;
+        private LocalDate partnershipPeriodStart;
+        private LocalDate partnershipPeriodEnd;
+        private Long adminId;
+        private Long partnerId;
+        private Long storeId;
+        private List<PartnershipOptionResponseDTO> options;
     }
 }
