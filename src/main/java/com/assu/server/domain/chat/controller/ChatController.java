@@ -1,9 +1,8 @@
 package com.assu.server.domain.chat.controller;
 
-import com.assu.server.domain.chat.dto.ChatRequestDTO;
-import com.assu.server.domain.chat.dto.ChatResponseDTO;
-import com.assu.server.domain.chat.dto.ChatRoomUpdateDTO;
+import com.assu.server.domain.chat.dto.*;
 import com.assu.server.domain.chat.repository.MessageRepository;
+import com.assu.server.domain.chat.service.BlockService;
 import com.assu.server.domain.chat.service.ChatService;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PresenceTracker;
@@ -29,6 +28,7 @@ public class ChatController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final PresenceTracker presenceTracker;
     private final MessageRepository messageRepository;
+    private final BlockService blockService;
 
     @Operation(
             summary = "채팅방을 생성하는 API",
@@ -139,4 +139,64 @@ public class ChatController {
         Long memberId = pd.getMember().getId();
         return BaseResponse.onSuccess(SuccessStatus._OK, chatService.leaveChattingRoom(roomId, memberId));
     }
+
+    @Operation(
+            summary = "상대방을 차단하는 API" +
+                    "상대방을 차단합니다. 메시지를 주고받을 수 없습니다.",
+            description = "# [v1.0 (2025-09-25)]() 상대방을 차단합니다.\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @PostMapping("/block")
+    public BaseResponse<BlockResponseDTO.BlockMemberDTO> block(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @RequestBody BlockRequestDTO.BlockMemberRequestDTO request
+            ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.blockMember(memberId, request.getOpponentId()));
+    }
+
+    @Operation(
+            summary = "상대방을 차단했는지 확인하는 API" +
+                    "상대방을 차단했는지 여부를 알려줍니다.",
+            description = "# [v1.0 (2025-09-25)]() 상대방을 차단했는지 검사합니다.\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @GetMapping("/check/block/{opponentId}")
+    public BaseResponse<BlockResponseDTO.CheckBlockMemberDTO> checkBlock(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @PathVariable Long opponentId
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.checkBlock(memberId, opponentId));
+    }
+
+    @Operation(
+            summary = "상대방을 차단 해제하는 API" +
+                    "상대방을 차단해제합니다. 앞으로 다시 메시지를 주고받을 수 있습니다.",
+            description = "# [v1.0 (2025-09-25)]() 상대방을 차단 해제합니다.\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @DeleteMapping("/unblock")
+    public BaseResponse<BlockResponseDTO.BlockMemberDTO> unblock(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @RequestParam Long opponentId
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.unblockMember(memberId, opponentId));
+    }
+
+    @Operation(
+            summary = "차단한 대상을 조회합니다." +
+                    "본인이 차단한 대상을 모두 조회합니다.",
+            description = "# [v1.0 (2025-09-25)]() 차단한 대상을 조회합니다..\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @GetMapping("/blockList")
+    public BaseResponse<List<BlockResponseDTO.BlockMemberDTO>> getBlockList(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.getMyBlockList(memberId));
+    }
+
 }

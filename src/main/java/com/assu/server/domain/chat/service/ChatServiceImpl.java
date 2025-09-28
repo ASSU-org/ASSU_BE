@@ -9,6 +9,7 @@ import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import com.assu.server.domain.chat.entity.ChattingRoom;
 import com.assu.server.domain.chat.entity.Message;
+import com.assu.server.domain.chat.repository.BlockRepository;
 import com.assu.server.domain.chat.repository.ChatRepository;
 import com.assu.server.domain.chat.repository.MessageRepository;
 import com.assu.server.domain.member.entity.Member;
@@ -38,6 +39,7 @@ public class ChatServiceImpl implements ChatService {
     private final AdminRepository adminRepository;
     private final MessageRepository messageRepository;
     private final StoreRepository storeRepository;
+    private final BlockRepository blockRepository;
 
 
     @Override
@@ -95,8 +97,8 @@ public class ChatServiceImpl implements ChatService {
         log.info("saved message id={}, roomId={}, senderId={}, receiverId={}",
                 saved.getId(), room.getId(), sender.getId(), receiver.getId());
 
-        boolean exists = messageRepository.existsById(saved.getId());
-        log.info("Saved? {}", exists); // true 아니면 트랜잭션/DB 문제
+//        boolean exists = messageRepository.existsById(saved.getId());
+//        log.info("Saved? {}", exists); // true 아니면 트랜잭션/DB 문제
         return ChatConverter.toSendMessageDTO(saved);
     }
 
