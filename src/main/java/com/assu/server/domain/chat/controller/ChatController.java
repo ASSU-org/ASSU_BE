@@ -1,9 +1,11 @@
 package com.assu.server.domain.chat.controller;
 
-import com.assu.server.domain.chat.dto.ChatRequestDTO;
-import com.assu.server.domain.chat.dto.ChatResponseDTO;
+import com.assu.server.domain.chat.dto.*;
+import com.assu.server.domain.chat.repository.MessageRepository;
+import com.assu.server.domain.chat.service.BlockService;
 import com.assu.server.domain.chat.service.ChatService;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
+import com.assu.server.global.util.PresenceTracker;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,9 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final PresenceTracker presenceTracker;
+    private final MessageRepository messageRepository;
+    private final BlockService blockService;
 
     @Operation(
             summary = "채팅방을 생성하는 API",
@@ -61,10 +66,33 @@ public class ChatController {
     )
     @MessageMapping("/send")
     public void handleMessage(@Payload ChatRequestDTO.ChatMessageRequestDTO request) {
-        log.info("[WS] handleMessage IN: {}", request);   // ★ 호출 여부 확인
-        ChatResponseDTO.SendMessageResponseDTO response = chatService.handleMessage(request);
-        log.info("[WS] handleMessage SAVED id={}", response.messageId()); // 저장 확인용
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.roomId(), response);
+        // 먼저 접속 여부 확인 후 unreadCount 계산
+        boolean receiverInRoom = presenceTracker.isInRoom(request.getReceiverId(), request.getRoomId());
+        int unreadForSender = receiverInRoom ? 0 : 1;
+        request.setUnreadCountForSender(unreadForSender);
+
+        ChatResponseDTO.SendMessageResponseDTO saved = chatService.handleMessage(request);
+        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.getRoomId(), saved);
+
+        if (!receiverInRoom) {
+            Long totalUnreadCount = messageRepository.countUnreadMessagesByRoomAndReceiver(
+                    request.getRoomId(),
+                    request.getReceiverId()
+            );
+
+            ChatRoomUpdateDTO updateDTO = ChatRoomUpdateDTO.builder()
+                    .roomId(request.getRoomId())
+                    .lastMessage(saved.message())
+                    .lastMessageTime(saved.sentAt())
+                    .unreadCount(totalUnreadCount)
+                    .build();
+
+            simpMessagingTemplate.convertAndSendToUser(
+                    request.getReceiverId().toString(),
+                    "/queue/updates",
+                    updateDTO
+            );
+        }
     }
 
     @Operation(
@@ -111,4 +139,64 @@ public class ChatController {
         Long memberId = pd.getMember().getId();
         return BaseResponse.onSuccess(SuccessStatus._OK, chatService.leaveChattingRoom(roomId, memberId));
     }
+
+    @Operation(
+            summary = "상대방을 차단하는 API" +
+                    "상대방을 차단합니다. 메시지를 주고받을 수 없습니다.",
+            description = "# [v1.0 (2025-09-25)]() 상대방을 차단합니다.\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @PostMapping("/block")
+    public BaseResponse<BlockResponseDTO.BlockMemberDTO> block(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @RequestBody BlockRequestDTO.BlockMemberRequestDTO request
+            ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.blockMember(memberId, request.getOpponentId()));
+    }
+
+    @Operation(
+            summary = "상대방을 차단했는지 확인하는 API" +
+                    "상대방을 차단했는지 여부를 알려줍니다.",
+            description = "# [v1.0 (2025-09-25)]() 상대방을 차단했는지 검사합니다.\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @GetMapping("/check/block/{opponentId}")
+    public BaseResponse<BlockResponseDTO.CheckBlockMemberDTO> checkBlock(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @PathVariable Long opponentId
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.checkBlock(memberId, opponentId));
+    }
+
+    @Operation(
+            summary = "상대방을 차단 해제하는 API" +
+                    "상대방을 차단해제합니다. 앞으로 다시 메시지를 주고받을 수 있습니다.",
+            description = "# [v1.0 (2025-09-25)]() 상대방을 차단 해제합니다.\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @DeleteMapping("/unblock")
+    public BaseResponse<BlockResponseDTO.BlockMemberDTO> unblock(
+            @AuthenticationPrincipal PrincipalDetails pd,
+            @RequestParam Long opponentId
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.unblockMember(memberId, opponentId));
+    }
+
+    @Operation(
+            summary = "차단한 대상을 조회합니다." +
+                    "본인이 차단한 대상을 모두 조회합니다.",
+            description = "# [v1.0 (2025-09-25)]() 차단한 대상을 조회합니다..\n"+
+                    "- memberId: Request Body, Long\n"
+    )
+    @GetMapping("/blockList")
+    public BaseResponse<List<BlockResponseDTO.BlockMemberDTO>> getBlockList(
+            @AuthenticationPrincipal PrincipalDetails pd
+    ) {
+        Long memberId = pd.getMember().getId();
+        return BaseResponse.onSuccess(SuccessStatus._OK, blockService.getMyBlockList(memberId));
+    }
+
 }

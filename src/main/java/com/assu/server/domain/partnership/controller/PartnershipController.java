@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.notification.service.NotificationCommandService;
-import com.assu.server.domain.partnership.dto.PaperResponseDTO;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
 import com.assu.server.domain.partnership.dto.PartnershipResponseDTO;
 import com.assu.server.domain.partnership.service.PartnershipService;
-import com.assu.server.domain.store.entity.Store;
 import com.assu.server.domain.store.repository.StoreRepository;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
@@ -110,7 +108,7 @@ public class PartnershipController {
             description = "제휴 아이디를 입력하세요."
     )
     @GetMapping("/{partnershipId}")
-    public BaseResponse<PartnershipResponseDTO.WritePartnershipResponseDTO> getPartnership(
+    public BaseResponse<PartnershipResponseDTO.GetPartnershipDetailResponseDTO> getPartnership(
             @PathVariable Long partnershipId
     ) {
         return BaseResponse.onSuccess(SuccessStatus._OK, partnershipService.getPartnership(partnershipId));

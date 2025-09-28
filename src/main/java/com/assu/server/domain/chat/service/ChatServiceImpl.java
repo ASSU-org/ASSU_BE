@@ -9,6 +9,7 @@ import com.assu.server.domain.chat.dto.ChatResponseDTO;
 import com.assu.server.domain.chat.dto.ChatRoomListResultDTO;
 import com.assu.server.domain.chat.entity.ChattingRoom;
 import com.assu.server.domain.chat.entity.Message;
+import com.assu.server.domain.chat.repository.BlockRepository;
 import com.assu.server.domain.chat.repository.ChatRepository;
 import com.assu.server.domain.chat.repository.MessageRepository;
 import com.assu.server.domain.member.entity.Member;
@@ -38,6 +39,7 @@ public class ChatServiceImpl implements ChatService {
     private final AdminRepository adminRepository;
     private final MessageRepository messageRepository;
     private final StoreRepository storeRepository;
+    private final BlockRepository blockRepository;
 
 
     @Override
@@ -83,24 +85,20 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public ChatResponseDTO.SendMessageResponseDTO handleMessage(ChatRequestDTO.ChatMessageRequestDTO request) {
         // 유효성 검사
-        ChattingRoom room = chatRepository.findById(request.roomId())
+        ChattingRoom room = chatRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ROOM));
-        Member sender = memberRepository.findById(request.senderId())
+        Member sender = memberRepository.findById(request.getSenderId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
-        Member receiver = memberRepository.findById(request.receiverId())
+        Member receiver = memberRepository.findById(request.getReceiverId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_MEMBER));
 
         Message message = ChatConverter.toMessageEntity(request, room, sender, receiver);
-//        messageRepository.save(message);
-        log.info("saved message start");
         Message saved = messageRepository.saveAndFlush(message);
-        log.info("saved message middle");
         log.info("saved message id={}, roomId={}, senderId={}, receiverId={}",
                 saved.getId(), room.getId(), sender.getId(), receiver.getId());
 
-        log.info("saved message end");
-        boolean exists = messageRepository.existsById(saved.getId());
-        log.info("Saved? {}", exists); // true 아니면 트랜잭션/DB 문제
+//        boolean exists = messageRepository.existsById(saved.getId());
+//        log.info("Saved? {}", exists); // true 아니면 트랜잭션/DB 문제
         return ChatConverter.toSendMessageDTO(saved);
     }
 
