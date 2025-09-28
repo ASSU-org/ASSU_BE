@@ -1,5 +1,6 @@
 package com.assu.server.domain.auth.service;
 
+import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.global.apiPayload.code.status.ErrorStatus;
 import com.assu.server.global.util.RandomNumberUtil;
 import com.assu.server.domain.auth.exception.CustomAuthException;
@@ -18,11 +19,18 @@ public class PhoneAuthServiceImpl implements PhoneAuthService {
 
     private final StringRedisTemplate redisTemplate;
     private final AligoSmsClient aligoSmsClient;
+    private final MemberRepository memberRepository;
 
     private static final Duration AUTH_CODE_TTL = Duration.ofMinutes(5); // 인증번호 5분 유효
 
     @Override
-    public void sendAuthNumber(String phoneNumber) {
+    public void checkAndSendAuthNumber(String phoneNumber) {
+        boolean exists = memberRepository.existsByPhoneNum(phoneNumber);
+
+        if (exists) {
+            throw new CustomAuthException(ErrorStatus.EXISTED_PHONE);
+        }
+
         String authNumber = RandomNumberUtil.generateSixDigit();
         redisTemplate.opsForValue().set(phoneNumber, authNumber, AUTH_CODE_TTL);
 

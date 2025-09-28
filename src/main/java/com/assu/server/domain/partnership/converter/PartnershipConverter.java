@@ -18,11 +18,8 @@ import com.assu.server.domain.user.entity.PartnershipUsage;
 import com.assu.server.domain.user.entity.Student;
 import com.assu.server.domain.store.entity.Store;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class PartnershipConverter {
 
@@ -291,5 +288,19 @@ public class PartnershipConverter {
 		paper.setPartnershipPeriodStart(dto.getPartnershipPeriodStart());
 		paper.setPartnershipPeriodEnd(dto.getPartnershipPeriodEnd());
 		paper.setIsActivated(ActivationStatus.SUSPEND);
+	}
+
+	public static PartnershipResponseDTO.GetPartnershipDetailResponseDTO getPartnershipResultDTO(
+			Paper paper,
+			List<PaperContent> contents,
+			List<List<Goods>> goodsBatches
+	) {
+		PartnershipResponseDTO.WritePartnershipResponseDTO responseInfo =
+				writePartnershipResultDTO(paper, contents, goodsBatches);
+
+		return PartnershipResponseDTO.GetPartnershipDetailResponseDTO.builder()
+				.updatedAt(paper.getUpdatedAt()) // UpdatedAt 값 가져오기
+				.responseInfo(responseInfo)      // 상세정보 DTO 설정
+				.build();
 	}
 }

@@ -8,7 +8,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.assu.server.domain.member.entity.Member;
-import com.assu.server.domain.notification.repository.NotificationRepository;
 import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.domain.partnership.converter.PartnershipConverter;
 import com.assu.server.domain.partnership.dto.PartnershipRequestDTO;
@@ -236,7 +235,7 @@ public class PartnershipServiceImpl implements PartnershipService {
 
     @Override
     @Transactional
-    public PartnershipResponseDTO.WritePartnershipResponseDTO getPartnership(Long partnershipId) {
+    public PartnershipResponseDTO.GetPartnershipDetailResponseDTO getPartnership(Long partnershipId) {
         Paper paper = paperRepository.findById(partnershipId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
 
@@ -246,14 +245,14 @@ public class PartnershipServiceImpl implements PartnershipService {
                 .map(pc -> pc.getGoods() == null ? Collections.<Goods>emptyList() : pc.getGoods())
                 .toList();
 
-        return PartnershipConverter.writePartnershipResultDTO(paper, contents, goodsBatches);
+        return PartnershipConverter.getPartnershipResultDTO(paper, contents, goodsBatches);
     }
 
     @Override
     @Transactional
     public List<PartnershipResponseDTO.SuspendedPaperDTO> getSuspendedPapers(Long adminId) {
         List<Paper> suspendedPapers =
-                paperRepository.findAllSuspendedByAdminWithPartner(ActivationStatus.SUSPEND, adminId);
+                paperRepository.findAllSuspendedByAdminWithNoPartner(ActivationStatus.SUSPEND, adminId);
 
         return suspendedPapers.stream()
                 .map(paper -> PartnershipResponseDTO.SuspendedPaperDTO.builder()
@@ -396,6 +395,8 @@ public class PartnershipServiceImpl implements PartnershipService {
         Paper draftPaper = PartnershipConverter.toDraftPaperEntity(admin, partner, store);
         paperRepository.save(draftPaper);
 
+        notificationService.sendPartnerProposal(partner.getId(), draftPaper.getId(), admin.getName());
+
         return PartnershipConverter.toCreateDraftResponseDTO(draftPaper);
     }
 
@@ -405,7 +406,7 @@ public class PartnershipServiceImpl implements PartnershipService {
         Paper paper = paperRepository.findById(paperId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PAPER));
 
-        // 1. paperContent + goods 삭제
+        // 0. paperContent + goods 삭제
         List<PaperContent> contentsToDelete = paperContentRepository.findByPaperId(paperId);
         if (contentsToDelete != null && !contentsToDelete.isEmpty()) {
             List<Long> contentIds = contentsToDelete.stream()
@@ -416,14 +417,25 @@ public class PartnershipServiceImpl implements PartnershipService {
             paperContentRepository.deleteAll(contentsToDelete);
         }
 
+        // 1. store 참조를 미리 잡아두기 (paper 삭제 후 사용)
+        Store store = paper.getStore();
+        boolean isTempStore = (store != null && paper.getPartner() == null);
+
         // 2. paper 삭제
         paperRepository.delete(paper);
 
-        // 3. 임시 store 삭제 (partner가 null인 경우만)
-        Store store = paper.getStore();
-        if (store != null && paper.getPartner() == null) {
-            storeRepository.delete(store);
+        // 3) 임시 store 삭제 (재사용 중이면 보존)
+        if (isTempStore) {
+            Long storeId = store.getId();
+
+            // 남은 paper 참조 수
+            long remainingPaperRefs = paperRepository.countByStore_Id(storeId);
+
+            if (remainingPaperRefs == 0) {
+                storeRepository.delete(store);
+            }
         }
+
     }
 
     @Override
