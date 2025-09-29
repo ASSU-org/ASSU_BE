@@ -445,7 +445,7 @@ public class PartnershipServiceImpl implements PartnershipService {
         Partner partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
 
-        List<ActivationStatus> targetStatuses = List.of(ActivationStatus.ACTIVE, ActivationStatus.SUSPEND);
+        List<ActivationStatus> targetStatuses = List.of(ActivationStatus.ACTIVE, ActivationStatus.SUSPEND, ActivationStatus.BLANK);
         boolean isPartnered = paperRepository.existsByAdmin_IdAndPartner_IdAndIsActivatedIn(adminId, partnerId, targetStatuses);
 
         Long paperId = null;
