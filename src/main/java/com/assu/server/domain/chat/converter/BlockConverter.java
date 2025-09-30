@@ -38,6 +38,7 @@ public class BlockConverter {
         return BlockResponseDTO.BlockMemberDTO.builder()
                 .memberId(blockedMember.getId())
                 .name(blockedName) // 또는 getNickname() 등 실제 필드명 사용
+                .blockDate(block.getCreatedAt())
                 .build();
     }
 
