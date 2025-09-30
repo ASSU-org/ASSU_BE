@@ -19,4 +19,5 @@ public class ChatRoomListResultDTO {
     private Long opponentId;
     private String opponentName;
     private String opponentProfileImage;
+    private String phoneNumber;
 }
