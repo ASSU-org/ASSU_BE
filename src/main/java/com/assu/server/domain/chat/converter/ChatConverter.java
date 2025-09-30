@@ -26,6 +26,7 @@ public class ChatConverter {
                 .opponentId(request.getOpponentId())
                 .opponentName(request.getOpponentName())
                 .opponentProfileImage(request.getOpponentProfileImage())
+                .phoneNumber(request.getPhoneNumber())
                 .build();
     }
 
