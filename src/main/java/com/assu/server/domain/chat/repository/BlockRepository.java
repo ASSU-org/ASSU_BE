@@ -19,7 +19,8 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
     // BlockRepository.java
     @Query("SELECT COUNT(b) > 0 FROM Block b " +
             "WHERE (b.blocker = :user1 AND b.blocked = :user2) " +
-            "OR (b.blocker = :user2 AND b.blocked = :user1)")
+            "OR (b.blocker = :user2 AND b.blocked = :user1)" +
+            "ORDER BY b.createdAt DESC")
     boolean existsBlockRelationBetween(@Param("user1") Member user1, @Param("user2") Member user2);
 
 }
