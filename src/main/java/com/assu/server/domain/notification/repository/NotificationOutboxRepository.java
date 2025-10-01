@@ -27,5 +27,16 @@ public interface NotificationOutboxRepository extends JpaRepository<Notification
 """)
     int markSentById(@Param("id") Long id);
 
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @org.springframework.data.jpa.repository.Query("""
+        update NotificationOutbox o
+           set o.status = com.assu.server.domain.notification.entity.NotificationOutbox.Status.FAILED
+         where o.id = :id
+           and o.status <> com.assu.server.domain.notification.entity.NotificationOutbox.Status.FAILED
+        """)
+    int markFailedById(@org.springframework.data.repository.query.Param("id") Long id);
+
+    boolean existsByIdAndStatus(Long id, NotificationOutbox.Status status);
+
     List<NotificationOutbox> findTop50ByStatusOrderByIdAsc(NotificationOutbox.Status status);
 }
