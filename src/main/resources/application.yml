@@ -19,14 +19,14 @@ spring:
         highlight_sql : true
   lifecycle:
     timeout-per-shutdown-phase: 30s
-    rabbitmq:
-      listener:
-        simple:
-          acknowledge-mode: manual
-          prefetch: 20
-          concurrency: 1
-          max-concurrency: 4
-          default-requeue-rejected: false
+  rabbitmq:
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 20
+        concurrency: 1
+        max-concurrency: 4
+        default-requeue-rejected: false
 
 logging:
   level:

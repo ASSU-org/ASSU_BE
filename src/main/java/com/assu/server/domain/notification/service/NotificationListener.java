@@ -23,28 +23,19 @@ public class NotificationListener {
     private final FcmClient fcmClient;
     private final OutboxStatusService outboxStatus; // ← 주입
 
-    @RabbitListener(queues = AmqpConfig.QUEUE)
+    @RabbitListener(queues = AmqpConfig.QUEUE, ackMode = "MANUAL")
     public void onMessage(@Payload NotificationMessageDTO payload,
                           Channel ch,
                           @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws Exception {
         try {
-            fcmClient.sendToMemberId(
-                    payload.getReceiverId(),
-                    payload.getTitle(),
-                    payload.getBody(),
-                    payload.getData()
-            );
-            ch.basicAck(tag, false);
-
-            // idempotencyKey = outboxId 로 보냈으니 그대로 사용
+            fcmClient.sendToMemberId(payload.getReceiverId(), payload.getTitle(), payload.getBody(), payload.getData());
             Long outboxId = Long.valueOf(payload.getIdempotencyKey());
-            outboxStatus.markSent(outboxId); // 새 트랜잭션에서 SENT 전이
+            outboxStatus.markSent(outboxId);   // ★ ACK 전에 완료 표시
+
+            ch.basicAck(tag, false);           // ★ 맨 마지막에 단 한 번만 ACK
         } catch (RuntimeException e) {
-            if (isTransient(e)) {
-                ch.basicNack(tag, false, true);
-            } else {
-                ch.basicNack(tag, false, false);
-            }
+            if (isTransient(e)) ch.basicNack(tag, false, true);
+            else                ch.basicNack(tag, false, false);
         } catch (Exception e) {
             ch.basicNack(tag, false, false);
         }
@@ -62,4 +53,3 @@ public class NotificationListener {
         return false;
     }
 }
-
