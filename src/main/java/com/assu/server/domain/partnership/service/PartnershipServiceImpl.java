@@ -87,6 +87,12 @@ public class PartnershipServiceImpl implements PartnershipService {
 
         // 5. 생성된 모든 Usage 기록을 한 번에 저장
         partnershipUsageRepository.saveAll(usages);
+        Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
+            () -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
+        );
+        Partner partner = store.getPartner();
+        Long partnerId = partner.getId();
+        notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
 
         // @Transactional 환경에서는 studentsToUpdate의 변경 사항(스탬프)이 자동으로 DB에 반영됩니다.
     }
