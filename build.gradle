@@ -43,7 +43,7 @@ dependencies {
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
 
 	// webflux; webclient
-	implementation 'org.springframework.boot:spring-boot-starter-webflux:3.4.5'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
 	// batch
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
@@ -97,7 +97,7 @@ dependencies {
 
 	// fcm
 	implementation 'com.squareup.okhttp3:okhttp:4.10.0'
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	//implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.google.auth:google-auth-library-oauth2-http:1.18.0'
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
 

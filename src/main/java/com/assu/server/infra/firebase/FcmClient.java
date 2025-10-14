@@ -50,7 +50,6 @@ public class FcmClient {
         String deeplink       = data != null ? data.getOrDefault("deeplink", "") : "";
         String notificationId = data != null ? data.getOrDefault("notificationId", "") : "";
 
-        // 3) 멀티캐스트 메시지 구성 (data-only + HIGH)
         com.google.firebase.messaging.MulticastMessage msg =
                 com.google.firebase.messaging.MulticastMessage.builder()
                         .addAllTokens(tokens)
