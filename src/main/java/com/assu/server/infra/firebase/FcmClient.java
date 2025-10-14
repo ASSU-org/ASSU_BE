@@ -50,28 +50,19 @@ public class FcmClient {
         String deeplink       = data != null ? data.getOrDefault("deeplink", "") : "";
         String notificationId = data != null ? data.getOrDefault("notificationId", "") : "";
 
-        // 3) 멀티캐스트 메시지 구성 (data-only + HIGH)
-        MulticastMessage msg = MulticastMessage.builder()
-                .addAllTokens(tokens)
-                .setAndroidConfig(AndroidConfig.builder()
-                        .setPriority(AndroidConfig.Priority.HIGH)
-                        // 채널/사운드 지정하면 더 확실
-                        .setNotification(AndroidNotification.builder()
-                                .setChannelId("assu_default") // 앱에서 만든 채널 ID와 일치
-                                .setSound("default")
+        com.google.firebase.messaging.MulticastMessage msg =
+                com.google.firebase.messaging.MulticastMessage.builder()
+                        .addAllTokens(tokens)
+                        .setAndroidConfig(AndroidConfig.builder()
+                                .setPriority(AndroidConfig.Priority.HIGH)
                                 .build())
-                        .build())
-                // ★ 시스템이 띄우는 notification payload 추가
-                .setNotification(Notification.builder()
-                        .setTitle(_title)
-                        .setBody(_body)
-                        .build())
-                // 기존 비즈니스 데이터는 그대로 유지
-                .putData("type",  type)
-                .putData("refId", refId)
-                .putData("deeplink", deeplink)
-                .putData("notificationId", notificationId)
-                .build();
+                        .putData("title", _title)
+                        .putData("body",  _body)
+                        .putData("type",  type)
+                        .putData("refId", refId)
+                        .putData("deeplink", deeplink)
+                        .putData("notificationId", notificationId)
+                        .build();
 
         try {
             ApiFuture<BatchResponse> future = messaging.sendEachForMulticastAsync(msg);

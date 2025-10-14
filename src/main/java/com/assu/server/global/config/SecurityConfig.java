@@ -41,7 +41,8 @@ public class SecurityConfig {
                                 "/auth/students/login",
                                 "/auth/tokens/refresh",
                                 "/auth/students/ssu-verify",
-                                "/map/place"
+                                "/map/place",
+                                "/member/inquiries/{inquiry-id}/answer"
                         ).permitAll()
                     .requestMatchers("/ws/**").permitAll()
                         // 나머지는 인증 필요
