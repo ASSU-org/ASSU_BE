@@ -10,6 +10,12 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(
+        name = "device_token",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_token_member", columnNames = {"token", "member_id"})
+        }
+)
 public class DeviceToken extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +24,7 @@ public class DeviceToken extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name="member_id", nullable=false)
     private Member member;
 
-    @Column(nullable=false, length=200, unique=true)
+    @Column(nullable=false, length=200)
     private String token;
 
     @Setter
