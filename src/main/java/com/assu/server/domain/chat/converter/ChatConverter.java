@@ -49,8 +49,17 @@ public class ChatConverter {
                 .roomId(room.getId())
                 .adminViewName(room.getPartner().getName())
                 .partnerViewName(room.getAdmin().getName())
+                .isNew(true)
                 .build();
+    }
 
+    public static ChatResponseDTO.CreateChatRoomResponseDTO toEnterChatRoomDTO(ChattingRoom room) {
+        return ChatResponseDTO.CreateChatRoomResponseDTO.builder()
+                .roomId(room.getId())
+                .adminViewName(room.getPartner().getName())
+                .partnerViewName(room.getAdmin().getName())
+                .isNew(false)
+                .build();
     }
 
     public static Message toMessageEntity(ChatRequestDTO.ChatMessageRequestDTO request, ChattingRoom room, Member sender, Member receiver) {

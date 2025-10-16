@@ -21,6 +21,7 @@ public class ChatResponseDTO {
         private Long roomId;
         private String adminViewName;
         private String partnerViewName;
+        private Boolean isNew;
     }
 
     // 메시지 전송
