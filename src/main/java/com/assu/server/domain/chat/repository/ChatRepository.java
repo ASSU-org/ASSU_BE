@@ -5,6 +5,7 @@ import com.assu.server.domain.chat.entity.ChattingRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 
 public interface ChatRepository extends JpaRepository<ChattingRoom, Long> {
@@ -68,4 +69,24 @@ public interface ChatRepository extends JpaRepository<ChattingRoom, Long> {
     """)
     List<ChatRoomListResultDTO> findChattingRoomsByMemberId(@Param("memberId") Long memberId);
 
+    @Query("""
+        SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END
+        FROM ChattingRoom c
+        WHERE c.admin.id = :adminId AND c.partner.id = :partnerId
+    """)
+    Boolean checkChattingRoomByAdminIdAndPartnerId(
+            @Param("adminId") Long adminId,
+            @Param("partnerId") Long partnerId
+    );
+
+
+    @Query("""
+        SELECT c
+        FROM ChattingRoom c
+        WHERE c.admin.id = :adminId AND c.partner.id = :partnerId
+    """)
+    ChattingRoom findChattingRoomByAdminIdAndPartnerId(
+            @Param("adminId") Long adminId,
+            @Param("partnerId")Long partnerId
+    );
 }

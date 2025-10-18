@@ -58,20 +58,14 @@ public class ProfileImageServiceImpl implements ProfileImageService{
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomAuthException(ErrorStatus.NO_SUCH_MEMBER));
 
-        String keyOrUrl = member.getProfileUrl();
-        if (keyOrUrl == null || keyOrUrl.isBlank()) {
+        String key = member.getProfileUrl(); // DB에 저장된 경로 (ex. members/17/profile/aaa.png)
+
+        if (key == null || key.isBlank()) {
             throw new CustomAuthException(ErrorStatus.PROFILE_IMAGE_NOT_FOUND);
         }
 
-        if (keyOrUrl.startsWith("http://") || keyOrUrl.startsWith("https://")) {
-            return keyOrUrl;
-        }
-
-        String presigned = amazonS3Manager.generatePresignedUrl(keyOrUrl);
-        if (presigned == null) {
-            throw new CustomAuthException(ErrorStatus.PROFILE_IMAGE_NOT_FOUND);
-        }
-        return presigned;
+        // S3 주소 리턴
+        return "https://assu-bucket.s3.ap-northeast-2.amazonaws.com/" + key;
     }
 }
 

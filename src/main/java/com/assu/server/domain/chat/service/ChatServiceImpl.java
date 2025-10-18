@@ -67,18 +67,25 @@ public class ChatServiceImpl implements ChatService {
             throw new DatabaseException(ErrorStatus.NO_SUCH_STORE_WITH_THAT_PARTNER);
         }
 
-        ChattingRoom room = ChatConverter.toCreateChattingRoom(admin, partner);
+        boolean isExist = chatRepository.checkChattingRoomByAdminIdAndPartnerId(admin.getId(), partner.getId());
 
-        room.updateStatus(ActivationStatus.ACTIVE);
+        if(!isExist) {
+            ChattingRoom room = ChatConverter.toCreateChattingRoom(admin, partner);
 
-        room.updateMemberCount(2);
+            room.updateStatus(ActivationStatus.ACTIVE);
 
-        room.updateName(
-                partner.getName(),
-                admin.getName()
-        );
-        ChattingRoom savedRoom = chatRepository.save(room);
-        return ChatConverter.toCreateChatRoomIdDTO(savedRoom);
+            room.updateMemberCount(2);
+
+            room.updateName(
+                    partner.getName(),
+                    admin.getName()
+            );
+            ChattingRoom savedRoom = chatRepository.save(room);
+            return ChatConverter.toCreateChatRoomIdDTO(savedRoom);
+        } else {
+            ChattingRoom existChatRoom = chatRepository.findChattingRoomByAdminIdAndPartnerId(admin.getId(), partner.getId());
+            return ChatConverter.toEnterChatRoomDTO(existChatRoom);
+        }
     }
 
     @Override
