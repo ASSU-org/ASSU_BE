@@ -29,11 +29,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     );
 
     @Query("""
-                SELECT r
-                FROM Review r
-                WHERE r.student.id = :memberId
-                ORDER BY r.createdAt DESC
-            """)
+            SELECT r
+            FROM Review r
+            WHERE r.student.id = :memberId
+        """)
     Page<Review> findByMemberId(@Param("memberId") Long memberId, Pageable pageable);
 
     @Query("""
