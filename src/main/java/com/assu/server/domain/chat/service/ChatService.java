@@ -12,4 +12,5 @@ public interface ChatService {
     ChatResponseDTO.ReadMessageResponseDTO readMessage(Long roomId, Long memberId);
     ChatResponseDTO.ChatHistoryResponseDTO readHistory(Long roomId, Long memberId);
     ChatResponseDTO.LeaveChattingRoomResponseDTO leaveChattingRoom(Long roomId, Long memberId);
+    ChatResponseDTO.SendMessageResponseDTO sendGuideMessage(ChatRequestDTO.ChatMessageRequestDTO request);
 }
