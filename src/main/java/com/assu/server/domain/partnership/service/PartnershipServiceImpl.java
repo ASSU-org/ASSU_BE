@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
+import com.assu.server.domain.chat.dto.ChatRequestDTO;
+import com.assu.server.domain.chat.entity.ChattingRoom;
+import com.assu.server.domain.chat.repository.ChatRepository;
+import com.assu.server.domain.chat.service.ChatService;
 import org.springframework.stereotype.Service;
 
 import com.assu.server.domain.member.entity.Member;
@@ -54,6 +57,8 @@ public class PartnershipServiceImpl implements PartnershipService {
 	private final StudentRepository studentRepository;
     private final PaperContentRepository contentRepository;
     private final NotificationCommandService notificationService;
+    private final ChatService chatService;
+    private final ChatRepository chatRepository;
 
 
     @Override
@@ -402,6 +407,20 @@ public class PartnershipServiceImpl implements PartnershipService {
         paperRepository.save(draftPaper);
 
         notificationService.sendPartnerProposal(partner.getId(), draftPaper.getId(), admin.getName());
+
+        ChattingRoom chattingRoom = chatRepository.findChattingRoomByAdminIdAndPartnerId(admin.getId(), partner.getId());
+
+        String guideMessage = admin.getName() + "님이 제휴 제안서 초안을 전송했어요! 확인 후 제휴 제안서를 작성해 주세요";
+        ChatRequestDTO.ChatMessageRequestDTO guideMessageRequest = new ChatRequestDTO.ChatMessageRequestDTO(
+                chattingRoom.getId(),
+                admin.getId(),
+                partner.getId(),
+                guideMessage,
+                0
+        );
+
+        // 5. 완성된 DTO를 사용해서 안내 메시지를 전송합니다.
+        chatService.sendGuideMessage(guideMessageRequest);
 
         return PartnershipConverter.toCreateDraftResponseDTO(draftPaper);
     }

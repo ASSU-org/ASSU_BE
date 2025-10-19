@@ -1,6 +1,7 @@
 package com.assu.server.domain.chat.converter;
 
 import com.assu.server.domain.admin.entity.Admin;
+import com.assu.server.domain.chat.entity.enums.MessageType;
 import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.chat.dto.ChatMessageDTO;
 import com.assu.server.domain.chat.dto.ChatRequestDTO;
@@ -69,6 +70,18 @@ public class ChatConverter {
                 .receiver(receiver)
                 .message(request.getMessage())
                 .unreadCount(request.getUnreadCountForSender())
+                .type(MessageType.TEXT)
+                .build();
+    }
+
+    public static Message toGuideMessageEntity(ChatRequestDTO.ChatMessageRequestDTO request, ChattingRoom room, Member sender, Member receiver) {
+        return Message.builder()
+                .chattingRoom(room)
+                .sender(sender)
+                .receiver(receiver)
+                .message(request.getMessage())
+                .unreadCount(0)
+                .type(MessageType.GUIDE)
                 .build();
     }
 
