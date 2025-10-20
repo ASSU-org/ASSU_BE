@@ -1,5 +1,6 @@
 package com.assu.server.domain.chat.dto;
 
+import com.assu.server.domain.chat.entity.enums.MessageType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -30,4 +31,6 @@ public class ChatMessageDTO {
 
     @JsonProperty("isMyMessage")
     private boolean isMyMessage;
+
+    private MessageType messageType;
 }
