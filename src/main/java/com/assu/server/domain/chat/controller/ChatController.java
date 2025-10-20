@@ -4,6 +4,10 @@ import com.assu.server.domain.chat.dto.*;
 import com.assu.server.domain.chat.repository.MessageRepository;
 import com.assu.server.domain.chat.service.BlockService;
 import com.assu.server.domain.chat.service.ChatService;
+import com.assu.server.domain.common.enums.UserRole;
+import com.assu.server.domain.member.entity.Member;
+import com.assu.server.domain.member.repository.MemberRepository;
+import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PresenceTracker;
 import com.assu.server.global.util.PrincipalDetails;
@@ -28,7 +32,9 @@ public class ChatController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final PresenceTracker presenceTracker;
     private final MessageRepository messageRepository;
+    private final MemberRepository memberRepository;
     private final BlockService blockService;
+    private final NotificationCommandService notificationCommandService;
 
     @Operation(
             summary = "채팅방을 생성하는 API",
@@ -92,6 +98,15 @@ public class ChatController {
                     "/queue/updates",
                     updateDTO
             );
+            Member sender = memberRepository.findById(request.getSenderId()).orElse(null);
+            String senderName = "";
+            if (sender.getRole()== UserRole.ADMIN) {
+                senderName = sender.getAdminProfile().getName();
+            } else {
+                senderName = sender.getPartnerProfile().getName();
+            }
+
+            notificationCommandService.sendChat(request.getReceiverId(), request.getRoomId(), senderName, request.getMessage());
         }
     }
 
