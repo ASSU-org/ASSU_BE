@@ -293,6 +293,37 @@ public class PartnershipServiceImpl implements PartnershipService {
 
         paper.setIsActivated(next);
 
+        Long adminId = paper.getAdmin().getId();
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_ADMIN));
+        Long partnerId = paper.getPartner().getId();
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_SUCH_PARTNER));
+        ChattingRoom chattingRoom = chatRepository.findChattingRoomByAdminIdAndPartnerId(admin.getId(), partner.getId());
+
+        if (next.equals(ActivationStatus.SUSPEND)) {
+            String guideMessage = partner.getName() + "님이 제휴 제안서를 전송했어요!\n내용을 확인 후 동의해 주세요";
+            ChatRequestDTO.ChatMessageRequestDTO guideMessageRequest = new ChatRequestDTO.ChatMessageRequestDTO(
+                    chattingRoom.getId(),
+                    partnerId,
+                    adminId,
+                    guideMessage,
+                    0
+            );
+            chatService.sendGuideMessage(guideMessageRequest);
+
+        } else if (next.equals(ActivationStatus.ACTIVE)) {
+            String guideMessage = "축하드립니다!\n" +admin.getName() + "님이 동의했습니다! 제휴 계약서를 다시한번 확인해 보세요!";
+            ChatRequestDTO.ChatMessageRequestDTO guideMessageRequest = new ChatRequestDTO.ChatMessageRequestDTO(
+                    chattingRoom.getId(),
+                    adminId,
+                    partnerId,
+                    guideMessage,
+                    0
+            );
+            chatService.sendGuideMessage(guideMessageRequest);
+        }
+
         return PartnershipResponseDTO.UpdateResponseDTO.builder()
                 .partnershipId(paper.getId())
                 .prevStatus(prev == null ? null : prev.name())
