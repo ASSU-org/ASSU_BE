@@ -37,7 +37,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             m.isRead,
             CASE WHEN m.sender.id = :memberId THEN true
             ELSE false
-            END
+            END,
+            m.type
         )
         FROM Message m
         WHERE m.chattingRoom.id = :roomId
