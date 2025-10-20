@@ -313,7 +313,7 @@ public class PartnershipServiceImpl implements PartnershipService {
             chatService.sendGuideMessage(guideMessageRequest);
 
         } else if (next.equals(ActivationStatus.ACTIVE)) {
-            String guideMessage = "축하드립니다!\n" +admin.getName() + "님이 동의했습니다! 제휴 계약서를 다시한번 확인해 보세요!";
+            String guideMessage = "축하드립니다!\n" + "제휴 계약이 성립되었습니다. 제휴 계약서를 다시한번 확인해 보세요!";
             ChatRequestDTO.ChatMessageRequestDTO guideMessageRequest = new ChatRequestDTO.ChatMessageRequestDTO(
                     chattingRoom.getId(),
                     adminId,
