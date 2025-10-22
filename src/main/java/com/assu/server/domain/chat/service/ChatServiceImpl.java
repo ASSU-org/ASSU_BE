@@ -128,7 +128,6 @@ public class ChatServiceImpl implements ChatService {
 
         ChatResponseDTO.SendMessageResponseDTO responseDTO = ChatConverter.toSendMessageDTO(saved);
         simpMessagingTemplate.convertAndSend("/sub/chat/" + request.getRoomId(), responseDTO);
-        notificationCommandService.sendChat(receiver.getId(), room.getId(), sender.getAdminProfile().getName(), "제안서 초안이 도착했습니다. 확인해 주세요");
 
         return responseDTO;
     }

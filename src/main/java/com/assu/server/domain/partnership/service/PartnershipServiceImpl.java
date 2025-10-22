@@ -311,6 +311,7 @@ public class PartnershipServiceImpl implements PartnershipService {
                     0
             );
             chatService.sendGuideMessage(guideMessageRequest);
+            notificationService.sendChat(adminId, chattingRoom.getId(), partner.getName(), guideMessage);
 
         } else if (next.equals(ActivationStatus.ACTIVE)) {
             String guideMessage = "축하드립니다!\n" + "제휴 계약이 성립되었습니다. 제휴 계약서를 다시한번 확인해 보세요!";
@@ -322,6 +323,7 @@ public class PartnershipServiceImpl implements PartnershipService {
                     0
             );
             chatService.sendGuideMessage(guideMessageRequest);
+            notificationService.sendChat(partnerId, chattingRoom.getId(), admin.getName(), guideMessage);
         }
 
         return PartnershipResponseDTO.UpdateResponseDTO.builder()
@@ -452,6 +454,7 @@ public class PartnershipServiceImpl implements PartnershipService {
 
         // 5. 완성된 DTO를 사용해서 안내 메시지를 전송합니다.
         chatService.sendGuideMessage(guideMessageRequest);
+        notificationService.sendChat(partner.getId(), chattingRoom.getId(), admin.getName(), guideMessage);
 
         return PartnershipConverter.toCreateDraftResponseDTO(draftPaper);
     }

@@ -12,6 +12,7 @@ import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PresenceTracker;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -70,6 +71,7 @@ public class ChatController {
                     "- receiverId: Request Body, Long\n" +
                     "- message: Request Body, String\n"
     )
+    @Transactional
     @MessageMapping("/send")
     public void handleMessage(@Payload ChatRequestDTO.ChatMessageRequestDTO request) {
         // 먼저 접속 여부 확인 후 unreadCount 계산
@@ -99,14 +101,16 @@ public class ChatController {
                     updateDTO
             );
             Member sender = memberRepository.findById(request.getSenderId()).orElse(null);
-            String senderName = "";
+            String senderName;
             if (sender.getRole()== UserRole.ADMIN) {
                 senderName = sender.getAdminProfile().getName();
             } else {
                 senderName = sender.getPartnerProfile().getName();
             }
 
+            log.info(">>>>>>>>메시지 전송은 될걸");
             notificationCommandService.sendChat(request.getReceiverId(), request.getRoomId(), senderName, request.getMessage());
+            log.info(">>>>>>>>알림이 가나");
         }
     }
 
