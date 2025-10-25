@@ -4,15 +4,12 @@ import com.assu.server.domain.chat.dto.*;
 import com.assu.server.domain.chat.repository.MessageRepository;
 import com.assu.server.domain.chat.service.BlockService;
 import com.assu.server.domain.chat.service.ChatService;
-import com.assu.server.domain.common.enums.UserRole;
-import com.assu.server.domain.member.entity.Member;
 import com.assu.server.domain.member.repository.MemberRepository;
 import com.assu.server.domain.notification.service.NotificationCommandService;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import com.assu.server.global.util.PresenceTracker;
 import com.assu.server.global.util.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -31,11 +28,11 @@ import java.util.List;
 public class ChatController {
     private final ChatService chatService;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final PresenceTracker presenceTracker;
-    private final MessageRepository messageRepository;
-    private final MemberRepository memberRepository;
+//    private final PresenceTracker presenceTracker;
+//    private final MessageRepository messageRepository;
+//    private final MemberRepository memberRepository;
     private final BlockService blockService;
-    private final NotificationCommandService notificationCommandService;
+//    private final NotificationCommandService notificationCommandService;
 
     @Operation(
             summary = "채팅방을 생성하는 API",
@@ -71,48 +68,67 @@ public class ChatController {
                     "- receiverId: Request Body, Long\n" +
                     "- message: Request Body, String\n"
     )
-    @Transactional
     @MessageMapping("/send")
     public void handleMessage(@Payload ChatRequestDTO.ChatMessageRequestDTO request) {
-        // 먼저 접속 여부 확인 후 unreadCount 계산
-        boolean receiverInRoom = presenceTracker.isInRoom(request.getReceiverId(), request.getRoomId());
-        int unreadForSender = receiverInRoom ? 0 : 1;
-        request.setUnreadCountForSender(unreadForSender);
 
-        ChatResponseDTO.SendMessageResponseDTO saved = chatService.handleMessage(request);
-        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.getRoomId(), saved);
+        // 1. 서비스 호출 (모든 비즈니스 로직 위임)
+        MessageHandlingResult result = chatService.handleMessage(request);
 
-        if (!receiverInRoom) {
-            Long totalUnreadCount = messageRepository.countUnreadMessagesByRoomAndReceiver(
-                    request.getRoomId(),
-                    request.getReceiverId()
-            );
+        // 2. [항상 전송] 채팅방 메시지 전송
+        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.getRoomId(), result.sendMessageResponseDTO());
 
-            ChatRoomUpdateDTO updateDTO = ChatRoomUpdateDTO.builder()
-                    .roomId(request.getRoomId())
-                    .lastMessage(saved.message())
-                    .lastMessageTime(saved.sentAt())
-                    .unreadCount(totalUnreadCount)
-                    .build();
-
+        // 3. [조건부 전송] 채팅방 목록 업데이트 전송
+        if (result.hasRoomUpdates()) {
             simpMessagingTemplate.convertAndSendToUser(
-                    request.getReceiverId().toString(),
+                    result.receiverId().toString(),
                     "/queue/updates",
-                    updateDTO
+                    result.chatRoomUpdateDTO()
             );
-            Member sender = memberRepository.findById(request.getSenderId()).orElse(null);
-            String senderName;
-            if (sender.getRole()== UserRole.ADMIN) {
-                senderName = sender.getAdminProfile().getName();
-            } else {
-                senderName = sender.getPartnerProfile().getName();
-            }
-
-            log.info(">>>>>>>>메시지 전송은 될걸");
-            notificationCommandService.sendChat(request.getReceiverId(), request.getRoomId(), senderName, request.getMessage());
-            log.info(">>>>>>>>알림이 가나");
         }
     }
+
+//    @Transactional
+//    @MessageMapping("/send")
+//    public void handleMessage(@Payload ChatRequestDTO.ChatMessageRequestDTO request) {
+//        // 먼저 접속 여부 확인 후 unreadCount 계산
+//        boolean receiverInRoom = presenceTracker.isInRoom(request.getReceiverId(), request.getRoomId());
+//        int unreadForSender = receiverInRoom ? 0 : 1;
+//        request.setUnreadCountForSender(unreadForSender);
+//
+//        ChatResponseDTO.SendMessageResponseDTO saved = chatService.handleMessage(request);
+//        simpMessagingTemplate.convertAndSend("/sub/chat/" + request.getRoomId(), saved);
+//
+//        if (!receiverInRoom) {
+//            Long totalUnreadCount = messageRepository.countUnreadMessagesByRoomAndReceiver(
+//                    request.getRoomId(),
+//                    request.getReceiverId()
+//            );
+//
+//            ChatRoomUpdateDTO updateDTO = ChatRoomUpdateDTO.builder()
+//                    .roomId(request.getRoomId())
+//                    .lastMessage(saved.message())
+//                    .lastMessageTime(saved.sentAt())
+//                    .unreadCount(totalUnreadCount)
+//                    .build();
+//
+//            simpMessagingTemplate.convertAndSendToUser(
+//                    request.getReceiverId().toString(),
+//                    "/queue/updates",
+//                    updateDTO
+//            );
+//            Member sender = memberRepository.findById(request.getSenderId()).orElse(null);
+//            String senderName;
+//            if (sender.getRole()== UserRole.ADMIN) {
+//                senderName = sender.getAdminProfile().getName();
+//            } else {
+//                senderName = sender.getPartnerProfile().getName();
+//            }
+//
+//            log.info(">>>>>>>>메시지 전송은 될걸");
+//            notificationCommandService.sendChat(request.getReceiverId(), request.getRoomId(), senderName, request.getMessage());
+//            log.info(">>>>>>>>알림이 가나");
+//        }
+//    }
 
     @Operation(
             summary = "메시지 읽음 처리 API",
