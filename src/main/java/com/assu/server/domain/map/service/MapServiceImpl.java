@@ -144,6 +144,13 @@ public class MapServiceImpl implements MapService {
                     : null;
             final String profileUrl = (key != null ? amazonS3Manager.generatePresignedUrl(key) : null);
 
+            // phoneNumber null-safe 처리 (빈 문자열로 변환)
+            final String phoneNumber = (s.getPartner() != null
+                    && s.getPartner().getMember() != null
+                    && s.getPartner().getMember().getPhoneNum() != null)
+                    ? s.getPartner().getMember().getPhoneNum()
+                    : "";
+
             // 2-4) DTO 빌드 (content null 허용)
             return MapResponseDTO.StoreMapResponseDTO.builder()
                     .storeId(s.getId())
@@ -162,7 +169,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(s.getLatitude())
                     .longitude(s.getLongitude())
                     .profileUrl(profileUrl)
-                    .phoneNumber(s.getPartner().getMember().getPhoneNum())
+                    .phoneNumber(phoneNumber)
                     .build();
         }).toList();
     }
@@ -174,9 +181,7 @@ public class MapServiceImpl implements MapService {
         return stores.stream().map(s -> {
             boolean hasPartner = s.getPartner() != null;
             PaperContent content = paperContentRepository.findTopByPaperStoreIdOrderByIdDesc(s.getId())
-                    .orElseThrow(
-                        () -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT)
-                    );
+                    .orElse(null);
 
             String key = (s.getPartner() != null) ? s.getPartner().getMember().getProfileUrl() : null;
             String url = amazonS3Manager.generatePresignedUrl(key);
@@ -206,9 +211,16 @@ public class MapServiceImpl implements MapService {
                 }
             }
 
+            // phoneNumber null-safe 처리 (빈 문자열로 변환)
+            String phoneNumber = (s.getPartner() != null
+                    && s.getPartner().getMember() != null
+                    && s.getPartner().getMember().getPhoneNum() != null)
+                    ? s.getPartner().getMember().getPhoneNum()
+                    : "";
+
             return MapResponseDTO.StoreMapResponseDTO.builder()
                     .storeId(s.getId())
-                    .adminName(admin.getName())
+                    .adminName(admin != null ? admin.getName() : null)
                     .adminId(adminId)
                     .name(s.getName())
                     .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
@@ -223,7 +235,7 @@ public class MapServiceImpl implements MapService {
                     .latitude(s.getLatitude())
                     .longitude(s.getLongitude())
                     .profileUrl(url)
-                    .phoneNumber(s.getPartner().getMember().getPhoneNum())
+                    .phoneNumber(phoneNumber)
                     .build();
         }).toList();
     }

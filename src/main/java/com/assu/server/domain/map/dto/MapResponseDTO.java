@@ -67,7 +67,6 @@ public class MapResponseDTO {
         private Double longitude;
         private String profileUrl;
         private String phoneNumber;
-
     }
 
     @Getter @NoArgsConstructor @AllArgsConstructor @Builder
