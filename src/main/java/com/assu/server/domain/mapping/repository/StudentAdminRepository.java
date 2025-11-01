@@ -52,8 +52,6 @@ public interface StudentAdminRepository extends JpaRepository<StudentAdmin, Long
         """, nativeQuery = true)
     Long countTodayUsersByAdmin(@Param("adminId") Long adminId);
 
-    // 🔧 핵심 수정: Paper 정보를 포함한 사용량 조회 (N+1 해결)
-    // Paper ID를 함께 반환하여 별도 조회 불필요
     @Query(value = """
         SELECT
           p.id                              AS paperId,
@@ -71,7 +69,7 @@ public interface StudentAdminRepository extends JpaRepository<StudentAdmin, Long
         """, nativeQuery = true)
     List<StoreUsageWithPaper> findUsageByStoreWithPaper(@Param("adminId") Long adminId);
 
-    // 🆕 추가: 0건 포함 조회 (대시보드에서 모든 제휴 업체를 보여줘야 하는 경우)
+    // 0건 포함 조회 (대시보드에서 모든 제휴 업체를 보여줘야 하는 경우)
     @Query(value = """
         SELECT
           p.id                                   AS paperId,
@@ -88,7 +86,6 @@ public interface StudentAdminRepository extends JpaRepository<StudentAdmin, Long
         """, nativeQuery = true)
     List<StoreUsageWithPaper> findUsageByStoreIncludingZero(@Param("adminId") Long adminId);
 
-    // 🔧 Projection 인터페이스: Paper ID 추가
     interface StoreUsageWithPaper {
         Long getPaperId();    // 🆕 추가: Paper ID
         Long getStoreId();
