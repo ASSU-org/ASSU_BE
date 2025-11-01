@@ -21,6 +21,9 @@ import com.assu.server.domain.user.service.StudentService;
 import com.assu.server.global.apiPayload.BaseResponse;
 import com.assu.server.global.apiPayload.code.status.SuccessStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
 @Tag(name = "유저 관련 api", description = "유저와 관련된 로직을 처리하는 api")
 @RequiredArgsConstructor
@@ -73,9 +76,6 @@ public class StudentController {
 				studentService.getUnreviewedUsage(pd.getId(), pageable)));
 	}
 
-
-
-
 	@Operation(
 		summary = "사용자 stamp 개수 조회 API",
 		description = "# [v1.0 (2025-09-09)](https://www.notion.so/2691197c19ed805c980dd546adee9301?source=copy_link)\n" +
@@ -90,4 +90,24 @@ public class StudentController {
     ) {
         return BaseResponse.onSuccess(SuccessStatus._OK, studentService.getStamp(pd.getId()));
     }
+
+	@Operation(
+			summary = "사용자의 이용 가능한 제휴 조회 API",
+			description = "# [v1.0 (2025-10-30)](https://clumsy-seeder-416.notion.site/API-29c1197c19ed8030b1f5e2a744416651?source=copy_link)\n" +
+					"- all = true면 전체 조회, false면 2개만 조회"
+	)
+	@GetMapping("/usable")
+	public BaseResponse<List<StudentResponseDTO.UsablePartnershipDTO>> getUsablePartnership(
+			@AuthenticationPrincipal PrincipalDetails pd,
+			@RequestParam(name = "all", defaultValue = "false") boolean all
+	) {
+		return BaseResponse.onSuccess(SuccessStatus._OK, studentService.getUsablePartnership(pd.getId(), all));
+	}
+
+	@PostMapping("/sync/all")
+	public BaseResponse<String> syncAllStudentsNow() {
+		studentService.syncUserPapersForAllStudents();
+		return BaseResponse.onSuccess(SuccessStatus._OK, "전체 학생 user_paper 동기화 완료");
+	}
+
 }

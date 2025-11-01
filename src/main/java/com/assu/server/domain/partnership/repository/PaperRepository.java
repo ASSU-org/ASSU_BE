@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,4 +50,16 @@ public interface PaperRepository extends JpaRepository<Paper, Long> {
     Optional<Paper> findTopPaperByStoreId(Long storeId);
     long countByStore_Id(Long storeId);
 
+    @Query("""
+        SELECT p FROM Paper p
+        WHERE p.admin.id IN :adminIds
+          AND p.isActivated = :status
+          AND p.partnershipPeriodStart <= :today
+          AND p.partnershipPeriodEnd >= :today
+    """)
+    List<Paper> findActivePapersByAdminIds(@Param("adminIds") List<Long> adminIds,
+                                           @Param("today") LocalDate today,
+                                           @Param("status") ActivationStatus status);
+
+    List<Paper> findByStoreIdAndAdminIdAndIsActivated(Long storeId, Long adminId, ActivationStatus isActivated);
 }
