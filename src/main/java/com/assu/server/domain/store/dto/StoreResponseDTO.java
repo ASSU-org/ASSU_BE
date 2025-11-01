@@ -19,13 +19,7 @@ public class StoreResponseDTO {
             private Long rank;           // 그 주 순위(1부터)
             private Long usageCount;     // 그 주 사용 건수
     }
-	@AllArgsConstructor
-	@RequiredArgsConstructor
-	@Builder
-	@Getter
-	public static class todayBest{
-		List<String> bestStores;
-	}
+
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -34,6 +28,13 @@ public class StoreResponseDTO {
         private Long storeId;
         private String storeName;
         private List<WeeklyRankResponseDTO> items; // 과거→현재 (6개)
+    }
+    @AllArgsConstructor
+    @RequiredArgsConstructor
+    @Builder
+    @Getter
+    public static class todayBest{
+        List<String> bestStores;
     }
 
 }
