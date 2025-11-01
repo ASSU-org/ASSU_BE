@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class StudentAdminServiceImpl implements StudentAdminService {
     private final StudentAdminRepository studentAdminRepository;
     private final AdminRepository adminRepository;
-    private final PaperRepository paperRepository;  // 🔧 수정: PaperRepository 사용
+    private final PaperRepository paperRepository;
 
     @Override
     @Transactional
@@ -59,11 +59,10 @@ public class StudentAdminServiceImpl implements StudentAdminService {
     public StudentAdminResponseDTO.CountUsageResponseDTO getCountUsage(Long memberId) {
         Admin admin = getAdminOrThrow(memberId);
 
-        // 🔧 수정: Paper 정보를 포함한 조회 (N+1 해결)
         List<StudentAdminRepository.StoreUsageWithPaper> storeUsages =
                 studentAdminRepository.findUsageByStoreWithPaper(memberId);
 
-        // 데이터가 없으면 예외 처리
+        //예외 처리
         if (storeUsages.isEmpty()) {
             throw new DatabaseException(ErrorStatus.NO_USAGE_DATA);
         }
@@ -71,7 +70,6 @@ public class StudentAdminServiceImpl implements StudentAdminService {
         // 첫 번째가 가장 사용량이 많은 업체 (ORDER BY usageCount DESC)
         var top = storeUsages.get(0);
 
-        // 🔧 수정: Paper ID로 직접 조회 (별도 쿼리 불필요)
         Paper paper = paperRepository.findById(top.getPaperId())
                 .orElseThrow(() -> new DatabaseException(ErrorStatus.NO_PAPER_FOR_STORE));
 
@@ -92,16 +90,13 @@ public class StudentAdminServiceImpl implements StudentAdminService {
             return StudentAdminConverter.countUsageListResponseDTO(List.of());
         }
 
-        // 🔧 핵심 개선: Paper ID 목록을 한 번에 조회 (Batch Query)
         List<Long> paperIds = storeUsages.stream()
                 .map(StudentAdminRepository.StoreUsageWithPaper::getPaperId)
                 .toList();
 
-        // 🔧 한 번의 IN 쿼리로 모든 Paper 조회
         Map<Long, Paper> paperMap = paperRepository.findAllById(paperIds).stream()
                 .collect(Collectors.toMap(Paper::getId, paper -> paper));
 
-        // 🔧 Paper 조회 없이 매핑만 수행 (N+1 완전 해결)
         var items = storeUsages.stream().map(row -> {
             Paper paper = paperMap.get(row.getPaperId());
             if (paper == null) {
