@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.assu.server.domain.partnership.entity.enums.CriterionType;
+import com.assu.server.domain.partnership.entity.enums.OptionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,5 +67,21 @@ public class StudentResponseDTO {
         private int stamp;
         private String message;
     }
+
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class UsablePartnershipDTO {
+		private Long partnershipId;
+		private String adminName;
+		private String partnerName;
+		private CriterionType criterionType;
+		private OptionType optionType;
+		private Integer people;
+		private Long cost;
+		private String category;
+		private Long discountRate;
+	}
 
 }

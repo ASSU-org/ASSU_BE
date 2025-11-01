@@ -67,4 +67,7 @@ LIMIT 1
             @Param("price") String price,              // CriterionType.PRICE.name()
             @Param("headcount") String headcount       // CriterionType.HEADCOUNT.name()
     );
+
+    Optional<PaperContent> findTopByPaperIdOrderByIdDesc(Long paperId);
+
 }
