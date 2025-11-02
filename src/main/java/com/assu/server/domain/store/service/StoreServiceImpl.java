@@ -26,7 +26,7 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@Transactional
 	public StoreResponseDTO.todayBest getTodayBestStore() {
-		List<String> bestStores = partnershipUsageRepository.findTodayPopularPartnership();
+		List<String> bestStores = storeRepository.findTodayBestStoreNames();
 
 		return StoreResponseDTO.todayBest.builder()
 			.bestStores(bestStores)
