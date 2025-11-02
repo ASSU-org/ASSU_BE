@@ -223,6 +223,7 @@ public class MapServiceImpl implements MapService {
                     .adminName(admin != null ? admin.getName() : null)
                     .adminId(adminId)
                     .name(s.getName())
+                    .note(content.getNote())
                     .address(s.getAddress() != null ? s.getAddress() : s.getDetailAddress())
                     .rate(s.getRate())
                     .criterionType(content != null ? content.getCriterionType() : null)

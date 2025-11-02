@@ -61,6 +61,7 @@ public class MapResponseDTO {
         private Integer people;
         private Long cost;
         private String category;
+        private String note;
         private Long discountRate;
         private boolean hasPartner;
         private Double latitude;

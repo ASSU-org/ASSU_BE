@@ -56,6 +56,7 @@ public class PartnershipConverter {
         }
 		return partnershipRequestDTO.getOptions().stream()
 				.map(optionDto -> PaperContent.builder()
+						.note(optionDto.getNote()) // 일단 노트까지 받아서 변환
 						.paper(paper) // 어떤 Paper에 속하는지 연결
 						.optionType(optionDto.getOptionType())
 						.criterionType(optionDto.getCriterionType())
@@ -102,7 +103,14 @@ public class PartnershipConverter {
 	public static PaperContentResponseDTO.storePaperContentResponse toContentResponse(PaperContent content) {
 		List<String> goodsList = extractGoods(content);
 		Integer peopleValue = extractPeople(content);
-		String paperContentText = buildPaperContentText(content, goodsList, peopleValue);
+
+		String paperContentText;
+		if(content.getNote()!= null){
+			paperContentText = content.getNote();
+		}else{
+			 paperContentText = buildPaperContentText(content, goodsList, peopleValue);
+		}
+
 
 		return PaperContentResponseDTO.storePaperContentResponse.builder()
 			.adminId(content.getPaper().getAdmin().getId())
@@ -204,6 +212,7 @@ public class PartnershipConverter {
                     .paper(paper)
                     .optionType(o.getOptionType())
                     .criterionType(o.getCriterionType())
+					.note(o.getNote())
                     .people(o.getPeople())
                     .cost(o.getCost())
                     .category(o.getCategory())
@@ -238,6 +247,11 @@ public class PartnershipConverter {
         if (contents != null) {
             for (int i = 0; i < contents.size(); i++) {
                 PaperContent pc = contents.get(i);
+
+				String note = null;
+				if(pc.getNote()!= null){
+					note = pc.getNote();
+				}
                 List<Goods> goods = (goodsBatches != null && goodsBatches.size() > i)
                         ? goodsBatches.get(i) : List.of();
                 optionDTOS.add(
@@ -245,6 +259,7 @@ public class PartnershipConverter {
                                 .optionType(pc.getOptionType())
                                 .criterionType(pc.getCriterionType())
                                 .people(pc.getPeople())
+								.note(note)
                                 .cost(pc.getCost())
                                 .category(pc.getCategory())
                                 .discountRate(pc.getDiscount())
@@ -253,6 +268,8 @@ public class PartnershipConverter {
                 );
             }
         }
+
+
         return PartnershipResponseDTO.WritePartnershipResponseDTO.builder()
                 .partnershipId(paper.getId())
                 .partnershipPeriodStart(paper.getPartnershipPeriodStart())
@@ -319,6 +336,10 @@ public class PartnershipConverter {
 		if (contents != null) {
 			for (int i = 0; i < contents.size(); i++) {
 				PaperContent pc = contents.get(i);
+				String note = null;
+				if(pc.getNote()!= null){
+					note = pc.getNote();
+				}
 				List<Goods> goods = (goodsBatches != null && goodsBatches.size() > i)
 						? goodsBatches.get(i) : List.of();
 				optionDTOS.add(
@@ -327,6 +348,7 @@ public class PartnershipConverter {
 								.criterionType(pc.getCriterionType())
 								.people(pc.getPeople())
 								.cost(pc.getCost())
+								.note(note)
 								.category(pc.getCategory())
 								.discountRate(pc.getDiscount())
 								.goods(goodsResultDTO(goods))
