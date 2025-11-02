@@ -80,6 +80,7 @@ public class StudentResponseDTO {
 		private OptionType optionType;
 		private Integer people;
 		private Long cost;
+		private String note;
 		private String category;
 		private Long discountRate;
 	}

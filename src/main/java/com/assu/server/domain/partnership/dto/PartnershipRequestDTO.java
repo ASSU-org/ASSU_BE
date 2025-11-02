@@ -40,6 +40,7 @@ public class PartnershipRequestDTO {
         private Long cost;
         private String category;
         private Long discountRate;
+        private String note;
         private List<PartnershipGoodsRequestDTO> goods; // 서비스 제공 항목
 
     }

@@ -40,6 +40,7 @@ public class PartnershipResponseDTO {
         private CriterionType criterionType;
         private Integer people;
         private Long cost;
+        private String note;
         private String category;
         private Long discountRate;
 

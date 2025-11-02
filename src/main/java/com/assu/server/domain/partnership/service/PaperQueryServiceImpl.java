@@ -50,17 +50,6 @@ public class PaperQueryServiceImpl implements PaperQueryService {
 			student.getDepartment(),
 			student.getMajor());
 
-		// // 한번 더 거르기 위해서
-		// List<Admin> filteredAdmin = adminList.stream()
-		// 	.filter(admin -> {
-		// 		String name = admin.getName();
-		// 		Major major = admin.getMajor();
-		// 		return name.contains(student.getUniversity())
-		// 			|| name.contains(student.getDepartment())
-		// 			|| major.equals(student.getMajor());
-		// 	}).toList();
-
-
 		// 추출한 admin, store와 일치하는 paperId 를 추출합니다.
 		List<Paper> paperList = adminList.stream()
 			.flatMap(admin ->
