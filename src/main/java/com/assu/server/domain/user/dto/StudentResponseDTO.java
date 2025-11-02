@@ -81,6 +81,7 @@ public class StudentResponseDTO {
 		private Integer people;
 		private Long cost;
 		private String note;
+		private Long paperId;
 		private String category;
 		private Long discountRate;
 	}
