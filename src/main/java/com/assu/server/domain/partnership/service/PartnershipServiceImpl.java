@@ -101,48 +101,7 @@ public class PartnershipServiceImpl implements PartnershipService {
 
         // @Transactional 환경에서는 studentsToUpdate의 변경 사항(스탬프)이 자동으로 DB에 반영됩니다.
     }
-	// public void recordPartnershipUsage(PartnershipRequestDTO.finalRequest dto, Member member){
-    //
-    //     Student requestStudent = studentRepository.findById(member.getId()).orElseThrow(
-    //         () -> new GeneralException(ErrorStatus.NO_SUCH_STUDENT) // 혹은 적절한 예외 처리
-    //     );
-    //
-	// 	List<PartnershipUsage> usages = new ArrayList<>();
-    //
-    //     PaperContent content = contentRepository.findById(dto.getContentId()).orElseThrow(
-    //         () -> new GeneralException(ErrorStatus.NO_SUCH_CONTENT)
-    //     );
-    //     Long paperId = content.getPaper().getId();
-	// 	// 1) 요청한 member 본인
-	// 	usages.add(PartnershipConverter.toPartnershipUsage(dto, requestStudent, paperId));
-    //     requestStudent.setStamp();
-    //     System.out.println("update 된 stamp : "+requestStudent.getStamp());
-    //
-	// 	List<Long> userIds = Optional.ofNullable(dto.getUserIds()).orElse(Collections.emptyList());
-	// 	// 2) dto의 userIds에 있는 다른 사용자들
-	// 	for (Long userId : userIds) {
-    //         if(userId != member.getId()){
-    //             Student student = studentRepository.getReferenceById(userId);
-    //             usages.add(PartnershipConverter.toPartnershipUsage(dto, student, paperId));
-    //             student.setStamp();
-    //         }
-    //
-	// 	}
-    //     partnershipUsageRepository.saveAll(usages);
-    //
-    //     // Store store = storeRepository.findById(dto.getStoreId()).orElseThrow(
-    //     //     () -> new GeneralException(ErrorStatus.NO_SUCH_STORE)
-    //     // );
-    //     // Partner partner = store.getPartner();
-    //     // if (partner != null) {
-    //     //     Long partnerId = partner.getId();
-    //     //     System.out.println("알림 요청이 들어갑니다.");
-    //     //     notificationService.sendOrder(partnerId, 0L, dto.getTableNumber(), dto.getPartnershipContent());
-    //     //
-    //     // } else {
-    //     //     throw new GeneralException(ErrorStatus.NO_SUCH_PARTNER);
-    //     // }
-	// }
+
 
 
 

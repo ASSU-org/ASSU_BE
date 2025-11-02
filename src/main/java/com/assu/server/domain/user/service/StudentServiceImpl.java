@@ -144,7 +144,11 @@ public class StudentServiceImpl implements StudentService {
 
 			// 카테고리 결정 로직 그대로
 			String finalCategory = null;
+			String note = null;
 			if (content != null) {
+				if(content.getNote() != null){
+					note = content.getNote();
+				}
 				if (content.getCategory() != null) {
 					finalCategory = content.getCategory();
 				} else if (content.getOptionType() == OptionType.SERVICE) {
@@ -159,6 +163,7 @@ public class StudentServiceImpl implements StudentService {
 					.partnershipId(paper.getId())
 					.adminName(adminName)
 					.partnerName(partnerName)
+					.note(note)
 					.criterionType(content != null ? content.getCriterionType() : null)
 					.optionType(content != null ? content.getOptionType() : null)
 					.people(content != null ? content.getPeople() : null)
