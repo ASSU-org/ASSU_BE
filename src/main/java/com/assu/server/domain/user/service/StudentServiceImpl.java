@@ -163,7 +163,7 @@ public class StudentServiceImpl implements StudentService {
 					.partnershipId(paper.getId())
 					.adminName(adminName)
 					.partnerName(partnerName)
-					.note(note)
+					.note(note).paperId(content != null? content.getPaper().getId(): null)
 					.criterionType(content != null ? content.getCriterionType() : null)
 					.optionType(content != null ? content.getOptionType() : null)
 					.people(content != null ? content.getPeople() : null)
