@@ -18,7 +18,7 @@ public class DeviceToken extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name="member_id", nullable=false)
     private Member member;
 
-    @Column(nullable=false, length=200, unique=true)
+    @Column(nullable=false, length=200)
     private String token;
 
     @Setter
