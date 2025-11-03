@@ -21,7 +21,7 @@ public class NotificationFactory {
                 String msg = asString(ctx.get("message"), "");
                 title = "ASSU";
                 preview = sender + ": " + truncateByCodePoint(msg, 200);
-                deeplink = "/chat/rooms/" + refId;
+                deeplink = String.valueOf(refId);
             }
             case PARTNER_SUGGESTION -> {
                 title = "제휴 건의";
